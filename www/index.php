@@ -12,6 +12,8 @@
 
         <link rel="stylesheet" href="css/bootstrap.min.css">
         <style>
+
+
             body {
                 padding-top: 60px;
                 padding-bottom: 40px;
@@ -35,7 +37,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </a>
-                    <a class="brand" href="#">This tool</a>
+                    <a class="brand" href="#">ScienceScape</a>
                     <div class="nav-collapse collapse">
                         <ul class="nav">
                             <!--<li class="active"><a href="#">Gaga</a></li>-->
@@ -84,32 +86,48 @@
                         <a href="index.php"><img src="res/header.png"/></a>
                     </div>
                     <div class="title">
-                        some médialab tool
+                        ScienceScape
                     </div>
                 </div>
                 <div class="span5">
                     <div class="abstract">
-                        <p><strong>Catchline.</strong> Stupid simple description.</p>
+                        <p><strong>Helpers for scientometrics.</strong> Convert files, get networks, visualize stuff from Scopus or Web of Science.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Example row of columns -->
             <div class="row">
                 <div class="span4">
-                    <h2>Heading</h2>
-                    <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-                    <p><a class="btn" href="#">View details &raquo;</a></p>
-                </div>
-                <div class="span4">
-                    <h2>Heading</h2>
-                    <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-                    <p><a class="btn" href="#">View details &raquo;</a></p>
-               </div>
-                <div class="span4">
-                    <h2>Heading</h2>
-                    <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
-                    <p><a class="btn" href="#">View details &raquo;</a></p>
+                    <h2>Scopus DOI Links</h2>
+                    <p class="text-info">
+                        Adds the list of citation links where there are DOI references, in a Scopus CSV file.
+                    </p>
+                    <h4>1. Upload your Scopus CSV file</h4>
+                        <div id="scopusdoilinks" style="height: 50px">
+                            <div class="input">
+                                <input type="file" name="file" id='scopusdoilinks_input'/>
+                                <span class="help-block">Note: you can drag and drop a file</span>
+                            </div>
+                            <div class="progress" style="display: none;">
+                                <div class="bar" style="width: 0%;"></div>
+                            </div>
+                            <div class="alert" style="display: none;">
+                            </div>
+                        </div>
+                    </p>
+                    <!-- <h4>2. Settings</h4>
+                    <p>
+                        <label class="checkbox">
+                            <input type="checkbox" value="" checked="true">
+                            Add DOI links
+                        </label>
+                    </p> -->
+                    <h4>2. Download result</h4>
+                    <p>
+                        <button class="btn disabled" id="scopusdoilinks_download" onclick="downloadScopusdoilinks()"><i class="icon-download"></i> Download CSV with DOI links</button>
+                    </p>
+                    <!-- <h4>Help</h4> -->
+
                 </div>
             </div>
         </div>
@@ -117,6 +135,10 @@
         <?php include("includes/footer.php"); ?>
 
         <?php include("includes/footcontent.php"); ?>
+
+        <script>
+            document.getElementById('scopusdoilinks_input').addEventListener('change', fileLoader.handleFileSelect, false);
+        </script>
 
     </body>
 </html>

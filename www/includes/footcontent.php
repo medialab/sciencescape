@@ -4,7 +4,9 @@
 
 <script src="js/libs/jquery.md5.js"></script>
 
-<script src="js/libs/d3.min.js"></script>
+<script src="js/libs/bootstrap.min.js"></script>
+
+<script src="js/libs/d3.v2.min.js"></script>
 <!-- <script src="js/libs/d3.min.js"></script> -->
 <!-- <script src="js/libs/d3.chart.min.js"></script> -->
 <!-- <script src="js/libs/d3.csv.min.js"></script> -->
@@ -16,7 +18,7 @@
 <script src="js/libs/chroma.js"></script>
 <!-- <script src="js/libs/chroma.palette-gen.js"></script> -->
 
-<!-- <script src="js/libs/FileSaver.js"></script> -->
+<script src="js/libs/FileSaver.js"></script>
 
 <!-- <script src="js/libs/loadbar.js"></script>
 <script src="js/libs/sigma.min.js"></script>
