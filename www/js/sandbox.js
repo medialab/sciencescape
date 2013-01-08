@@ -1,4 +1,5 @@
 var scopusdoilinks_data = '';
+var wosdoilinks_data = '';
 
 // http://images.webofknowledge.com/WOK45/help/WOS/h_fieldtags.html
 var fieldTags = [
@@ -131,7 +132,22 @@ var fileLoader = {
                     $('#scopusdoilinks_download').removeClass('disabled')
                 } else {
                     $('#'+id+' .progress').hide()
+                    $('#'+id+' .alert').addClass('alert-error')
+                    $('#'+id+' .alert').html('Parsing error <button type="button" class="close" data-dismiss="alert">&times;</button>')
+                    $('#'+id+' .alert').show()
+                }
+                break;
+            case 'wosdoilinks':
+                wosdoilinks_data = build_wosDoiLinks(fileLoader.reader.result);
+                if(wosdoilinks_data){
+                    $('#'+id+' .progress').hide()
                     $('#'+id+' .alert').addClass('alert-success')
+                    $('#'+id+' .alert').html('Parsing successful <button type="button" class="close" data-dismiss="alert">&times;</button>')
+                    $('#'+id+' .alert').show()
+                    $('#scopusdoilinks_download').removeClass('disabled')
+                } else {
+                    $('#'+id+' .progress').hide()
+                    $('#'+id+' .alert').addClass('alert-error')
                     $('#'+id+' .alert').html('Parsing error <button type="button" class="close" data-dismiss="alert">&times;</button>')
                     $('#'+id+' .alert').show()
                 }
@@ -219,7 +235,11 @@ function build_scopusDoiLinks(csv){
 }
 
 function build_wosDoiLinks(csv){
-    return build_DoiLinks(csv, d3.csv.parseRows, 'CR', 'DOI_CITED')
+    if ( $('#wosdoilinks_filetype').is( ':checked' ) ){
+        return build_DoiLinks(csv, d3.csv.parseRows, 'CR', 'DOI_CITED')
+    } else {
+        
+    }
 }
 
 function build_DoiLinks(csv, rowsParser, column, doi_column_name){

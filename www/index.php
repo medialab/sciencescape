@@ -150,12 +150,12 @@
                 </div>
 
                 <div class="span4">
-                    <h2>Web of Science CSV DOI Links</h2>
+                    <h2>Web of Science DOI Links</h2>
                     <p class="text-info">
-                        Adds the list of citation links where there are DOI references, in a WoS CSV file.
+                        Adds the list of citation links where there are DOI references, in a WoS file (classic or CSV).
                     </p>
                     <br/>
-                    <h4>1. Upload your WoS CSV file</h4>
+                    <h4>1. Upload your WoS file</h4>
                         <div id="wosdoilinks" style="height: 50px">
                             <div class="input">
                                 <input type="file" name="file" id='wosdoilinks_input'/>
@@ -168,15 +168,16 @@
                             </div>
                         </div>
                     </p>
-                    <!-- <h4>2. Settings</h4>
+                    <br/>
+                    <h4>2. Settings</h4>
                     <p>
                         <label class="checkbox">
-                            <input type="checkbox" value="" checked="true">
-                            Add DOI links
+                            <input type="checkbox" id="wosdoilinks_filetype" value="">
+                            CSV file
                         </label>
-                    </p> -->
+                    </p>
                     <br/>
-                    <h4>2. Download result</h4>
+                    <h4>3. Download result</h4>
                     <p>
                         <button class="btn disabled" id="wosdoilinks_download" onclick="downloadWosdoilinks()"><i class="icon-download"></i> Download CSV with DOI links</button>
                     </p>
@@ -209,6 +210,7 @@
 
         <script>
             document.getElementById('scopusdoilinks_input').addEventListener('change', fileLoader.handleFileSelect, false);
+            document.getElementById('wosdoilinks_input').addEventListener('change', fileLoader.handleFileSelect, false);
         </script>
 
     </body>
