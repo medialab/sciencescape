@@ -148,6 +148,58 @@
                     </p>
 
                 </div>
+
+                <div class="span4">
+                    <h2>Web of Science CSV DOI Links</h2>
+                    <p class="text-info">
+                        Adds the list of citation links where there are DOI references, in a WoS CSV file.
+                    </p>
+                    <br/>
+                    <h4>1. Upload your WoS CSV file</h4>
+                        <div id="wosdoilinks" style="height: 50px">
+                            <div class="input">
+                                <input type="file" name="file" id='wosdoilinks_input'/>
+                                <span class="help-block">Note: you can drag and drop a file</span>
+                            </div>
+                            <div class="progress" style="display: none;">
+                                <div class="bar" style="width: 0%;"></div>
+                            </div>
+                            <div class="alert" style="display: none;">
+                            </div>
+                        </div>
+                    </p>
+                    <!-- <h4>2. Settings</h4>
+                    <p>
+                        <label class="checkbox">
+                            <input type="checkbox" value="" checked="true">
+                            Add DOI links
+                        </label>
+                    </p> -->
+                    <br/>
+                    <h4>2. Download result</h4>
+                    <p>
+                        <button class="btn disabled" id="wosdoilinks_download" onclick="downloadWosdoilinks()"><i class="icon-download"></i> Download CSV with DOI links</button>
+                    </p>
+                    <br/>
+                    <!-- <h4>Help</h4>
+                    <p>
+                        This script is useful if you want to build a network of citations.
+                    </p>
+                    <p>
+                        The problem is to match the papers of the table with the papers in the references.
+                        The titles might have variations or discrepancies, messing up the matching.
+                        The solution is to use exact identifiers.
+                    </p>
+                    <p>
+                        Such identifiers exist in the world of scientometrics: the DOI, or <a href="http://en.wikipedia.org/wiki/Digital_object_identifier">"Digital Object Identifier"</a>.
+                        They are sometimes present in the list of papers, and they are sometimes present in the references.
+                    </p>
+                    <p>
+                        <strong>This tool extracts the DOI from the references and adds them to a new column.</strong>
+                        You may use the resulting CSV to build a network with Table2Net.
+                    </p> -->
+
+                </div>
             </div>
         </div>
 
