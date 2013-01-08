@@ -56,7 +56,7 @@ var fieldTags = [
     {tag:"UT",  name:"Unique Article Identifier"},
     {tag:"ER",  name:"End of Record"},
     {tag:"EF",  name:"End of File"},
-    {tag:"DOI_CITED",   name:"Citated Papers"}
+    {tag:"DOI_CITED",   name:"Cited papers having a DOI"}
 ];
 
 var fileLoader = {
@@ -151,11 +151,11 @@ function downloadScopusdoilinks(){
     
     bb.append(headers.map(function(header){
         var result = header;
-        fieldTags.forEach(function(ft){
+        /*fieldTags.forEach(function(ft){
             if(ft.tag==header){
                 result += " ("+ft.name+")";
             }
-        });
+        });*/
         return result;
     }).map(function(header){
         return '"' + header.replace(/"/gi, '""') + '"';
@@ -215,43 +215,46 @@ function parseWOS(wos){
 }
 
 function build_scopusDoiLinks(csv){
-    var lines = csv.split("\n");
-    var headline = lines.shift().split("\t");
-    var CR_index = -1;
+    return build_DoiLinks(csv, d3.csv.parseRows, 'References', 'Cited papers having a DOI')
+}
+
+function build_wosDoiLinks(csv){
+    return build_DoiLinks(csv, d3.csv.parseRows, 'CR', 'DOI_CITED')
+}
+
+function build_DoiLinks(csv, rowsParser, column, doi_column_name){
+    var lines = rowsParser(csv)
+    var headline = lines.shift()
+    var CR_index = -1;  // Index containing the references
     headline.forEach(function(h,i){
-        if(h == "CR"){
-            CR_index = i;
+        if(h == column){
+            CR_index = i
         }
-    });
-    var csvRows = [headline];
-    lines.forEach(function(line){
-        var row = line.split("\t");
+    })
+    var csvRows = [headline]
+    lines.forEach(function(row){
         if(CR_index>=0 && CR_index < row.length){
             // Extract DOI reference of the cited paper if applicable
             var doi_refs = d3.merge(row[CR_index]
                 .split(";")
                 .map(function(ref){
                     return ref.split(",").filter(function(d){
-                        return d.match(/ +DOI.*/gi);
-                    });
+                        return d.match(/ +DOI.*/gi)
+                    })
                 })).map(function(doi){
-                    return doi.trim().split(" ")[1] || "";
+                    return doi.trim().split(" ")[1] || ""
                 }).filter(function(doi){
-                    return doi.trim() != "";
-                });
-            row.unshift(doi_refs.join("; "));
+                    return doi.trim() != ""
+                })
+            row.unshift(doi_refs.join("; "))
         } else {
-            row.unshift("");
+            row.unshift("")
         }
-        csvRows.push(row);
-    });
+        csvRows.push(row)
+    })
     
-    headline.unshift("DOI_CITED");
-    return csvRows;
-}
-
-function build_DoiLinks(csvRows){
-    
+    headline.unshift(doi_column_name)
+    return csvRows
 }
 
 // Utilities

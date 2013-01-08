@@ -102,6 +102,7 @@
                     <p class="text-info">
                         Adds the list of citation links where there are DOI references, in a Scopus CSV file.
                     </p>
+                    <br/>
                     <h4>1. Upload your Scopus CSV file</h4>
                         <div id="scopusdoilinks" style="height: 50px">
                             <div class="input">
@@ -122,11 +123,29 @@
                             Add DOI links
                         </label>
                     </p> -->
+                    <br/>
                     <h4>2. Download result</h4>
                     <p>
                         <button class="btn disabled" id="scopusdoilinks_download" onclick="downloadScopusdoilinks()"><i class="icon-download"></i> Download CSV with DOI links</button>
                     </p>
-                    <!-- <h4>Help</h4> -->
+                    <br/>
+                    <h4>Help</h4>
+                    <p>
+                        This script is useful if you want to build a network of citations.
+                    </p>
+                    <p>
+                        The problem is to match the papers of the table with the papers in the references.
+                        The titles might have variations or discrepancies, messing up the matching.
+                        The solution is to use exact identifiers.
+                    </p>
+                    <p>
+                        Such identifiers exist in the world of scientometrics: the DOI, or <a href="http://en.wikipedia.org/wiki/Digital_object_identifier">"Digital Object Identifier"</a>.
+                        They are sometimes present in the list of papers, and they are sometimes present in the references.
+                    </p>
+                    <p>
+                        <strong>This tool extracts the DOI from the references and adds them to a new column.</strong>
+                        You may use the resulting CSV to build a network with Table2Net.
+                    </p>
 
                 </div>
             </div>
