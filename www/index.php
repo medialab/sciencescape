@@ -143,7 +143,7 @@
                         They are sometimes present in the list of papers, and they are sometimes present in the references.
                     </p>
                     <p>
-                        <strong>This tool extracts the DOI from the references and adds them to a new column.</strong>
+                        <strong>This tool extracts the DOIs from the references and adds them to a new column.</strong>
                         You may use the resulting CSV to build a network with Table2Net.
                     </p>
 
@@ -168,37 +168,31 @@
                             </div>
                         </div>
                     </p>
-                    <br/>
+                    <!-- <br/>
                     <h4>2. Settings</h4>
                     <p>
                         <label class="checkbox">
                             <input type="checkbox" id="wosdoilinks_filetype" value="">
                             CSV file
                         </label>
-                    </p>
+                    </p> -->
                     <br/>
-                    <h4>3. Download result</h4>
+                    <h4>2. Download result</h4>
                     <p>
                         <button class="btn disabled" id="wosdoilinks_download" onclick="downloadWosdoilinks()"><i class="icon-download"></i> Download CSV with DOI links</button>
                     </p>
                     <br/>
-                    <!-- <h4>Help</h4>
+                    <h4>Help</h4>
                     <p>
-                        This script is useful if you want to build a network of citations.
-                    </p>
-                    <p>
-                        The problem is to match the papers of the table with the papers in the references.
-                        The titles might have variations or discrepancies, messing up the matching.
-                        The solution is to use exact identifiers.
-                    </p>
-                    <p>
-                        Such identifiers exist in the world of scientometrics: the DOI, or <a href="http://en.wikipedia.org/wiki/Digital_object_identifier">"Digital Object Identifier"</a>.
-                        They are sometimes present in the list of papers, and they are sometimes present in the references.
-                    </p>
-                    <p>
-                        <strong>This tool extracts the DOI from the references and adds them to a new column.</strong>
+                        <strong>This script does the same thing, but for Web of Science.</strong>
+                        It extracts the DOIs from the references and adds them to a new column "DOI_CITED".
                         You may use the resulting CSV to build a network with Table2Net.
-                    </p> -->
+                    </p>
+                    <p>
+                        <strong>Supported file formats</strong> are CSV as well as the WoS-specific format, usually a .txt file.
+                        <strong>The detection is automatic.</strong> Just upload your file and the right algorithm will apply.
+                    </p>
+                    
 
                 </div>
             </div>

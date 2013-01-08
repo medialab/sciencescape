@@ -144,7 +144,7 @@ var fileLoader = {
                     $('#'+id+' .alert').addClass('alert-success')
                     $('#'+id+' .alert').html('Parsing successful <button type="button" class="close" data-dismiss="alert">&times;</button>')
                     $('#'+id+' .alert').show()
-                    $('#scopusdoilinks_download').removeClass('disabled')
+                    $('#wosdoilinks_download').removeClass('disabled')
                 } else {
                     $('#'+id+' .progress').hide()
                     $('#'+id+' .alert').addClass('alert-error')
@@ -160,38 +160,77 @@ var fileLoader = {
 }
 
 function downloadScopusdoilinks(){
-    var headers = scopusdoilinks_data.shift();
+    if(!$('#scopusdoilinks_download').hasClass('disabled')){
+        var headers = scopusdoilinks_data.shift();
 
-    window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder;
-    var bb = new BlobBuilder;
-    
-    bb.append(headers.map(function(header){
-        var result = header;
-        /*fieldTags.forEach(function(ft){
-            if(ft.tag==header){
-                result += " ("+ft.name+")";
-            }
-        });*/
-        return result;
-    }).map(function(header){
-        return '"' + header.replace(/"/gi, '""') + '"';
-    }).join(","));
-    
-    scopusdoilinks_data.forEach(function(items){
-        bb.append("\n" + items.map(function(item){
-            var cell = item || '';
-            return '"' + cell.replace(/"/gi, '""') + '"';
+        window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder;
+        var bb = new BlobBuilder;
+        
+        bb.append(headers.map(function(header){
+            var result = header;
+            /*fieldTags.forEach(function(ft){
+                if(ft.tag==header){
+                    result += " ("+ft.name+")";
+                }
+            });*/
+            return result;
+        }).map(function(header){
+            return '"' + header.replace(/"/gi, '""') + '"';
         }).join(","));
-    });
-    
-    $("#progress_bar_message").addClass("success_message");
-    //$("#progress_bar_message").html(table[0].length+" columns and "+table.length+" rows.");
-    $("#validation").addClass("open");
-    setTimeout('$("#progress_bar").removeClass("loading");', 2000);
-    
-    // Save file
-    var blob = bb.getBlob("text/csv;charset=utf-8");
-    saveAs(blob, "Scopus DOI Links.csv");
+        
+        scopusdoilinks_data.forEach(function(items){
+            bb.append("\n" + items.map(function(item){
+                var cell = item || '';
+                return '"' + cell.replace(/"/gi, '""') + '"';
+            }).join(","));
+        });
+        
+        $("#progress_bar_message").addClass("success_message");
+        //$("#progress_bar_message").html(table[0].length+" columns and "+table.length+" rows.");
+        $("#validation").addClass("open");
+        setTimeout('$("#progress_bar").removeClass("loading");', 2000);
+        
+        // Save file
+        var blob = bb.getBlob("text/csv;charset=utf-8");
+        saveAs(blob, "Scopus with DOI Links.csv");
+    }
+}
+
+function downloadWosdoilinks(){
+    if(!$('#wosdoilinks_download').hasClass('disabled')){
+        var headers = wosdoilinks_data.shift();
+
+        window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder;
+        var bb = new BlobBuilder;
+        
+        bb.append(headers.map(function(header){
+            var result = header;
+            fieldTags.forEach(function(ft){
+                if(ft.tag==header){
+                    result += " ("+ft.name+")";
+                }
+            });
+            return result;
+        }).map(function(header){
+            return '"' + header.replace(/"/gi, '""') + '"';
+        }).join(","));
+        
+        wosdoilinks_data.forEach(function(items){
+            bb.append("\n" + items.map(function(item){
+                var cell = item || '';
+                return '"' + cell.replace(/"/gi, '""') + '"';
+            }).join(","));
+        });
+        
+        $("#progress_bar_message").addClass("success_message");
+        //$("#progress_bar_message").html(table[0].length+" columns and "+table.length+" rows.");
+        $("#validation").addClass("open");
+        setTimeout('$("#progress_bar").removeClass("loading");', 2000);
+        
+        // Save file
+        var blob = bb.getBlob("text/csv;charset=utf-8");
+        saveAs(blob, "Web of Science with DOI Links.csv");
+    }
 }
 
 function parseWOS(wos){
@@ -234,12 +273,80 @@ function build_scopusDoiLinks(csv){
     return build_DoiLinks(csv, d3.csv.parseRows, 'References', 'Cited papers having a DOI')
 }
 
-function build_wosDoiLinks(csv){
-    if ( $('#wosdoilinks_filetype').is( ':checked' ) ){
-        return build_DoiLinks(csv, d3.csv.parseRows, 'CR', 'DOI_CITED')
+function build_wosDoiLinks(wos){
+    if ( wos.substring(0,2) != "FN" ){
+    // if ( $('#wosdoilinks_filetype').is( ':checked' ) ){
+        return build_DoiLinks(wos, d3.csv.parseRows, 'CR', 'DOI_CITED')
     } else {
-        
+        return convert_wos_to_CSV(wos, true)
     }
+}
+
+function convert_wos_to_CSV(wos, extractDOI){
+    var data = [];
+    var currentFieldTag = "";
+    var currentItem = {};
+    var lines = wos.split("\n");
+    if(lines.shift().substring(0,2) == "FN"){
+        lines.forEach(function(line){
+            var candidateFieldTag = line.substring(0,2);
+            if(candidateFieldTag != "  "){
+                currentFieldTag = candidateFieldTag;
+            }
+            
+            if(currentFieldTag == "ER"){
+                data.push(currentItem);
+                currentItem = new Object();
+            } else {
+                if(currentItem[currentFieldTag]){
+                    if(currentFieldTag=="TI" || currentFieldTag=="SO" || currentFieldTag=="AB"){
+                        currentItem[currentFieldTag] += " " + line.substring(3);
+                    } else {
+                        currentItem[currentFieldTag] += "|" + line.substring(3);
+                    }
+                    
+                    // Extract citations
+                    if(currentFieldTag=="CR" && extractDOI){
+                        // Extract DOI reference of the cited paper if applicable
+                        var doi_refs = line.substring(3).match(/DOI.*/gi);
+                        if(doi_refs && doi_refs.length>0){
+                            if(currentItem["DOI_CITED"]){
+                                currentItem["DOI_CITED"] += "|" + doi_refs[0].split(" ")[1];
+                            } else {
+                                currentItem["DOI_CITED"] = doi_refs[0].split(" ")[1];
+                            }
+                        }
+                    }
+                } else {
+                    currentItem[currentFieldTag] = line.substring(3);
+                }
+            }
+        });
+    } else {
+        alert("There is a problem with the WOS file\n(No FileName fieldtag)");
+    }
+
+    // At this point, data is a list of objects.
+    // Convert it to CSV
+
+    var headers = []
+    data.forEach(function(item){
+        for(i in item){
+            if(!headers.some(function(x){return x==i;})){
+                headers.push(i)
+            }
+        }
+    });
+
+    var csvRows = []
+    csvRows.push(headers)
+
+    data.forEach(function(item){
+        csvRows.push(headers.map(function(header){
+            return item[header] || '';
+        }))
+    })
+    return csvRows
 }
 
 function build_DoiLinks(csv, rowsParser, column, doi_column_name){
