@@ -41,7 +41,7 @@
                     <div class="nav-collapse collapse">
                         <ul class="nav">
                             <!--<li class="active"><a href="#">Gaga</a></li>-->
-                            <li><a href="#x">xxx</a></li>
+                            <!-- <li><a href="#x">xxx</a></li> -->
                             <!--
                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
@@ -58,9 +58,10 @@
                             -->
                         </ul>
 
-                       <div class="minilogo pull-right">
-                            <a href="http://medialab.sciences-po.fr"><img src="res/mini-tools.png"/></a>
-                            <a href="http://tools.medialab.sciences-po.fr"><img src="res/mini-sp.png"/></a>
+                       <div class="pull-right">
+                            <ul class="nav">
+                                <li><a href="http://tools.medialab.sciences-po.fr"><i class="icon icon-plus icon-white"></i> <span style="color: #FFF">Médialab Tools</span></a></li>
+                            </ul>
                         </div>
 
                         <!-- <form class="navbar-form pull-right">
