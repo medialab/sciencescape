@@ -156,7 +156,7 @@
                         Adds the list of citation links where there are DOI references, in a WoS file (classic or CSV).
                     </p>
                     <br/>
-                    <h4>1. Upload your WoS file</h4>
+                    <h4>1. Upload your WoS file (or CSV)</h4>
                         <div id="wosdoilinks" style="height: 50px">
                             <div class="input">
                                 <input type="file" name="file" id='wosdoilinks_input'/>
@@ -196,6 +196,39 @@
                     
 
                 </div>
+
+                <div class="span4">
+                    <h2>Web of Science to CSV</h2>
+                    <p class="text-info">
+                        Get a CSV from a web of science specific file.
+                    </p>
+                    <br/>
+                    <h4>1. Upload your WoS file</h4>
+                        <div id="woscsv" style="height: 50px">
+                            <div class="input">
+                                <input type="file" name="file" id='woscsv_input'/>
+                                <span class="help-block">Note: you can drag and drop a file</span>
+                            </div>
+                            <div class="progress" style="display: none;">
+                                <div class="bar" style="width: 0%;"></div>
+                            </div>
+                            <div class="alert" style="display: none;">
+                            </div>
+                        </div>
+                    </p>
+                    <br/>
+                    <h4>2. Download result</h4>
+                    <p>
+                        <button class="btn disabled" id="woscsv_download" onclick="downloadWoscsv()"><i class="icon-download"></i> Download CSV</button>
+                    </p>
+                    <br/>
+                    <h4>Help</h4>
+                    <p>
+                        If you have a classic WOS export (text format, organized by two-letter codes and beginning with "FN"), it will be converted to a <a href="http://en.wikipedia.org/wiki/CSV">CSV file</a> containing the same information.
+                    </p>
+                    
+
+                </div>
             </div>
         </div>
 
@@ -206,6 +239,7 @@
         <script>
             document.getElementById('scopusdoilinks_input').addEventListener('change', fileLoader.handleFileSelect, false);
             document.getElementById('wosdoilinks_input').addEventListener('change', fileLoader.handleFileSelect, false);
+            document.getElementById('woscsv_input').addEventListener('change', fileLoader.handleFileSelect, false);
         </script>
 
     </body>

@@ -1,5 +1,6 @@
 var scopusdoilinks_data = '';
 var wosdoilinks_data = '';
+var woscsv_data = '';
 
 // http://images.webofknowledge.com/WOK45/help/WOS/h_fieldtags.html
 var fieldTags = [
@@ -152,6 +153,21 @@ var fileLoader = {
                     $('#'+id+' .alert').show()
                 }
                 break;
+            case 'woscsv':
+                woscsv_data = build_wosCsv(fileLoader.reader.result);
+                if(woscsv_data){
+                    $('#'+id+' .progress').hide()
+                    $('#'+id+' .alert').addClass('alert-success')
+                    $('#'+id+' .alert').html('Parsing successful <button type="button" class="close" data-dismiss="alert">&times;</button>')
+                    $('#'+id+' .alert').show()
+                    $('#woscsv_download').removeClass('disabled')
+                } else {
+                    $('#'+id+' .progress').hide()
+                    $('#'+id+' .alert').addClass('alert-error')
+                    $('#'+id+' .alert').html('Parsing error <button type="button" class="close" data-dismiss="alert">&times;</button>')
+                    $('#'+id+' .alert').show()
+                }
+                break;
             default:
                 alert('Unknown file loader');
                 break;
@@ -233,6 +249,43 @@ function downloadWosdoilinks(){
     }
 }
 
+function downloadWoscsv(){
+    if(!$('#woscsv_download').hasClass('disabled')){
+        var headers = woscsv_data.shift();
+
+        window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder;
+        var bb = new BlobBuilder;
+        
+        bb.append(headers.map(function(header){
+            var result = header;
+            fieldTags.forEach(function(ft){
+                if(ft.tag==header){
+                    result += " ("+ft.name+")";
+                }
+            });
+            return result;
+        }).map(function(header){
+            return '"' + header.replace(/"/gi, '""') + '"';
+        }).join(","));
+        
+        woscsv_data.forEach(function(items){
+            bb.append("\n" + items.map(function(item){
+                var cell = item || '';
+                return '"' + cell.replace(/"/gi, '""') + '"';
+            }).join(","));
+        });
+        
+        $("#progress_bar_message").addClass("success_message");
+        //$("#progress_bar_message").html(table[0].length+" columns and "+table.length+" rows.");
+        $("#validation").addClass("open");
+        setTimeout('$("#progress_bar").removeClass("loading");', 2000);
+        
+        // Save file
+        var blob = bb.getBlob("text/csv;charset=utf-8");
+        saveAs(blob, "Web of Science.csv");
+    }
+}
+
 function parseWOS(wos){
     var lines = wos.split("\n");
     var headline = lines.shift().split("\t");
@@ -280,6 +333,10 @@ function build_wosDoiLinks(wos){
     } else {
         return convert_wos_to_CSV(wos, true)
     }
+}
+
+function build_wosCsv(wos){
+    return convert_wos_to_CSV(wos, false)
 }
 
 function convert_wos_to_CSV(wos, extractDOI){
