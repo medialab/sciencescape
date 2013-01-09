@@ -231,6 +231,9 @@
                 </div>
             </div>
             <div class="row">
+                <div class="span12"><hr/></div>
+            </div>
+            <div class="row">
                 <div class="span4">
                     <h2>WoS tags explanation</h2>
                     <p class="text-info">
