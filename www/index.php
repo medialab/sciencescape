@@ -230,6 +230,16 @@
 
                 </div>
             </div>
+            <div class="row">
+                <div class="span4">
+                    <h2>WoS tags explanation</h2>
+                    <p class="text-info">
+                        The two letter "field tags" in the Web of Science files are documented <a href="http://images.webofknowledge.com/WOK45/help/WOS/h_fieldtags.html">on this page</a>.
+                        Our tools add the explicit name to the field tag according to this list:
+                    </p>
+                    <ul id="fieldTags"></ul>
+                </div>
+            </div>
         </div>
 
         <?php include("includes/footer.php"); ?>
@@ -240,7 +250,10 @@
             document.getElementById('scopusdoilinks_input').addEventListener('change', fileLoader.handleFileSelect, false);
             document.getElementById('wosdoilinks_input').addEventListener('change', fileLoader.handleFileSelect, false);
             document.getElementById('woscsv_input').addEventListener('change', fileLoader.handleFileSelect, false);
-        </script>
 
+            $('#fieldTags').html(fieldTags.map(function(ft){
+                return '<li><strong>'+ft.tag+':</strong> '+ft.name+'</li>'
+            }).join(''))
+        </script>
     </body>
 </html>
