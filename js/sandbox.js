@@ -181,12 +181,11 @@ var fileLoader = {
 
 function downloadScopusdoilinks(){
     if(!$('#scopusdoilinks_download').hasClass('disabled')){
-        var headers = scopusdoilinks_data.shift();
+        var headers = scopusdoilinks_data.shift()
 
-        window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder
-        var bb = new BlobBuilder
+        var content = []
         
-        bb.append(headers.map(function(header){
+        content.push(headers.map(function(header){
             var result = header;
             /*fieldTags.forEach(function(ft){
                 if(ft.tag==header){
@@ -199,20 +198,21 @@ function downloadScopusdoilinks(){
         }).join(","));
         
         scopusdoilinks_data.forEach(function(items){
-            bb.append("\n" + items.map(function(item){
+            content.push("\n" + items.map(function(item){
                 var cell = item || '';
                 return '"' + cell.replace(/"/gi, '""') + '"';
             }).join(","));
         });
         
         $("#progress_bar_message").addClass("success_message");
-        //$("#progress_bar_message").html(table[0].length+" columns and "+table.length+" rows.");
         $("#validation").addClass("open");
         setTimeout('$("#progress_bar").removeClass("loading");', 2000);
         
         // Save file
-        var blob = bb.getBlob("text/csv;charset=utf-8");
+        var blob = new Blob(content, {'type':'text/csv;charset=utf-8'})
         saveAs(blob, "Scopus with DOI Links.csv");
+
+
     }
 }
 
@@ -220,10 +220,9 @@ function downloadWosdoilinks(){
     if(!$('#wosdoilinks_download').hasClass('disabled')){
         var headers = wosdoilinks_data.shift();
 
-        window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder;
-        var bb = new BlobBuilder;
+        var content = []
         
-        bb.append(headers.map(function(header){
+        content.push(headers.map(function(header){
             var result = header;
             fieldTags.forEach(function(ft){
                 if(ft.tag==header){
@@ -236,19 +235,18 @@ function downloadWosdoilinks(){
         }).join(","));
         
         wosdoilinks_data.forEach(function(items){
-            bb.append("\n" + items.map(function(item){
+            content.push("\n" + items.map(function(item){
                 var cell = item || '';
                 return '"' + cell.replace(/"/gi, '""') + '"';
             }).join(","));
         });
         
         $("#progress_bar_message").addClass("success_message");
-        //$("#progress_bar_message").html(table[0].length+" columns and "+table.length+" rows.");
         $("#validation").addClass("open");
         setTimeout('$("#progress_bar").removeClass("loading");', 2000);
         
         // Save file
-        var blob = bb.getBlob("text/csv;charset=utf-8");
+        var blob = new Blob(content, {'type':'text/csv;charset=utf-8'})
         saveAs(blob, "Web of Science with DOI Links.csv");
     }
 }
@@ -257,10 +255,9 @@ function downloadWoscsv(){
     if(!$('#woscsv_download').hasClass('disabled')){
         var headers = woscsv_data.shift();
 
-        window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder;
-        var bb = new BlobBuilder;
+        var content = []
         
-        bb.append(headers.map(function(header){
+        content.push(headers.map(function(header){
             var result = header;
             fieldTags.forEach(function(ft){
                 if(ft.tag==header){
@@ -273,19 +270,18 @@ function downloadWoscsv(){
         }).join(","));
         
         woscsv_data.forEach(function(items){
-            bb.append("\n" + items.map(function(item){
+            content.push("\n" + items.map(function(item){
                 var cell = item || '';
                 return '"' + cell.replace(/"/gi, '""') + '"';
             }).join(","));
         });
         
         $("#progress_bar_message").addClass("success_message");
-        //$("#progress_bar_message").html(table[0].length+" columns and "+table.length+" rows.");
         $("#validation").addClass("open");
         setTimeout('$("#progress_bar").removeClass("loading");', 2000);
         
         // Save file
-        var blob = bb.getBlob("text/csv;charset=utf-8");
+        var blob = new Blob(content, {'type':'text/csv;charset=utf-8'})
         saveAs(blob, "Web of Science.csv");
     }
 }
