@@ -26,10 +26,13 @@
 
 <script src="js/sandbox.js"></script>
 
+<?php
+if(isset($googleAnalyticsId) && $googleAnalyticsId != ""){
+?>
+
 <script type="text/javascript">
-/*
   var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-30237907-1']);
+  _gaq.push(['_setAccount', '<?php echo $googleAnalyticsId; ?>']);
   _gaq.push(['_trackPageview']);
 
   (function() {
@@ -37,8 +40,11 @@
     ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
   })();
-*/
 </script>
+
+<?php
+}
+?>
 
 <!--[if lt IE 7 ]>
 	<script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.2/CFInstall.min.js"></script>

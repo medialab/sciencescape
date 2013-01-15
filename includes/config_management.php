@@ -8,7 +8,6 @@ if(is_dir('_config/conf.php')){
 	include('_config_default/conf.php');
 }
 
-
 function recurse_copy($src, $dst) {
 	// NB: only one level, not the sub dirs
     $dir = opendir($src); 
