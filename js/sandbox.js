@@ -86,7 +86,8 @@ var fileLoader = {
             var percentLoaded = Math.round((evt.loaded / evt.total) * 100);
             // Increase the progress bar length.
             if (percentLoaded < 100) {
-                var bar = $(evt.srcElement).parent().siblings('.progress').children('.bar')
+                var target = evt.target || evt.srcElement
+                var bar = $(target).parent().siblings('.progress').children('.bar')
                 bar.css('width', percentLoaded + '%')
                 bar.text(percentLoaded + '%')
             }
@@ -94,9 +95,10 @@ var fileLoader = {
     },
     handleFileSelect: function(evt) {
         // Reset progress indicator on new file selection.
-        $(evt.srcElement).parent().hide()
-        $(evt.srcElement).parent().siblings('.progress').show()
-        var bar = $(evt.srcElement).parent().siblings('.progress').children('.bar')
+        var target = evt.target || evt.srcElement
+        $(target).parent().hide()
+        $(target).parent().siblings('.progress').show()
+        var bar = $(target).parent().siblings('.progress').children('.bar')
         bar.css('width', '0%')
         
         fileLoader.reader = new FileReader();
@@ -106,16 +108,18 @@ var fileLoader = {
             alert('File read cancelled');
         };
         fileLoader.reader.onloadstart = function(e) {
-            var bar = $(evt.srcElement).parent().siblings('.progress').children('.bar')
+            var target = evt.target || evt.srcElement
+            var bar = $(target).parent().siblings('.progress').children('.bar')
             bar.removeClass("bar-success")
             bar.removeClass("bar-warning")
         };
         fileLoader.reader.onload = function(e) {
             // Ensure that the progress bar displays 100% at the end.
-            var bar = $(evt.srcElement).parent().siblings('.progress').children('.bar')
+            var target = evt.target || evt.srcElement
+            var bar = $(target).parent().siblings('.progress').children('.bar')
             bar.css('width', '100%')
             bar.text('Reading: 100% - parsing...')
-            setTimeout("fileLoader.finalize('"+evt.srcElement.parentNode.parentNode.id+"');", 2000)
+            setTimeout("fileLoader.finalize('"+target.parentNode.parentNode.id+"');", 2000)
         }
         
         fileLoader.reader.readAsText(evt.target.files[0]);
@@ -179,8 +183,8 @@ function downloadScopusdoilinks(){
     if(!$('#scopusdoilinks_download').hasClass('disabled')){
         var headers = scopusdoilinks_data.shift();
 
-        window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder;
-        var bb = new BlobBuilder;
+        window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder
+        var bb = new BlobBuilder
         
         bb.append(headers.map(function(header){
             var result = header;
