@@ -10,6 +10,7 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
 
+<?php include('includes/config_management.php') ?>
 <?php include('includes/codetop.php') ?>
         <style>
 
