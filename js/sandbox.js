@@ -433,10 +433,12 @@ function build_DoiLinks(csv, rowsParser, column, doi_column_name){
                 .split(";")
                 .map(function(ref){
                     return ref.split(",").filter(function(d){
-                        return d.match(/ +DOI.*/gi)
+                        return d.match(/ +DOI[ :]+.*/gi)
                     })
                 })).map(function(doi){
-                    return doi.trim().split(" ")[1] || ""
+                    //return doi.trim().split(/[ :]/)[1] || ""
+                    var r = / +DOI[ :]+(.*)/gi
+                    return r.exec(doi)[1] || ''
                 }).filter(function(doi){
                     return doi.trim() != ""
                 })
