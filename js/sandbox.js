@@ -210,7 +210,11 @@ function downloadScopusdoilinks(){
         
         // Save file
         var blob = new Blob(content, {'type':'text/csv;charset=utf-8'})
-        saveAs(blob, "Scopus with DOI Links.csv");
+            ,filename = "Scopus with DOI Links.csv"
+        if(navigator.userAgent.match(/firefox/i))
+           alert('Note:\nFirefox does not handle file names, so you will have to rename this file to\n\"'+filename+'\""\nor some equivalent.')
+        saveAs(blob, filename)
+        
 
 
     }
@@ -247,7 +251,10 @@ function downloadWosdoilinks(){
         
         // Save file
         var blob = new Blob(content, {'type':'text/csv;charset=utf-8'})
-        saveAs(blob, "Web of Science with DOI Links.csv");
+            ,filename = "Web of Science with DOI Links.csv"
+        if(navigator.userAgent.match(/firefox/i))
+           alert('Note:\nFirefox does not handle file names, so you will have to rename this file to\n\"'+filename+'\""\nor some equivalent.')
+        saveAs(blob, filename)
     }
 }
 
@@ -282,7 +289,10 @@ function downloadWoscsv(){
         
         // Save file
         var blob = new Blob(content, {'type':'text/csv;charset=utf-8'})
-        saveAs(blob, "Web of Science.csv");
+            ,filename = "Web of Science.csv"
+        if(navigator.userAgent.match(/firefox/i))
+           alert('Note:\nFirefox does not handle file names, so you will have to rename this file to\n\"'+filename+'\""\nor some equivalent.')
+        saveAs(blob, filename)
     }
 }
 
