@@ -1,5 +1,5 @@
 <?php
-if(is_dir('_config/conf.php')){
+if(is_dir('_config/')){
 	// If there is a conf file, then take it
 	include('_config/conf.php');
 } else {
