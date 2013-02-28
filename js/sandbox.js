@@ -1,6 +1,7 @@
 var scopusdoilinks_data = '';
 var wosdoilinks_data = '';
 var woscsv_data = '';
+var scopusnet_data = '';
 
 // http://images.webofknowledge.com/WOK45/help/WOS/h_fieldtags.html
 var fieldTags = [
@@ -142,6 +143,21 @@ var fileLoader = {
                     $('#'+id+' .alert').show()
                 }
                 break;
+            case 'scopusextractlinks':
+                scopusnet_data = build_scopusDoiLinks(fileLoader.reader.result)
+                if(scopusnet_data){
+                    $('#'+id+' .progress').hide()
+                    $('#'+id+' .alert').addClass('alert-success')
+                    $('#'+id+' .alert').html('Parsing successful <button type="button" class="close" data-dismiss="alert">&times;</button>')
+                    $('#'+id+' .alert').show()
+                    $('#scopusextractlinks_download').removeClass('disabled')
+                } else {
+                    $('#'+id+' .progress').hide()
+                    $('#'+id+' .alert').addClass('alert-error')
+                    $('#'+id+' .alert').html('Parsing error <button type="button" class="close" data-dismiss="alert">&times;</button>')
+                    $('#'+id+' .alert').show()
+                }
+                break;
             case 'wosdoilinks':
                 wosdoilinks_data = build_wosDoiLinks(fileLoader.reader.result);
                 if(wosdoilinks_data){
@@ -216,6 +232,41 @@ function downloadScopusdoilinks(){
         saveAs(blob, filename)
         
 
+
+    }
+}
+
+function downloadScopusextractlinks(){
+    if(!$('#scopusextractlinks_download').hasClass('disabled')){
+        // scopusnet_data
+        
+        /*var headers = scopusnet_data.shift()
+
+        var content = []
+        
+        content.push(headers.map(function(header){
+            return '"' + header.replace(/"/gi, '""') + '"';
+        }).join(","));
+        
+        scopusnet_data.forEach(function(items){
+            content.push("\n" + items.map(function(item){
+                var cell = item || '';
+                return '"' + cell.replace(/"/gi, '""') + '"';
+            }).join(","));
+        });
+        
+        $("#progress_bar_message").addClass("success_message");
+        $("#validation").addClass("open");
+        setTimeout('$("#progress_bar").removeClass("loading");', 2000);
+        
+        // Save file
+        var blob = new Blob(content, {'type':'application/gexf+xml;charset=utf-8'})
+            ,filename = "Scopus network.gexf"
+        if(navigator.userAgent.match(/firefox/i))
+           alert('Note:\nFirefox does not handle file names, so you will have to rename this file to\n\"'+filename+'\""\nor some equivalent.')
+        saveAs(blob, filename)
+        
+*/
 
     }
 }

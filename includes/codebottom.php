@@ -24,6 +24,8 @@
 <script src="js/libs/sigma.min.js"></script>
 <script src="js/libs/sigma.forceatlas2.js"></script> -->
 
+<script src="js/table2net.js"></script>
+
 <script src="js/sandbox.js"></script>
 
 <?php
