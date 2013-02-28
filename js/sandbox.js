@@ -237,9 +237,23 @@ function downloadScopusdoilinks(){
 }
 
 function downloadScopusextractlinks(){
+    var authorsColumn
+        ,authorKeywordsColumn
+    scopusnet_data[0].forEach(function(d, i){
+        if(d == 'Authors')
+            authorsColumn = i
+        if(d == 'Author Keywords')
+            authorKeywordsColumn = i
+    })
     if(!$('#scopusextractlinks_download').hasClass('disabled')){
-        // scopusnet_data
-        
+        table2net.buildGraph(scopusnet_data, {
+            mode: 'bipartite'
+            ,nodesColumnId1: authorsColumn
+            ,nodesSeparator1: ','
+            ,nodesColumnId2: authorKeywordsColumn
+            ,nodesSeparator2: ';'
+        })
+
         /*var headers = scopusnet_data.shift()
 
         var content = []

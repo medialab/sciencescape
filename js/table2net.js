@@ -1,7 +1,7 @@
 ;(function($, ns, undefined){
 
 
-    ns.buildGraph = function(settings, table){
+    ns.buildGraph = function(table, settings){
         
         // Settings
         ns.settings = settings || {}
@@ -310,7 +310,7 @@
         ns.links.forEach(function(d){
             var sourceId = ns.dehydrate_expression(tableHeader[d.sourceColId])+"_"+$.md5(d.source)
                 ,targetId = ns.dehydrate_expression(tableHeader[d.targetColId])+"_"+$.md5(d.target)
-                ,type = tableHeader[linksColumnId]
+                ,type = tableHeader[ns.settings.linksColumnId]
             
             content.push("\n" +  '<edge source="'+sourceId+'" target="'+targetId+'" '+((ns.settings.weightEdges)?('weight="'+d.tableRows.length+'"'):(''))+'>')
             
@@ -400,7 +400,7 @@
     // Model
     ns.getNodes = function(nodesColumnId, nodesMultiples, nodesSeparator){
         // NODES
-        var nodesList = table.map(function(d,i){return {node:d[nodesColumnId], colId:nodesColumnId, tableRows:[i]};});
+        var nodesList = ns.table.map(function(d,i){return {node:d[nodesColumnId], colId:nodesColumnId, tableRows:[i]};});
         
         // Unfold if there are multiples
         if(nodesMultiples){
@@ -448,7 +448,7 @@
         // To build our graph, we will first build a bipartite graph and the transform it to a monopartite graph.
         // In this case, the nodes of the bipartite graph that will be transformed in links are called "GhostNodes".
         
-        var ghostNodesList = table.map(function(d,i){
+        var ghostNodesList = ns.table.map(function(d,i){
             // Here we want to keep tracking the links.
             // So we return objects that contain the ghostNode and the list of linked nodes.
             // There is only one linked node if there are no multiples for nodes, of course...
@@ -559,7 +559,7 @@
     }
 
     ns.getBipartiteLinks = function(nodesColumnId_1, nodesMultiples_1, nodesSeparator_1, nodesColumnId_2, nodesMultiples_2, nodesSeparator_2){
-        var secondaryNodesList = table.map(function(d,i){
+        var secondaryNodesList = ns.table.map(function(d,i){
             // Here we want to keep tracking the links.
             // So we return objects that contain the secondaryNode and the list of linked nodes.
             // There is only one linked nodes if there are no multiples for nodes, of course...
@@ -571,7 +571,7 @@
                 linkedNodesList = [linkedNode];
             } else {
                 // We clean the linkedNodesList like we did with the nodesList before...
-                linkedNodesList = table[i][nodesColumnId_1].split(nodesSeparator_1).map(function(d){
+                linkedNodesList = ns.table[i][nodesColumnId_1].split(nodesSeparator_1).map(function(d){
                     return clean_expression(d);
                 })
                 .filter(function(d){
@@ -669,7 +669,7 @@
     ns.getCitationLinks = function(nodesColumnId, nodesMultiples, nodesSeparator, linksColumnId, linksMultiples, linksSeparator){
         // localLinks.push({source:node1, target:node2, sourceColId:nodesColumnId, targetColId:nodesColumnId, tableRows:d.tableRows});
 
-        var linksList = table.map(function(d,i){return {source:d[nodesColumnId], sourceColId:nodesColumnId, target:d[linksColumnId], targetColId:nodesColumnId, tableRows:[i]};});
+        var linksList = ns.table.map(function(d,i){return {source:d[nodesColumnId], sourceColId:nodesColumnId, target:d[linksColumnId], targetColId:nodesColumnId, tableRows:[i]};});
         
         
         
@@ -748,4 +748,4 @@
         expression = expression || "";
         return String(expression).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
-})(window.table2net = window.table2net || {}, jQuery)
+})(jQuery, window.table2net = window.table2net || {})
