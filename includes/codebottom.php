@@ -20,9 +20,10 @@
 
 <script src="js/libs/FileSaver.js"></script>
 
-<!-- <script src="js/libs/loadbar.js"></script>
 <script src="js/libs/sigma.min.js"></script>
-<script src="js/libs/sigma.forceatlas2.js"></script> -->
+<script src="js/libs/sigma.forceatlas2.js"></script>
+
+<script src="js/libs/domino.js"></script>
 
 <script src="js/table2net.js"></script>
 

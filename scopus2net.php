@@ -109,7 +109,7 @@
         <script src="js/_page_scopus2net.js"></script>
 
         <script>
-            document.getElementById('scopusextract_input').addEventListener('change', fileLoader.handleFileSelect, false);
+            // document.getElementById('scopusextract_input').addEventListener('change', fileLoader.handleFileSelect, false);
         </script>
     </body>
 </html>
