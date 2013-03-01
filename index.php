@@ -52,56 +52,6 @@
             </div>
 
             <div class="row">
-                <div class="span12">
-                    <h2>Scopus to network</h2>
-                    <p class="text-info">
-                        Extract a network from a Scopus file and download it. You may visualize it with <a href="http://gephi.org">Gephi</a>.
-                    </p>
-                </div>
-            </div>
-            <div class="row">
-                <div class="span4">
-                    <h4>1. Upload your Scopus CSV file</h4>
-                        <div id="scopusextractlinks" style="height: 50px">
-                            <div class="input">
-                                <input type="file" name="file" id='scopusextractlinks_input'/>
-                                <span class="help-block">Note: you can drag and drop a file</span>
-                            </div>
-                            <div class="progress" style="display: none;">
-                                <div class="bar" style="width: 0%;"></div>
-                            </div>
-                            <div class="alert" style="display: none;">
-                            </div>
-                        </div>
-                    </p>
-                    <h4>2. Type of network</h4>
-                    <!-- <p>
-                        <label class="checkbox">
-                            <input type="checkbox" value="" checked="true">
-                            Add DOI links
-                        </label>
-                    </p> -->
-                    <br/>
-                    <h4>3. Download network</h4>
-                    <p>
-                        <button class="btn disabled" id="scopusextractlinks_download" onclick="downloadScopusextractlinks()"><i class="icon-download"></i> Build and download GEXF</button>
-                    </p>
-                    <br/>
-                    <h4>Help</h4>
-                    <p>
-                        This script is useful if you want to extract a network from a Scopus file.
-                    </p>
-                </div>
-                <div class="span8">
-                    <h4>Network preview</h4>
-                    <div class="sigmaDiv" style="width:100%; height: 400px; border: 1px solid #CCC;"></div>
-                    <br/>
-                    <br/>
-                    <br/>
-                </div>
-            </div>
-
-            <div class="row">
                 <div class="span4">
                     <h2>Scopus DOI Links</h2>
                     <p class="text-info">
@@ -253,8 +203,9 @@
 
         <?php include("includes/codebottom.php"); ?>
 
+        <script src="js/_page_index.js"></script>
+
         <script>
-            document.getElementById('scopusextractlinks_input').addEventListener('change', fileLoader.handleFileSelect, false);
             document.getElementById('scopusdoilinks_input').addEventListener('change', fileLoader.handleFileSelect, false);
             document.getElementById('wosdoilinks_input').addEventListener('change', fileLoader.handleFileSelect, false);
             document.getElementById('woscsv_input').addEventListener('change', fileLoader.handleFileSelect, false);

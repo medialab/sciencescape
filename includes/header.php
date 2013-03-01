@@ -10,7 +10,7 @@
                     <div class="nav-collapse collapse">
                         <ul class="nav">
                             <!--<li class="active"><a href="#">Gaga</a></li>-->
-                            <!-- <li><a href="#x">xxx</a></li> -->
+                            <li><a href="scopus2net.php">Scopus to Net</a></li>
                         </ul>
 
                         <div class="pull-right">
