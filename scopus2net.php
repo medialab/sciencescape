@@ -62,7 +62,8 @@
             <div class="row">
                 <div class="span4">
                     <h4>1. Upload your Scopus CSV file</h4>
-                        <div id="scopusextract" style="height: 50px">
+                        <div id="scopusextract"></div>
+                        <!-- <div id="scopusextract" style="height: 50px">
                             <div class="input">
                                 <input type="file" name="file" id='scopusextract_input'/>
                                 <span class="help-block">Note: you can drag and drop a file</span>
@@ -72,7 +73,7 @@
                             </div>
                             <div class="alert" style="display: none;">
                             </div>
-                        </div>
+                        </div> -->
                     </p>
                     <h4>2. Type of network</h4>
                     <!-- <p>

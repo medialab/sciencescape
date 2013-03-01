@@ -1,4 +1,4 @@
-// fileLoader
+// fileLoader (processing code)
 ;(function($, ns, undefined){
 
     ns.read = function(files, settings){
@@ -67,3 +67,14 @@
     }
 
 })(jQuery, window.fileLoader = window.fileLoader || {})
+
+
+
+/*
+// File loader (domino module)
+;(function(ns, domino) {
+    // Requires domino.js to be initialized:
+    if (!domino)
+        throw (new Error('domino.js is required to initialize the modules.'));
+
+})((domino.modules = domino.modules || {}), domino)*/

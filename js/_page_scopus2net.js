@@ -12,10 +12,10 @@ domino.settings({
                 ,dispatch: 'inputCSVfiles_updated'
                 ,triggers: 'update_inputCSVfiles'
             },{
-                id:'loadingComplete'
-                ,dispatch: 'loadingComplete_updated'
-                ,triggers: 'update_loadingComplete'
-                ,value: false
+                id:'loadingProgress'
+                ,dispatch: 'loadingProgress_updated'
+                ,triggers: 'update_loadingProgress'
+                ,value: 0
             }
         ],services: [
         ],hacks:[
@@ -24,83 +24,94 @@ domino.settings({
 
     //// Modules
 
+    // Log stuff in the console
+    D.addModule(function(){
+        domino.module.call(this)
+
+        this.triggers.events['loadingProgress_updated'] = function(d) {
+            console.log('Loading progress', D.get('loadingProgress'))
+        }
+    })
+
     // File loader
     D.addModule(function(){
         domino.module.call(this)
 
-        var target = '#scopusextract_input'
+        var container = $('#scopusextract')
 
-        $('#scopusextract_input').on('change', function(evt){
-            var target = evt.target || evt.srcElement
-            D.dispatchEvent('update_inputCSVfiles', {
-                inputCSVfiles: target.files
+        $(document).ready(function(e){
+            container.html('<div style="height: 40px"><div class="input"><input type="file" name="file"/></div><div class="progress" style="display: none;"><div class="bar" style="width: 0%;"></div></div></div>')
+            container.find('input').on('change', function(evt){
+                var target = evt.target || evt.srcElement
+                D.dispatchEvent('update_inputCSVfiles', {
+                    inputCSVfiles: target.files
+                })
             })
         })
 
+        
         this.triggers.events['inputCSVfiles_updated'] = function(){
             var files = D.get('inputCSVfiles')
             if( files !== undefined && files.length >0 ){
-                $(target).parent().hide()
-                $(target).parent().siblings('.progress').show()
-                var bar = $(target).parent().siblings('.progress').children('.bar')
+                container.find('div.input').hide()
+                container.find('div.progress').show()
+                var bar = container.find('div.progress .bar')
                 bar.css('width', '0%')
                 
                 fileLoader.read(files, {
                     onloadstart: function(evt){
-                        var target = evt.target || evt.srcElement
-                        var bar = $(target).parent().siblings('.progress').children('.bar')
-                        bar.removeClass("bar-success")
-                        bar.removeClass("bar-warning")
+                        D.dispatchEvent('loading_started')
                     },
                     onload: function(evt){
-                        // Ensure that the progress bar displays 100% at the end.
-                        var target = evt.target || evt.srcElement
-                        var bar = $(target).parent().siblings('.progress').children('.bar')
-                        bar.css('width', '100%')
-                        bar.text('Reading: 100% - parsing...')
-
-                        D.dispatchEvent('update_loadingComplete', {
-                            loadingComplete: true
-                        })
+                        D.dispatchEvent('loading_completed')
                     },
                     onprogress: function(evt){
                         // evt is an ProgressEvent
                         if (evt.lengthComputable) {
-                            var percentLoaded = Math.round((evt.loaded / evt.total) * 100)
-                            // Increase the progress bar length.
-                            if (percentLoaded < 100) {
-                                var target = evt.target || evt.srcElement
-                                var bar = $(target).parent().siblings('.progress').children('.bar')
-                                bar.css('width', percentLoaded + '%')
-                                bar.text(percentLoaded + '%')
-                            }
+                            D.dispatchEvent('update_loadingProgress', {
+                                loadingProgress: Math.round((evt.loaded / evt.total) * 100)
+                            })
                         }
                     }
                 })
             }
         }
 
-        this.triggers.events['loadingComplete_updated'] = function(){
-            if(D.get('loadingComplete')){
-                console.log(fileLoader.reader.result)
-                scopusnet_data = build_scopusDoiLinks(fileLoader.reader.result)
-                if(scopusnet_data){
-                    $(target+' .progress').hide()
-                    $(target+' .alert').addClass('alert-success')
-                    $(target+' .alert').html('Parsing successful <button type="button" class="close" data-dismiss="alert">&times;</button>')
-                    $(target+' .alert').show()
-                    $('#scopusextract_download').removeClass('disabled')
-                } else {
-                    $(target+' .progress').hide()
-                    $(target+' .alert').addClass('alert-error')
-                    $(target+' .alert').html('Parsing error <button type="button" class="close" data-dismiss="alert">&times;</button>')
-                    $(target+' .alert').show()
-                }
+        this.triggers.events['loadingProgress_updated'] = function(){
+            var percentLoaded = D.get('loadingProgress')
+            // Increase the progress bar length.
+            if (percentLoaded < 100) {
+                var bar = container.find('div.progress .bar')
+                bar.css('width', percentLoaded + '%')
+                bar.text(percentLoaded + '%')
+            }
+        }
+
+        this.triggers.events['loading_started'] = function(){
+            var bar = container.find('div.progress .bar')
+            bar.removeClass("bar-success")
+            bar.removeClass("bar-warning")
+        }
+
+        this.triggers.events['loading_completed'] = function(){
+            // Ensure that the progress bar displays 100% at the end.
+            var bar = container.find('div.progress .bar')
+            bar.css('width', '100%')
+            bar.text('Reading: 100%')
+        }
+    })
+    
+    // Download button
+    D.addModule(function(){
+        domino.module.call(this)
+
+        this.triggers.events['loading_completed'] = function(){
+            var scopusnet_data = build_scopusDoiLinks(fileLoader.reader.result)
+            if(scopusnet_data){
+                $('#scopusextract_download').removeClass('disabled')
             }
         }
     })
-        
-
 
     //// Data processing
     var scopusnet_data = '';
