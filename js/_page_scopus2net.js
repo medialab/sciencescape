@@ -40,7 +40,7 @@ domino.settings({
         var container = $('#scopusextract')
 
         $(document).ready(function(e){
-            container.html('<div style="height: 40px"><div class="input"><input type="file" name="file"/></div><div class="progress" style="display: none;"><div class="bar" style="width: 0%;"></div></div></div>')
+            container.html('<div style="height: 50px"><div class="input"><input type="file" name="file"/><span class="help-block">Note: you can drag and drop a file</span></div><div class="progress" style="display: none;"><div class="bar" style="width: 0%;"></div></div></div>')
             container.find('input').on('change', function(evt){
                 var target = evt.target || evt.srcElement
                 D.dispatchEvent('update_inputCSVfiles', {
