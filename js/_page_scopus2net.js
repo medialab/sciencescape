@@ -203,11 +203,12 @@ domino.settings({
         }
 
         this.triggers.events['mostConnectedNodesRemoved_updated'] = function(){
+            var overconnected = D.get('mostConnectedNodesRemoved')
             $('#alerts').append(
                 $('<div class="alert"/>')
                     .addClass('alert-warning')
                     .append(
-                        $('<span/>').text('Most connected nodes removed: '+D.get('mostConnectedNodesRemoved').map(function(node){return node.label}).join(', '))
+                        $('<span/>').text('Overconnected nodes removed: '+((overconnected.length>0)?(overconnected.map(function(node){return node.label}).join(', ')):('none')))
                     ).append(
                         $('<button type="button" class="close" data-dismiss="alert">&times;</button>')
                     )
@@ -219,7 +220,7 @@ domino.settings({
                 $('<div class="alert"/>')
                     .addClass('alert-warning')
                     .append(
-                        $('<span/>').text(D.get('poorlyConnectedNodesRemoved').length+' nodes were removed because they did not have enough neighbours')
+                        $('<span/>').text(D.get('poorlyConnectedNodesRemoved').length+' nodes were removed because they did not have enough neighbors')
                     ).append(
                         $('<button type="button" class="close" data-dismiss="alert">&times;</button>')
                     )
@@ -315,10 +316,10 @@ domino.settings({
 
                 var mostConnectedNodesRemoved = []
                 if(D.get('removeMostConnected')){
+                    var total = json.nodes.length
                     // Cleaning
-                    var highestDegree = d3.max(json.nodes.map(function(node){return node.inEdges.length + node.outEdges.length}))
                     json.nodes.forEach(function(node){
-                        if(node.inEdges.length + node.outEdges.length > 0.7 * highestDegree){
+                        if(node.inEdges.length + node.outEdges.length > 0.5 * total){
                             mostConnectedNodesRemoved.push(node)
                             node.hidden = true
                         }
