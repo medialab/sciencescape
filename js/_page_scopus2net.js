@@ -191,6 +191,7 @@ domino.settings({
             if( authorsColumn !== undefined && authorKeywordsColumn !== undefined )
                 networkOptions.push({
                     label: 'Authors and Keywords (from authors)'
+                    ,types: ['Authors', 'Author Keywords']
                     ,settings: {
                         mode: 'bipartite'
                         ,nodesColumnId1: authorsColumn
@@ -244,10 +245,18 @@ domino.settings({
                 ,data = D.get('dataTable')
                 ,optionId = $('#typeofnet').find('select').val()
                 ,option = networkOptions[optionId]
+                ,colors = ["#637CB5", "#C34E7B", "#66903C", "#C55C32", "#B25AC9"]
+                ,colorsByType = {}
+
+            option.types.forEach(function(type, i){
+                colorsByType[type] = colors[i]
+            })
 
             option.settings.jsonCallback = function(json){
                 D.dispatchEvent('build_success', {})
                 json.attributes.description = 'Network extracted from a Scopus file on ScienceScape ( http://tools.medialab.sciences-po.fr/sciencescape )'
+                json_graph_api.buildIndexes(json)
+
                 console.log('Network: ',json)
                 
                 // Instanciate sigma.js and customize it :
@@ -259,11 +268,13 @@ domino.settings({
                     sigInst.addNode(node.id,{
                         'x': Math.random()
                         ,'y': Math.random()
-                        //,'color': cluster['color']
+                        ,label: node.label
+                        ,size: 1 + 0.1 * Math.sqrt(node.inEdges.length + node.outEdges.length)
+                        ,'color': colorsByType[node.attributes_byId['attr_type']]
                     })
                 })
 
-                json.links.forEach(function(link, i){
+                json.edges.forEach(function(link, i){
                     sigInst.addEdge(i,link.sourceID,link.targetID)
                 })
 

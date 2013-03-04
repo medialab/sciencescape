@@ -25,6 +25,7 @@
 
 <script src="js/libs/domino.js"></script>
 
+<script src="js/libs/json_graph_api.js"></script>
 <script src="js/table2net.js"></script>
 
 <script src="js/sandbox.js"></script>

@@ -222,7 +222,7 @@
                             )
                     return {id:id, label:label, attributes:attributes}
                 })
-                ,links: ns.links.map(function(d){
+                ,edges: ns.links.map(function(d){
                     var sourceId = ns.dehydrate_expression(tableHeader[d.sourceColId])+"_"+$.md5(d.source)
                         ,targetId = ns.dehydrate_expression(tableHeader[d.targetColId])+"_"+$.md5(d.target)
                         ,attributes = [
