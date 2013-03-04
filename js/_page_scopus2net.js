@@ -12,6 +12,10 @@ domino.settings({
                 ,dispatch: 'inputCSVfiles_updated'
                 ,triggers: 'update_inputCSVfiles'
             },{
+                id:'dataTable'
+                ,dispatch: 'dataTable_updated'
+                ,triggers: 'update_dataTable'
+            },{
                 id:'loadingProgress'
                 ,dispatch: 'loadingProgress_updated'
                 ,triggers: 'update_loadingProgress'
@@ -29,7 +33,7 @@ domino.settings({
         domino.module.call(this)
 
         this.triggers.events['loadingProgress_updated'] = function(d) {
-            console.log('Loading progress', D.get('loadingProgress'))
+            // console.log('Loading progress', D.get('loadingProgress'))
         }
     })
 
@@ -78,7 +82,7 @@ domino.settings({
         }
 
         this.triggers.events['loadingProgress_updated'] = function(){
-            var percentLoaded = D.get('loadingProgress')
+            var percentLoaded = +D.get('loadingProgress')
             // Increase the progress bar length.
             if (percentLoaded < 100) {
                 var bar = container.find('div.progress .bar')
@@ -96,13 +100,14 @@ domino.settings({
         this.triggers.events['loading_completed'] = function(){
             // Ensure that the progress bar displays 100% at the end.
             var bar = container.find('div.progress .bar')
+            bar.addClass('bar-success')
             bar.css('width', '100%')
             bar.text('Reading: 100%')
         }
     })
     
     // Download button
-    D.addModule(function(){
+    /*D.addModule(function(){
         domino.module.call(this)
 
         this.triggers.events['loading_completed'] = function(){
@@ -111,7 +116,48 @@ domino.settings({
                 $('#scopusextract_download').removeClass('disabled')
             }
         }
+    })*/
+    
+    // Parsing progress bar
+    D.addModule(function(){
+        domino.module.call(this)
+
+        var container = $('#parsing')
+
+        $(document).ready(function(e){
+            container.html('<div style="height: 25px;"><div class="progress progress-striped active"><div class="bar" style="width: 0%;"></div></div></div>')
+        })
+        
+        this.triggers.events['loading_completed'] = function(){
+            container.find('div.progress').show()
+            container.find('div.progress div.bar').css('width', '100%')
+            container.find('div.progress div.bar').text('Parsing...')
+            D.dispatchEvent('task_initialized', {})
+        }
+
+        this.triggers.events['task_initialized'] = function(){
+            var scopusnet_data = build_scopusDoiLinks(fileLoader.reader.result)
+            container.find('div.progress').removeClass('progress-striped')
+            container.find('div.progress').removeClass('active')
+            if(scopusnet_data){
+                container.find('div.progress div.bar').addClass('bar-success')
+                container.find('div.progress div.bar').text('Parsing successful')
+                D.dispatchEvent('update_dataTable', {
+                    'dataTable': scopusnet_data
+                })
+            } else {
+                container.find('div.progress div.bar').addClass('bar-danger')
+                container.find('div.progress div.bar').text('Parsing failed')
+            }
+        }
     })
+    
+
+    // Type of network
+
+
+    // Preview network
+    
 
     //// Data processing
     var scopusnet_data = '';

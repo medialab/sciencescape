@@ -7,6 +7,11 @@
         ns.settings = settings || {}
         ns.table = table
 
+        if(ns.settings.jsonCallback === undefined && ns.settings.gexfCallback === undefined){
+            console.log('Table2net: at least one callback required (jsonCallback or gexfCallback)')
+            return false
+        }
+
         if(ns.settings.mode === undefined)
             ns.settings.mode = 'normal'    // 'normal', 'bipartite', 'citations', 'nolink'
         
@@ -75,6 +80,7 @@
     ns.buildGraph_ = function(){
         var tableHeader = ns.table.shift()
         
+
         if(ns.settings.mode == 'normal'){
 
             ns.nodes = ns.getNodes(ns.settings.nodesColumnId, ns.settings.nodesSeparator != null, ns.settings.nodesSeparator)
@@ -98,172 +104,258 @@
             ns.links = [];
             
         }
-        
-          /////////////////////////
-         // Let's make the GEXF //
-        /////////////////////////
-        
-        var content = []
-        
-        content.push('<?xml version="1.0" encoding="UTF-8"?><gexf xmlns="http://www.gexf.net/1.1draft" version="1.1" xmlns:viz="http://www.gexf.net/1.1draft/viz" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gexf.net/1.1draft http://www.gexf.net/1.1draft/gexf.xsd">')
-        content.push("\n" +  '<meta lastmodifieddate="2011-06-15"><creator>GraphMaker</creator><description>Jacomy Mathieu, Sciences Po Medialab and WebAtlas</description></meta>')
-        content.push("\n" +  '<graph defaultedgetype="'+((ns.settings.mode=="citation")?('directed'):('undirected'))+'" '+((ns.settings.timeSeries)?('timeformat="double"'):(''))+' mode="'+((ns.settings.timeSeries)?('dynamic'):('static'))+'">')
-        
-        // Nodes Attributes
-        content.push("\n" +  '<attributes class="node" mode="'+((ns.settings.timeSeries)?('dynamic'):('static'))+'">')
-        content.push("\n" +  '<attribute id="attr_type" title="Type" type="string"></attribute>')
-        content.push("\n" +  '<attribute id="global_occurrences" title="Occurrences Count" type="integer"></attribute>')
-        if(ns.settings.mode == 'bipartite'){
-            ns.settings.nodesMetadataColumnIds1.forEach(function(colId){
-                content.push("\n" +  '<attribute id="attr_1_'+colId+'" title="'+ns.xmlEntities(tableHeader[colId])+' (type 1)" type="string"></attribute>')
-            })
-            ns.settings.nodesMetadataColumnIds2.forEach(function(colId){
-                content.push("\n" +  '<attribute id="attr_2_'+colId+'" title="'+ns.xmlEntities(tableHeader[colId])+' (type 2)" type="string"></attribute>')
-            })
-        } else {
-            ns.settings.nodesMetadataColumnIds.forEach(function(colId){
-                content.push("\n" +  '<attribute id="attr_'+colId+'" title="'+ns.xmlEntities(tableHeader[colId])+'" type="string"></attribute>')
+
+        if(ns.settings.jsonCallback !== undefined){
+            ns.settings.jsonCallback({
+                nodes: ns.nodes
+                ,links: ns.links
             })
         }
-        content.push("\n" +  '</attributes>')
         
-        // Edges Attributes
-        content.push("\n" +  '<attributes class="edge" mode="'+((ns.settings.timeSeries)?('dynamic'):('static'))+'">')
-        content.push("\n" +  '<attribute id="attr_type" title="Type" type="string"></attribute>')
-        content.push("\n" +  '<attribute id="matchings_count" title="Matchings Count" type="integer"></attribute>')
-        ns.settings.linksMetadataColumnIds.forEach(function(colId){
-            content.push("\n" +  '<attribute id="attr_'+colId+'" title="'+ns.xmlEntities(tableHeader[colId])+'" type="string"></attribute>')
-        })
-        content.push("\n" +  '</attributes>')
-        
-        // Nodes
-        content.push("\n" +  '<nodes>')
-        ns.nodes.forEach(function(d){
-            var id = ns.dehydrate_expression(tableHeader[d.colId])+"_"+$.md5(d.node)
-                ,label = d.node
-                ,type = tableHeader[d.colId]
+        if(ns.settings.gexfCallback !== undefined){
+
+              /////////////////////////
+             // Let's make the GEXF //
+            /////////////////////////
             
-            content.push("\n" +  '<node id="'+id+'" label="'+ns.xmlEntities(label)+'">')
+            var content = []
             
-            // Dynamic
-            if(ns.settings.timeSeries){
-                content.push("\n" +  '<spells>')
-                var years = []
-                d.tableRows.forEach(function(rowId){
-                    var year = table[rowId][ns.settings.timeSeriesColumnId]
-                    if(!years.some(function(y){return y == year})){
-                        years.push(year);
-                    }
-                });
-                years.forEach(function(y){
-                    y = parseInt(y)
-                    content.push("\n" +  '<spell start="'+y+'.0" end="'+(y+1)+'.0" />')
-                })
-                content.push("\n" +  '</spells>')
-            }
+            content.push('<?xml version="1.0" encoding="UTF-8"?><gexf xmlns="http://www.gexf.net/1.1draft" version="1.1" xmlns:viz="http://www.gexf.net/1.1draft/viz" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gexf.net/1.1draft http://www.gexf.net/1.1draft/gexf.xsd">')
+            content.push("\n" +  '<meta lastmodifieddate="2011-06-15"><creator>Table2Net</creator><description>Jacomy Mathieu, Sciences Po Medialab and WebAtlas</description></meta>')
+            content.push("\n" +  '<graph defaultedgetype="'+((ns.settings.mode=="citation")?('directed'):('undirected'))+'" '+((ns.settings.timeSeries)?('timeformat="double"'):(''))+' mode="'+((ns.settings.timeSeries)?('dynamic'):('static'))+'">')
             
-            // AttributeValues
-            content.push("\n" +  '<attvalues>')
-            content.push("\n" +  '<attvalue for="attr_type" value="'+ns.xmlEntities(type)+'"></attvalue>')
-            content.push("\n" +  '<attvalue for="global_occurrences" value="'+d.tableRows.length+'"></attvalue>')
-            
+            // Nodes Attributes
+            content.push("\n" +  '<attributes class="node" mode="'+((ns.settings.timeSeries)?('dynamic'):('static'))+'">')
+            content.push("\n" +  '<attribute id="attr_type" title="Type" type="string"></attribute>')
+            content.push("\n" +  '<attribute id="global_occurrences" title="Occurrences Count" type="integer"></attribute>')
             if(ns.settings.mode == 'bipartite'){
                 ns.settings.nodesMetadataColumnIds1.forEach(function(colId){
-                    if(!ns.settings.timeSeries){
-                        if(type == tableHeader[ns.settings.nodesColumnId1]){
-                            var currentAttValue = ""
-                                ,attValues = d.tableRows.map(function(rowId){
-                                    return table[rowId][colId]
-                                }).sort(function(a, b) {
-                                    return a < b ? -1 : a > b ? 1 : 0
-                                }).filter(function(attValue){
-                                    var result = (attValue != currentAttValue)
-                                    currentAttValue = attValue
-                                    return result
-                                }).join(" | ")
-                            
-                            content.push("\n" +  '<attvalue for="attr_1_'+colId+'" value="'+ns.xmlEntities(attValues)+'"></attvalue>');
-                        } else {
-                            content.push("\n" +  '<attvalue for="attr_1_'+colId+'" value="n/a"></attvalue>');
-                        }
-                    } else {
-                        var attValuesPerYear = []
-                        d.tableRows.forEach(function(rowId){
-                            var year = table[rowId][ns.settings.timeSeriesColumnId]
-                                ,attValuesThisYear = attValuesPerYear[year] || []
-                                ,attValue = table[rowId][colId]
-                            attValuesThisYear.push(attValue)
-                            attValuesPerYear[year] = attValuesThisYear
-                        })
-                        d3.keys(attValuesPerYear).forEach(function(year){
-                            var currentAttValue = ""
-                                ,attValues = attValuesPerYear[year].sort(function(a, b) {
-                                    return a < b ? -1 : a > b ? 1 : 0
-                                }).filter(function(attValue){
-                                    var result = (attValue != currentAttValue)
-                                    currentAttValue = attValue
-                                    return result
-                                }).join(" | ")
-                            year = parseInt(year)
-                            if(type == tableHeader[ns.settings.nodesColumnId1]){
-                                content.push("\n" +  '<attvalue for="attr_1_'+colId+'" value="'+ns.xmlEntities(attValues)+'" start="'+year+'.0" end="'+(year+1)+'.0"></attvalue>')
-                            } else {
-                                content.push("\n" +  '<attvalue for="attr_1_'+colId+'" value="n/a" start="'+year+'.0" end="'+(year+1)+'.0"></attvalue>')
-                            }
-                        })
-                    }
+                    content.push("\n" +  '<attribute id="attr_1_'+colId+'" title="'+ns.xmlEntities(tableHeader[colId])+' (type 1)" type="string"></attribute>')
                 })
                 ns.settings.nodesMetadataColumnIds2.forEach(function(colId){
-                    if(!ns.settings.timeSeries){
-                        if(type == tableHeader[ns.settings.nodesColumnId2]){
-                            var currentAttValue = ""
-                                ,attValues = d.tableRows.map(function(rowId){
-                                    return table[rowId][colId]
-                                }).sort(function(a, b) {
-                                    return a < b ? -1 : a > b ? 1 : 0
-                                }).filter(function(attValue){
-                                    var result = (attValue != currentAttValue)
-                                    currentAttValue = attValue
-                                    return result
-                                }).join(" | ")
-                            
-                            content.push("\n" +  '<attvalue for="attr_2_'+colId+'" value="'+ns.xmlEntities(attValues)+'"></attvalue>');
-                        } else {
-                            content.push("\n" +  '<attvalue for="attr_2_'+colId+'" value="n/a"></attvalue>');
-                        }
-                    } else {
-                        var attValuesPerYear = []
-                        d.tableRows.forEach(function(rowId){
-                            var year = table[rowId][ns.settings.timeSeriesColumnId]
-                                ,attValuesThisYear = attValuesPerYear[year] || []
-                                ,attValue = table[rowId][colId]
-                            attValuesThisYear.push(attValue)
-                            attValuesPerYear[year] = attValuesThisYear
-                        })
-                        d3.keys(attValuesPerYear).forEach(function(year){
-                            var currentAttValue = ""
-                                ,attValues = attValuesPerYear[year].sort(function(a, b) {
-                                    return a < b ? -1 : a > b ? 1 : 0
-                                }).filter(function(attValue){
-                                    var result = (attValue != currentAttValue)
-                                    currentAttValue = attValue
-                                    return result
-                                }).join(" | ")
-                            year = parseInt(year)
-                            if(type == tableHeader[ns.settings.nodesColumnId2]){
-                                content.push("\n" +  '<attvalue for="attr_2_'+colId+'" value="'+ns.xmlEntities(attValues)+'" start="'+year+'.0" end="'+(year+1)+'.0"></attvalue>')
-                            } else {
-                                content.push("\n" +  '<attvalue for="attr_2_'+colId+'" value="n/a" start="'+year+'.0" end="'+(year+1)+'.0"></attvalue>')
-                            }
-                        })
-                    }
+                    content.push("\n" +  '<attribute id="attr_2_'+colId+'" title="'+ns.xmlEntities(tableHeader[colId])+' (type 2)" type="string"></attribute>')
                 })
             } else {
                 ns.settings.nodesMetadataColumnIds.forEach(function(colId){
-                    if(!ns.settings.timeSeries){
+                    content.push("\n" +  '<attribute id="attr_'+colId+'" title="'+ns.xmlEntities(tableHeader[colId])+'" type="string"></attribute>')
+                })
+            }
+            content.push("\n" +  '</attributes>')
+            
+            // Edges Attributes
+            content.push("\n" +  '<attributes class="edge" mode="'+((ns.settings.timeSeries)?('dynamic'):('static'))+'">')
+            content.push("\n" +  '<attribute id="attr_type" title="Type" type="string"></attribute>')
+            content.push("\n" +  '<attribute id="matchings_count" title="Matchings Count" type="integer"></attribute>')
+            ns.settings.linksMetadataColumnIds.forEach(function(colId){
+                content.push("\n" +  '<attribute id="attr_'+colId+'" title="'+ns.xmlEntities(tableHeader[colId])+'" type="string"></attribute>')
+            })
+            content.push("\n" +  '</attributes>')
+            
+            // Nodes
+            content.push("\n" +  '<nodes>')
+            ns.nodes.forEach(function(d){
+                var id = ns.dehydrate_expression(tableHeader[d.colId])+"_"+$.md5(d.node)
+                    ,label = d.node
+                    ,type = tableHeader[d.colId]
+                
+                content.push("\n" +  '<node id="'+id+'" label="'+ns.xmlEntities(label)+'">')
+                
+                // Dynamic
+                if(ns.settings.timeSeries){
+                    content.push("\n" +  '<spells>')
+                    var years = []
+                    d.tableRows.forEach(function(rowId){
+                        var year = table[rowId][ns.settings.timeSeriesColumnId]
+                        if(!years.some(function(y){return y == year})){
+                            years.push(year);
+                        }
+                    });
+                    years.forEach(function(y){
+                        y = parseInt(y)
+                        content.push("\n" +  '<spell start="'+y+'.0" end="'+(y+1)+'.0" />')
+                    })
+                    content.push("\n" +  '</spells>')
+                }
+                
+                // AttributeValues
+                content.push("\n" +  '<attvalues>')
+                content.push("\n" +  '<attvalue for="attr_type" value="'+ns.xmlEntities(type)+'"></attvalue>')
+                content.push("\n" +  '<attvalue for="global_occurrences" value="'+d.tableRows.length+'"></attvalue>')
+                
+                if(ns.settings.mode == 'bipartite'){
+                    ns.settings.nodesMetadataColumnIds1.forEach(function(colId){
+                        if(!ns.settings.timeSeries){
+                            if(type == tableHeader[ns.settings.nodesColumnId1]){
+                                var currentAttValue = ""
+                                    ,attValues = d.tableRows.map(function(rowId){
+                                        return table[rowId][colId]
+                                    }).sort(function(a, b) {
+                                        return a < b ? -1 : a > b ? 1 : 0
+                                    }).filter(function(attValue){
+                                        var result = (attValue != currentAttValue)
+                                        currentAttValue = attValue
+                                        return result
+                                    }).join(" | ")
+                                
+                                content.push("\n" +  '<attvalue for="attr_1_'+colId+'" value="'+ns.xmlEntities(attValues)+'"></attvalue>');
+                            } else {
+                                content.push("\n" +  '<attvalue for="attr_1_'+colId+'" value="n/a"></attvalue>');
+                            }
+                        } else {
+                            var attValuesPerYear = []
+                            d.tableRows.forEach(function(rowId){
+                                var year = table[rowId][ns.settings.timeSeriesColumnId]
+                                    ,attValuesThisYear = attValuesPerYear[year] || []
+                                    ,attValue = table[rowId][colId]
+                                attValuesThisYear.push(attValue)
+                                attValuesPerYear[year] = attValuesThisYear
+                            })
+                            d3.keys(attValuesPerYear).forEach(function(year){
+                                var currentAttValue = ""
+                                    ,attValues = attValuesPerYear[year].sort(function(a, b) {
+                                        return a < b ? -1 : a > b ? 1 : 0
+                                    }).filter(function(attValue){
+                                        var result = (attValue != currentAttValue)
+                                        currentAttValue = attValue
+                                        return result
+                                    }).join(" | ")
+                                year = parseInt(year)
+                                if(type == tableHeader[ns.settings.nodesColumnId1]){
+                                    content.push("\n" +  '<attvalue for="attr_1_'+colId+'" value="'+ns.xmlEntities(attValues)+'" start="'+year+'.0" end="'+(year+1)+'.0"></attvalue>')
+                                } else {
+                                    content.push("\n" +  '<attvalue for="attr_1_'+colId+'" value="n/a" start="'+year+'.0" end="'+(year+1)+'.0"></attvalue>')
+                                }
+                            })
+                        }
+                    })
+                    ns.settings.nodesMetadataColumnIds2.forEach(function(colId){
+                        if(!ns.settings.timeSeries){
+                            if(type == tableHeader[ns.settings.nodesColumnId2]){
+                                var currentAttValue = ""
+                                    ,attValues = d.tableRows.map(function(rowId){
+                                        return table[rowId][colId]
+                                    }).sort(function(a, b) {
+                                        return a < b ? -1 : a > b ? 1 : 0
+                                    }).filter(function(attValue){
+                                        var result = (attValue != currentAttValue)
+                                        currentAttValue = attValue
+                                        return result
+                                    }).join(" | ")
+                                
+                                content.push("\n" +  '<attvalue for="attr_2_'+colId+'" value="'+ns.xmlEntities(attValues)+'"></attvalue>');
+                            } else {
+                                content.push("\n" +  '<attvalue for="attr_2_'+colId+'" value="n/a"></attvalue>');
+                            }
+                        } else {
+                            var attValuesPerYear = []
+                            d.tableRows.forEach(function(rowId){
+                                var year = table[rowId][ns.settings.timeSeriesColumnId]
+                                    ,attValuesThisYear = attValuesPerYear[year] || []
+                                    ,attValue = table[rowId][colId]
+                                attValuesThisYear.push(attValue)
+                                attValuesPerYear[year] = attValuesThisYear
+                            })
+                            d3.keys(attValuesPerYear).forEach(function(year){
+                                var currentAttValue = ""
+                                    ,attValues = attValuesPerYear[year].sort(function(a, b) {
+                                        return a < b ? -1 : a > b ? 1 : 0
+                                    }).filter(function(attValue){
+                                        var result = (attValue != currentAttValue)
+                                        currentAttValue = attValue
+                                        return result
+                                    }).join(" | ")
+                                year = parseInt(year)
+                                if(type == tableHeader[ns.settings.nodesColumnId2]){
+                                    content.push("\n" +  '<attvalue for="attr_2_'+colId+'" value="'+ns.xmlEntities(attValues)+'" start="'+year+'.0" end="'+(year+1)+'.0"></attvalue>')
+                                } else {
+                                    content.push("\n" +  '<attvalue for="attr_2_'+colId+'" value="n/a" start="'+year+'.0" end="'+(year+1)+'.0"></attvalue>')
+                                }
+                            })
+                        }
+                    })
+                } else {
+                    ns.settings.nodesMetadataColumnIds.forEach(function(colId){
+                        if(!ns.settings.timeSeries){
+                            var currentAttValue = ""
+                                ,attValues = d.tableRows.map(function(rowId){
+                                    return table[rowId][colId];
+                                }).sort(function(a, b) {
+                                    return a < b ? -1 : a > b ? 1 : 0
+                                }).filter(function(attValue){
+                                    var result = (attValue != currentAttValue)
+                                    currentAttValue = attValue
+                                    return result
+                                }).join(" | ")
+                            
+                            content.push("\n" +  '<attvalue for="attr_'+colId+'" value="'+ns.xmlEntities(attValues)+'"></attvalue>')
+                        } else {
+                            attValuesPerYear = []
+                            d.tableRows.forEach(function(rowId){
+                                var year = table[rowId][dynColumnId]
+                                    ,attValuesThisYear = attValuesPerYear[year] || []
+                                    ,attValue = table[rowId][colId]
+                                attValuesThisYear.push(attValue)
+                                
+                                attValuesPerYear[year] = attValuesThisYear
+                            })
+                            d3.keys(attValuesPerYear).forEach(function(year){
+                                var currentAttValue = ""
+                                    ,attValues = attValuesPerYear[year].sort(function(a, b) {
+                                        return a < b ? -1 : a > b ? 1 : 0
+                                    }).filter(function(attValue){
+                                        var result = (attValue != currentAttValue)
+                                        currentAttValue = attValue
+                                        return result
+                                    }).join(" | ")
+                                year = parseInt(year)
+                                content.push("\n" +  '<attvalue for="attr_'+colId+'" value="'+ns.xmlEntities(attValues)+'" start="'+year+'.0" end="'+(year+1)+'.0"></attvalue>')
+                            });
+                        }
+                    })
+                }   
+                
+                content.push("\n" +  '</attvalues>')
+                content.push("\n" +  '</node>')
+                
+            })
+            content.push("\n" +  '</nodes>')
+            
+            // Edges
+            content.push("\n" +  '<edges>')
+            ns.links.forEach(function(d){
+                var sourceId = ns.dehydrate_expression(tableHeader[d.sourceColId])+"_"+$.md5(d.source)
+                    ,targetId = ns.dehydrate_expression(tableHeader[d.targetColId])+"_"+$.md5(d.target)
+                    ,type = tableHeader[ns.settings.linksColumnId]
+                
+                content.push("\n" +  '<edge source="'+sourceId+'" target="'+targetId+'" '+((ns.settings.weightEdges)?('weight="'+d.tableRows.length+'"'):(''))+'>')
+                
+                // Dynamic
+                if(ns.settings.timeSeries){
+                    content.push("\n" +  '<spells>');
+                    var years = []
+                    d.tableRows.forEach(function(rowId){
+                        var year = table[rowId][dynColumnId]
+                        if(!years.some(function(y){return y == year})){
+                            years.push(year)
+                        }
+                    });
+                    years.forEach(function(y){
+                        y = parseInt(y)
+                        content.push("\n" +  '<spell start="'+y+'.0" end="'+(y+1)+'.0" />');
+                    });
+                    content.push("\n" +  '</spells>');
+                }
+                
+                // AttributeValues
+                content.push("\n" +  '<attvalues>')
+                content.push("\n" +  '<attvalue for="matchings_count" value="'+ns.xmlEntities(d.tableRows.length)+'"></attvalue>');
+                content.push("\n" +  '<attvalue for="attr_type" value="'+ns.xmlEntities(type)+'"></attvalue>');
+                
+                ns.settings.linksMetadataColumnIds.forEach(function(colId){
+                    if(ns.settings.timeSeries){
                         var currentAttValue = ""
                             ,attValues = d.tableRows.map(function(rowId){
-                                return table[rowId][colId];
+                                return table[rowId][colId]
                             }).sort(function(a, b) {
                                 return a < b ? -1 : a > b ? 1 : 0
                             }).filter(function(attValue){
@@ -294,105 +386,32 @@
                                 }).join(" | ")
                             year = parseInt(year)
                             content.push("\n" +  '<attvalue for="attr_'+colId+'" value="'+ns.xmlEntities(attValues)+'" start="'+year+'.0" end="'+(year+1)+'.0"></attvalue>')
-                        });
+                        })
                     }
                 })
-            }   
-            
-            content.push("\n" +  '</attvalues>')
-            content.push("\n" +  '</node>')
-            
-        })
-        content.push("\n" +  '</nodes>')
-        
-        // Edges
-        content.push("\n" +  '<edges>')
-        ns.links.forEach(function(d){
-            var sourceId = ns.dehydrate_expression(tableHeader[d.sourceColId])+"_"+$.md5(d.source)
-                ,targetId = ns.dehydrate_expression(tableHeader[d.targetColId])+"_"+$.md5(d.target)
-                ,type = tableHeader[ns.settings.linksColumnId]
-            
-            content.push("\n" +  '<edge source="'+sourceId+'" target="'+targetId+'" '+((ns.settings.weightEdges)?('weight="'+d.tableRows.length+'"'):(''))+'>')
-            
-            // Dynamic
-            if(ns.settings.timeSeries){
-                content.push("\n" +  '<spells>');
-                var years = []
-                d.tableRows.forEach(function(rowId){
-                    var year = table[rowId][dynColumnId]
-                    if(!years.some(function(y){return y == year})){
-                        years.push(year)
-                    }
-                });
-                years.forEach(function(y){
-                    y = parseInt(y)
-                    content.push("\n" +  '<spell start="'+y+'.0" end="'+(y+1)+'.0" />');
-                });
-                content.push("\n" +  '</spells>');
-            }
-            
-            // AttributeValues
-            content.push("\n" +  '<attvalues>')
-            content.push("\n" +  '<attvalue for="matchings_count" value="'+ns.xmlEntities(d.tableRows.length)+'"></attvalue>');
-            content.push("\n" +  '<attvalue for="attr_type" value="'+ns.xmlEntities(type)+'"></attvalue>');
-            
-            ns.settings.linksMetadataColumnIds.forEach(function(colId){
-                if(ns.settings.timeSeries){
-                    var currentAttValue = ""
-                        ,attValues = d.tableRows.map(function(rowId){
-                            return table[rowId][colId]
-                        }).sort(function(a, b) {
-                            return a < b ? -1 : a > b ? 1 : 0
-                        }).filter(function(attValue){
-                            var result = (attValue != currentAttValue)
-                            currentAttValue = attValue
-                            return result
-                        }).join(" | ")
-                    
-                    content.push("\n" +  '<attvalue for="attr_'+colId+'" value="'+ns.xmlEntities(attValues)+'"></attvalue>')
-                } else {
-                    attValuesPerYear = []
-                    d.tableRows.forEach(function(rowId){
-                        var year = table[rowId][dynColumnId]
-                            ,attValuesThisYear = attValuesPerYear[year] || []
-                            ,attValue = table[rowId][colId]
-                        attValuesThisYear.push(attValue)
-                        
-                        attValuesPerYear[year] = attValuesThisYear
-                    })
-                    d3.keys(attValuesPerYear).forEach(function(year){
-                        var currentAttValue = ""
-                            ,attValues = attValuesPerYear[year].sort(function(a, b) {
-                                return a < b ? -1 : a > b ? 1 : 0
-                            }).filter(function(attValue){
-                                var result = (attValue != currentAttValue)
-                                currentAttValue = attValue
-                                return result
-                            }).join(" | ")
-                        year = parseInt(year)
-                        content.push("\n" +  '<attvalue for="attr_'+colId+'" value="'+ns.xmlEntities(attValues)+'" start="'+year+'.0" end="'+(year+1)+'.0"></attvalue>')
-                    })
-                }
+                content.push("\n" +  '</attvalues>')
+                content.push("\n" +  '</edge>')
             })
-            content.push("\n" +  '</attvalues>')
-            content.push("\n" +  '</edge>')
-        })
-        content.push("\n" +  '</edges>')
+            content.push("\n" +  '</edges>')
 
-        content.push("\n" +  '</graph></gexf>')
-        
-        // Finally, download !
-        ns.nodes = []
-        ns.links = []
-        
-        var blob = new Blob(content, {'type':'text/gexf+xml;charset=utf-8'})
-            ,filename = "Network.gexf"
-        if(navigator.userAgent.match(/firefox/i))
-           alert('Note:\nFirefox does not handle file names, so you will have to rename this file to\n\"'+filename+'\""\nor some equivalent.')
-        saveAs(blob, filename)
+            content.push("\n" +  '</graph></gexf>')
+            
+            // Finally, download !
+            /*
+            ns.nodes = []
+            ns.links = []
+            
+            var blob = new Blob(content, {'type':'text/gexf+xml;charset=utf-8'})
+                ,filename = "Network.gexf"
+            if(navigator.userAgent.match(/firefox/i))
+               alert('Note:\nFirefox does not handle file names, so you will have to rename this file to\n\"'+filename+'\""\nor some equivalent.')
+            saveAs(blob, filename)
 
-        $('#build_container').html('<div class="alert alert-success">GEXF downloaded <button type="button" class="close" data-dismiss="alert">&times;</button></div>')
+            $('#build_container').html('<div class="alert alert-success">GEXF downloaded <button type="button" class="close" data-dismiss="alert">&times;</button></div>')
+            */
+            ns.settings.gexfCallback(content)
 
+        }
     }
 
 
