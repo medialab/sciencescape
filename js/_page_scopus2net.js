@@ -7,6 +7,7 @@ domino.settings({
     var D = new domino({
         name: "main"
         ,properties: [
+
             {
                 id:'inputCSVfiles'
                 ,dispatch: 'inputCSVfiles_updated'
@@ -29,6 +30,10 @@ domino.settings({
                 ,triggers: 'update_loadingProgress'
                 ,value: 0
             },{
+                id:'sigmaInstance'
+                ,dispatch: 'sigmaInstance_updated'
+                ,triggers: 'update_sigmaInstance'
+            },{
                 id:'minDegreeThreshold'
                 // ,type: 'integer'
                 ,value: 2
@@ -40,6 +45,14 @@ domino.settings({
                 ,value: true
                 ,dispatch: 'removeMostConnected_updated'
                 ,triggers: 'update_removeMostConnected'
+            },{
+                id: 'mostConnectedNodesRemoved'
+                ,dispatch: 'mostConnectedNodesRemoved_updated'
+                ,triggers: 'update_mostConnectedNodesRemoved'
+            },{
+                id: 'poorlyConnectedNodesRemoved'
+                ,dispatch: 'poorlyConnectedNodesRemoved_updated'
+                ,triggers: 'update_poorlyConnectedNodesRemoved'
             }
         ],services: [
         ],hacks:[
@@ -130,18 +143,6 @@ domino.settings({
         }
     })
     
-    // Download button
-    /*D.addModule(function(){
-        domino.module.call(this)
-
-        this.triggers.events['loading_completed'] = function(){
-            var scopusnet_data = build_scopusDoiLinks(fileLoader.reader.result)
-            if(scopusnet_data){
-                $('#scopusextract_download').removeClass('disabled')
-            }
-        }
-    })*/
-    
     // Parsing progress bar
     D.addModule(function(){
         domino.module.call(this)
@@ -184,7 +185,48 @@ domino.settings({
         }
     })
     
-    
+    // Alerts
+    D.addModule(function(){
+        domino.module.call(this)
+
+        this.triggers.events['networkJson_updated'] = function(){
+            var networkJson = D.get('networkJson')
+            $('#alerts').append(
+                $('<div class="alert"/>')
+                    .addClass('alert-success')
+                    .append(
+                        $('<span/>').text('You obtained a filtered network of '+networkJson.nodes.length+' nodes and '+networkJson.edges.length+' links (removed nodes not counted)')
+                    ).append(
+                        $('<button type="button" class="close" data-dismiss="alert">&times;</button>')
+                    )
+            )
+        }
+
+        this.triggers.events['mostConnectedNodesRemoved_updated'] = function(){
+            $('#alerts').append(
+                $('<div class="alert"/>')
+                    .addClass('alert-warning')
+                    .append(
+                        $('<span/>').text('Most connected nodes removed: '+D.get('mostConnectedNodesRemoved').map(function(node){return node.label}).join(', '))
+                    ).append(
+                        $('<button type="button" class="close" data-dismiss="alert">&times;</button>')
+                    )
+            )
+        }
+
+        this.triggers.events['poorlyConnectedNodesRemoved_updated'] = function(){
+            $('#alerts').append(
+                $('<div class="alert"/>')
+                    .addClass('alert-warning')
+                    .append(
+                        $('<span/>').text(D.get('poorlyConnectedNodesRemoved').length+' nodes were removed because they did not have enough neighbours')
+                    ).append(
+                        $('<button type="button" class="close" data-dismiss="alert">&times;</button>')
+                    )
+            )
+        }
+    })
+
     // Type of network
     D.addModule(function(){
         domino.module.call(this)
@@ -271,22 +313,24 @@ domino.settings({
                 json.attributes.description = 'Network extracted from a Scopus file on ScienceScape ( http://tools.medialab.sciences-po.fr/sciencescape )'
                 json_graph_api.buildIndexes(json)
 
+                var mostConnectedNodesRemoved = []
                 if(D.get('removeMostConnected')){
                     // Cleaning
                     var highestDegree = d3.max(json.nodes.map(function(node){return node.inEdges.length + node.outEdges.length}))
                     json.nodes.forEach(function(node){
                         if(node.inEdges.length + node.outEdges.length > 0.7 * highestDegree){
-                            console.log('remove ', node.label)
+                            mostConnectedNodesRemoved.push(node)
                             node.hidden = true
                         }
                     })
                     json_graph_api.removeHidden(json)
                 }
-                D.dispatchEvent('update_networkJson', {
-                    networkJson: json
+                D.dispatchEvent('update_mostConnectedNodesRemoved', {
+                    mostConnectedNodesRemoved: mostConnectedNodesRemoved
                 })
 
                 var threshold = D.get('minDegreeThreshold')
+                    ,poorlyConnectedNodesRemoved = []
                 if(threshold>0){
                     // Recursive cleaning
                     var modif = true
@@ -296,11 +340,21 @@ domino.settings({
                             if(node.inEdges.length + node.outEdges.length < threshold){
                                 modif = true
                                 node.hidden = true
+                                poorlyConnectedNodesRemoved.push(node)
                             }
                         })
                         json_graph_api.removeHidden(json)
                     }
                 }
+
+                D.dispatchEvent('update_poorlyConnectedNodesRemoved', {
+                    poorlyConnectedNodesRemoved: poorlyConnectedNodesRemoved
+                })
+
+                D.dispatchEvent('update_networkJson', {
+                    networkJson: json
+                })
+
                 
             }
             table2net.buildGraph(data, option.settings)
@@ -359,14 +413,15 @@ domino.settings({
             })
 
             // Instanciate sigma.js and customize it :
-            var sigInst = sigma.init(document.getElementById('sigma-example')).drawingProperties({
+            sigmaInstance = sigma.init(document.getElementById('sigma-example')).drawingProperties({
                 defaultLabelColor: '#666'
                 ,edgeColor: 'default'
                 ,defaultEdgeColor: '#ccc'
             })
 
+            console.log('At sigma inst: ', 'json.nodes.length', json.nodes.length, 'json.nodes_byId', Object.keys(json.nodes_byId).length)
             json.nodes.forEach(function(node){
-                sigInst.addNode(node.id,{
+                sigmaInstance.addNode(node.id,{
                     'x': Math.random()
                     ,'y': Math.random()
                     ,label: node.label
@@ -376,36 +431,83 @@ domino.settings({
             })
 
             json.edges.forEach(function(link, i){
-                sigInst.addEdge(i,link.sourceID,link.targetID)
+                sigmaInstance.addEdge(i,link.sourceID,link.targetID)
             })
 
             // Start the ForceAtlas2 algorithm
-            sigInst.startForceAtlas2()
+            sigmaInstance.startForceAtlas2()
 
             var isRunning = true;
             document.getElementById('stop-layout').addEventListener('click',function(){
                 if(isRunning){
                     isRunning = false;
-                    sigInst.stopForceAtlas2();
+                    sigmaInstance.stopForceAtlas2();
                     document.getElementById('stop-layout').childNodes[0].nodeValue = 'Start Layout';
                 }else{
                     isRunning = true;
-                    sigInst.startForceAtlas2();
+                    sigmaInstance.startForceAtlas2();
                     document.getElementById('stop-layout').childNodes[0].nodeValue = 'Stop Layout';
                 }
             },true)
             document.getElementById('rescale-graph').addEventListener('click',function(){
-                sigInst.position(0,0,1).draw();
+                sigmaInstance.position(0,0,1).draw();
             },true)
 
+            D.dispatchEvent('update_sigmaInstance', {
+                sigmaInstance: sigmaInstance
+            })
         }
 
     })
-                
+    
+    // Download graph button     
+    D.addModule(function(){
+        domino.module.call(this)
+
+        var container = $('#download')
+
+        $(document).ready(function(e){
+            container.html('<div style="height: 25px"><button class="btn btn-block disabled"><i class="icon-download"></i> Download network</button></div>')
+        })
+        
+        this.triggers.events['networkJson_updated'] = function(){
+            var button = container.find('button')
+
+            button.removeClass('disabled').click(function(){
+                if(!button.hasClass('disabled')){
+                    button.addClass('disabled')
+                    
+                    var json = D.get('networkJson')
+
+                    // Get layout properties from sigma
+                    var sigmaInstance = D.get('sigmaInstance')
+                    sigmaInstance.iterNodes(function(sigmaNode){
+                        var node = json.nodes_byId[sigmaNode.id]
+                        if(node === undefined){
+                            console.log('Cannot find node '+sigmaNode.id)
+                            sigmaNode.color = '#FF0000'
+                        } else {
+                            // console.log('Can find node '+sigmaNode.id)
+                            node.x = sigmaNode.x
+                            node.y = sigmaNode.y
+                            node.size = sigmaNode.size
+                            node.color = sigmaNode.color
+                        }
+                    })
+
+                    // Download
+                    var blob = new Blob(json_graph_api.buildGEXF(json), {'type':'text/gexf+xml;charset=utf-8'})
+                        ,filename = "Network.gexf"
+                    if(navigator.userAgent.match(/firefox/i))
+                       alert('Note:\nFirefox does not handle file names, so you will have to rename this file to\n\"'+filename+'\""\nor some equivalent.')
+                    saveAs(blob, filename)
+                }
+            })
+        }
+    })
+
 
     //// Data processing
-    var scopusnet_data = '';
-
     function downloadScopusextract(){
         var authorsColumn
             ,authorKeywordsColumn
@@ -450,7 +552,7 @@ domino.settings({
                alert('Note:\nFirefox does not handle file names, so you will have to rename this file to\n\"'+filename+'\""\nor some equivalent.')
             saveAs(blob, filename)
             
-    */
+            */
 
         }
     }

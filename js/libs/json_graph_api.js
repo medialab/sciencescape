@@ -126,81 +126,80 @@ var json_graph_api = {
 	
 	buildGEXF: function(graph){
 		// Blob Builder
-		window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder;
-		var bb = new BlobBuilder;
+		var content = []
 		
 		var today = new Date();
 		
-		bb.append('<?xml version="1.0" encoding="UTF-8"?><gexf xmlns="http://www.gexf.net/1.2draft" version="1.2" xmlns:viz="http://www.gexf.net/1.2draft/viz" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd">');
-		bb.append("\n" +  '<meta lastmodifieddate="'+today+'"><author>'+json_graph_api.xmlEntities((graph.attributes && graph.attributes.author) || '')+'</author><description>'+json_graph_api.xmlEntities((graph.attributes && graph.attributes.description) || '')+'</description></meta>');
-		bb.append("\n" +  '<graph defaultedgetype="directed" mode="static">');
+		content.push('<?xml version="1.0" encoding="UTF-8"?><gexf xmlns="http://www.gexf.net/1.2draft" version="1.2" xmlns:viz="http://www.gexf.net/1.2draft/viz" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd">');
+		content.push("\n" +  '<meta lastmodifieddate="'+today+'"><author>'+json_graph_api.xmlEntities((graph.attributes && graph.attributes.author) || '')+'</author><description>'+json_graph_api.xmlEntities((graph.attributes && graph.attributes.description) || '')+'</description></meta>');
+		content.push("\n" +  '<graph defaultedgetype="directed" mode="static">');
 		
 		// Nodes Attributes
-		bb.append("\n" +  '<attributes class="node" mode="static">');
+		content.push("\n" +  '<attributes class="node" mode="static">');
 		graph.nodesAttributes.forEach(function(nodeAttribute){
-			bb.append("\n" +  '<attribute id="'+json_graph_api.xmlEntities(nodeAttribute.id)+'" title="'+json_graph_api.xmlEntities(nodeAttribute.title)+'" type="'+json_graph_api.xmlEntities(nodeAttribute.type)+'"></attribute>');
+			content.push("\n" +  '<attribute id="'+json_graph_api.xmlEntities(nodeAttribute.id)+'" title="'+json_graph_api.xmlEntities(nodeAttribute.title)+'" type="'+json_graph_api.xmlEntities(nodeAttribute.type)+'"></attribute>');
 		});
-		bb.append("\n" +  '</attributes>');
+		content.push("\n" +  '</attributes>');
 		
 		// Edges Attributes
-		bb.append("\n" +  '<attributes class="edge" mode="static">');
+		content.push("\n" +  '<attributes class="edge" mode="static">');
 		graph.edgesAttributes.forEach(function(edgeAttribute){
-			bb.append("\n" +  '<attribute id="'+json_graph_api.xmlEntities(edgeAttribute.id)+'" title="'+json_graph_api.xmlEntities(edgeAttribute.title)+'" type="'+json_graph_api.xmlEntities(edgeAttribute.type)+'"></attribute>');
+			content.push("\n" +  '<attribute id="'+json_graph_api.xmlEntities(edgeAttribute.id)+'" title="'+json_graph_api.xmlEntities(edgeAttribute.title)+'" type="'+json_graph_api.xmlEntities(edgeAttribute.type)+'"></attribute>');
 		});
-		bb.append("\n" +  '</attributes>');
+		content.push("\n" +  '</attributes>');
 		
 		// Nodes
-		bb.append("\n" +  '<nodes>');
+		content.push("\n" +  '<nodes>');
 		graph.nodes.forEach(function(node){
 			var id = json_graph_api.xmlEntities(node.id);
 			var label = node.label || '';
 			
-			bb.append("\n" +  '<node id="'+id+'" label="'+json_graph_api.xmlEntities(label)+'">');
+			content.push("\n" +  '<node id="'+id+'" label="'+json_graph_api.xmlEntities(label)+'">');
 			
 			// AttributeValues
-			bb.append("\n" +  '<attvalues>');
+			content.push("\n" +  '<attvalues>');
 			node.attributes.forEach(function(nodeAttribute){
-				bb.append("\n" +  '<attvalue for="'+json_graph_api.xmlEntities(nodeAttribute.attr)+'" value="'+json_graph_api.xmlEntities(nodeAttribute.val)+'"></attvalue>');
+				content.push("\n" +  '<attvalue for="'+json_graph_api.xmlEntities(nodeAttribute.attr)+'" value="'+json_graph_api.xmlEntities(nodeAttribute.val)+'"></attvalue>');
 			});
 			
-			bb.append("\n" +  '</attvalues>');
+			content.push("\n" +  '</attvalues>');
 			
 			if(node.size)
-				bb.append("\n" +  '<viz:size value="'+node.size+'"></viz:size>');
+				content.push("\n" +  '<viz:size value="'+node.size+'"></viz:size>');
 			if(node.x && node.y)
-				bb.append("\n" +  '<viz:position x="'+node.x+'" y="'+(-node.y)+'"></viz:position>');
+				content.push("\n" +  '<viz:position x="'+node.x+'" y="'+(-node.y)+'"></viz:position>');
 			if(node.color)
-				bb.append("\n" +  '<viz:color r="'+Math.round(node.color.r)+'" g="'+Math.round(node.color.g)+'" b="'+Math.round(node.color.b)+'"></viz:color>');
+				content.push("\n" +  '<viz:color r="'+Math.round(node.color.r)+'" g="'+Math.round(node.color.g)+'" b="'+Math.round(node.color.b)+'"></viz:color>');
 			
-			bb.append("\n" +  '</node>');
+			content.push("\n" +  '</node>');
 			
 		});
-		bb.append("\n" +  '</nodes>');
+		content.push("\n" +  '</nodes>');
 		
 		// Edges
-		bb.append("\n" +  '<edges>');
+		content.push("\n" +  '<edges>');
 		graph.edges.forEach(function(edge){
 			var sourceId = json_graph_api.xmlEntities(edge.sourceID);
 			var targetId = json_graph_api.xmlEntities(edge.targetID);
 			
-			bb.append("\n" +  '<edge source="'+sourceId+'" target="'+targetId+'" >');
+			content.push("\n" +  '<edge source="'+sourceId+'" target="'+targetId+'" >');
 			
 			// AttributeValues
-			bb.append("\n" +  '<attvalues>');
+			content.push("\n" +  '<attvalues>');
 			edge.attributes.forEach(function(edgeAttribute){
-				bb.append("\n" +  '<attvalue for="'+json_graph_api.xmlEntities(edgeAttribute.attr)+'" value="'+json_graph_api.xmlEntities(edgeAttribute.val)+'"></attvalue>');
+				content.push("\n" +  '<attvalue for="'+json_graph_api.xmlEntities(edgeAttribute.attr)+'" value="'+json_graph_api.xmlEntities(edgeAttribute.val)+'"></attvalue>');
 			});
 			
-			bb.append("\n" +  '</attvalues>');
-			bb.append("\n" +  '</edge>');
+			content.push("\n" +  '</attvalues>');
+			content.push("\n" +  '</edge>');
 			
 		});
-		bb.append("\n" +  '</edges>');
+		content.push("\n" +  '</edges>');
 		
-		bb.append("\n" +  '</graph></gexf>');
+		content.push("\n" +  '</graph></gexf>');
 		
 		// Finalization
-		return bb.getBlob("text/gexf+xml;charset=utf-8");
+		return content
 	},
 	
 	buildIndexes: function(graph){

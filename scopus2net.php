@@ -101,9 +101,9 @@
                             <label class="checkbox">
                                 <input id="removeMostConnected" type="checkbox"> Remove overconnected nodes
                             </label>
-                            <select id="minDegreeThreshold">
+                            <select id="minDegreeThreshold" class="input-block-level">
                                 <option value="0">Keep all</option>
-                                <option value="1">Keep only connected nodes</option>
+                                <option value="1">Keep nodes connected to 1+ neighbors</option>
                                 <option value="2">Keep nodes connected to 2+ neighbors</option>
                                 <option value="3">Keep nodes connected to 3+ neighbors</option>
                                 <option value="4">Keep nodes connected to 4+ neighbors</option>
@@ -114,6 +114,8 @@
                     <h4>Build network</h4>
                     <div id="build"><span class="muted">build</span></div>
                     <br/>
+                    <h4>Download</h4>
+                    <div id="download"><span class="muted">download</span></div><br/>
                     <h4>Help</h4>
                     <p>
                         This script is useful if you want to extract a network from a Scopus file.
@@ -122,6 +124,7 @@
                 <div class="span8">
                     <h4>Network preview</h4>
                     <div id="sigmaDiv"><span class="muted">network preview</span></div>
+                    <div id="alerts"></div>
                 </div>
             </div>
         </div>
