@@ -107,8 +107,143 @@
 
         if(ns.settings.jsonCallback !== undefined){
             ns.settings.jsonCallback({
-                nodes: ns.nodes
-                ,links: ns.links
+                attributes: {
+                    source: 'table2net'
+                }
+                ,nodesAttributes:[
+                        {
+                            id: 'attr_type'
+                            ,title: 'Type'
+                            ,type: 'string'
+                        },{
+                            id: 'global_occurrences'
+                            ,title: 'Occurrences Count'
+                            ,type: 'integer'
+                        }
+                    ].concat(
+                        (ns.settings.mode == 'bipartite')?(
+                            ns.settings.nodesMetadataColumnIds1.map(function(colId){
+                                return {
+                                    id: 'attr_1_' + colId
+                                    ,title: tableHeader[colId]
+                                    ,type: 'string'
+                                }
+                            }).concat(ns.settings.nodesMetadataColumnIds2.map(function(colId){
+                                return {
+                                    id: 'attr_2_' + colId
+                                    ,title: tableHeader[colId]
+                                    ,type: 'string'
+                                }
+                            }))
+                        ):(
+                            ns.settings.nodesMetadataColumnIds.map(function(colId){
+                                return {
+                                    id: colId
+                                    ,title: tableHeader[colId]
+                                    ,type: 'string'
+                                }
+                            })
+                        )
+                    )
+                ,edgesAttributes: [
+                        {
+                            id: 'attr_type'
+                            ,title: 'Type'
+                            ,type: 'string'
+                        },{
+                            id: 'matchings_count'
+                            ,title: 'Matchings Count'
+                            ,type: 'integer'
+                        }
+                    ].concat(ns.settings.linksMetadataColumnIds.map(function(colId){
+                        return {
+                            id: colId
+                            ,title: tableHeader[colId]
+                            ,type: 'string'
+                        }
+                    }))
+                ,nodes: ns.nodes.map(function(d){
+                    var id = ns.dehydrate_expression(tableHeader[d.colId])+"_"+$.md5(d.node)
+                        ,label = d.node
+                        ,type = tableHeader[d.colId]
+                        ,attributes = [
+                                {  attr: 'attr_type',           val: type }
+                                ,{ attr: 'global_occurrences',  val: d.tableRows.length }
+                            ].concat(
+                                (ns.settings.mode == 'bipartite')?(
+                                    ns.settings.nodesMetadataColumnIds1.map(function(colId){
+                                        if(type == tableHeader[ns.settings.nodesColumnId1]){
+                                            var currentAttValue = ""
+                                                ,attValues = d.tableRows.map(function(rowId){
+                                                    return table[rowId][colId]
+                                                }).sort(function(a, b) {
+                                                    return a < b ? -1 : a > b ? 1 : 0
+                                                }).filter(function(attValue){
+                                                    var result = (attValue != currentAttValue)
+                                                    currentAttValue = attValue
+                                                    return result
+                                                }).join(" | ")
+                                            return {attr: 'attr_1_'+colId, val: attValues}
+                                        } else {
+                                            return {attr: 'attr_1_'+colId, val: 'n/a'}
+                                        }
+                                    }).concat(ns.settings.nodesMetadataColumnIds2.map(function(colId){
+                                        if(type == tableHeader[ns.settings.nodesColumnId2]){
+                                            var currentAttValue = ""
+                                                ,attValues = d.tableRows.map(function(rowId){
+                                                    return table[rowId][colId]
+                                                }).sort(function(a, b) {
+                                                    return a < b ? -1 : a > b ? 1 : 0
+                                                }).filter(function(attValue){
+                                                    var result = (attValue != currentAttValue)
+                                                    currentAttValue = attValue
+                                                    return result
+                                                }).join(" | ")
+                                            return {attr: 'attr_2_'+colId, val: attValues}
+                                        } else {
+                                            return {attr: 'attr_2_'+colId, val: 'n/a'}
+                                        }
+                                    }))
+                                ):(
+                                    ns.settings.nodesMetadataColumnIds.map(function(colId){
+                                        var currentAttValue = ""
+                                            ,attValues = d.tableRows.map(function(rowId){
+                                                return table[rowId][colId]
+                                            }).sort(function(a, b) {
+                                                return a < b ? -1 : a > b ? 1 : 0
+                                            }).filter(function(attValue){
+                                                var result = (attValue != currentAttValue)
+                                                currentAttValue = attValue
+                                                return result
+                                            }).join(" | ")
+                                        return {attr: 'attr_'+colId, val: attValues}
+                                    })
+                                )
+                            )
+                    return {id:id, label:label, attributes:attributes}
+                })
+                ,links: ns.links.map(function(d){
+                    var sourceId = ns.dehydrate_expression(tableHeader[d.sourceColId])+"_"+$.md5(d.source)
+                        ,targetId = ns.dehydrate_expression(tableHeader[d.targetColId])+"_"+$.md5(d.target)
+                        ,attributes = [
+                            {  attr: 'attr_type',       val: tableHeader[ns.settings.linksColumnId] }
+                            ,{ attr: 'matchings_count', val: d.tableRows.length }
+                        ].concat(ns.settings.linksMetadataColumnIds.map(function(colId){
+                            var currentAttValue = ""
+                                ,attValues = d.tableRows.map(function(rowId){
+                                    return table[rowId][colId]
+                                }).sort(function(a, b) {
+                                    return a < b ? -1 : a > b ? 1 : 0
+                                }).filter(function(attValue){
+                                    var result = (attValue != currentAttValue)
+                                    currentAttValue = attValue
+                                    return result
+                                }).join(" | ")
+                            return {attr: 'attr_'+colId, val:attValues}
+                        }))
+
+                    return {sourceID: sourceId, targetID: targetId, attributes: attributes}
+                })
             })
         }
         
@@ -352,7 +487,7 @@
                 content.push("\n" +  '<attvalue for="attr_type" value="'+ns.xmlEntities(type)+'"></attvalue>');
                 
                 ns.settings.linksMetadataColumnIds.forEach(function(colId){
-                    if(ns.settings.timeSeries){
+                    if(!ns.settings.timeSeries){
                         var currentAttValue = ""
                             ,attValues = d.tableRows.map(function(rowId){
                                 return table[rowId][colId]
@@ -441,7 +576,7 @@
         // Clean
         var temp_nodesList = nodesList
             .map(function(d){
-                return {node:clean_expression(d.node), colId:d.colId, tableRows:d.tableRows};
+                return {node:ns.clean_expression(d.node), colId:d.colId, tableRows:d.tableRows};
             })
             .filter(function(d){
                 return d.node != "";
@@ -475,12 +610,12 @@
             // Linked nodes
             var linkedNodesList;
             if(!nodesMultiples){
-                linkedNodesList = [clean_expression(table[i][nodesColumnId])];
+                linkedNodesList = [ns.clean_expression(table[i][nodesColumnId])];
             } else {
                 // We clean the linkedNodesList like we did with the nodesList before...
                 if(table[i][nodesColumnId]){
                     linkedNodesList = table[i][nodesColumnId].split(nodesSeparator).map(function(d){
-                        return clean_expression(d);
+                        return ns.clean_expression(d);
                     })
                     .filter(function(d){
                         return d != "";
@@ -508,7 +643,7 @@
         // Clean
         var temp_ghostNodesList = ghostNodesList
             .map(function(d){
-                return {ghostNode:clean_expression(d.ghostNode), linkedNodes:d.linkedNodes, tableRows:d.tableRows};
+                return {ghostNode:ns.clean_expression(d.ghostNode), linkedNodes:d.linkedNodes, tableRows:d.tableRows};
             })
             .filter(function(d){
                 return d.ghostNode != "";
@@ -586,12 +721,12 @@
             // Linked nodes
             var linkedNodesList;
             if(!nodesMultiples_1){
-                var linkedNode = clean_expression(table[i][nodesColumnId_1]);
+                var linkedNode = ns.clean_expression(table[i][nodesColumnId_1]);
                 linkedNodesList = [linkedNode];
             } else {
                 // We clean the linkedNodesList like we did with the nodesList before...
                 linkedNodesList = ns.table[i][nodesColumnId_1].split(nodesSeparator_1).map(function(d){
-                    return clean_expression(d);
+                    return ns.clean_expression(d);
                 })
                 .filter(function(d){
                     return d != "";
@@ -617,7 +752,7 @@
         // Clean
         var temp_secondaryNodesList = secondaryNodesList
             .map(function(d){
-                return {secondaryNode:clean_expression(d.secondaryNode), linkedNodes:d.linkedNodes, tableRows:d.tableRows};
+                return {secondaryNode:ns.clean_expression(d.secondaryNode), linkedNodes:d.linkedNodes, tableRows:d.tableRows};
             })
             .filter(function(d){
                 return d.secondaryNode != "";
@@ -729,7 +864,7 @@
         // Clean
         var temp_linksList = linksList
             .map(function(link){
-                return {source:clean_expression(link.source), sourceColId:link.sourceColId, target:clean_expression(link.target), targetColId:link.targetColId, tableRows:link.tableRows};
+                return {source:ns.clean_expression(link.source), sourceColId:link.sourceColId, target:ns.clean_expression(link.target), targetColId:link.targetColId, tableRows:link.tableRows};
             })
             .filter(function(link){
                 return link.source != "" && link.target != "";

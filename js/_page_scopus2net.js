@@ -16,6 +16,10 @@ domino.settings({
                 ,dispatch: 'dataTable_updated'
                 ,triggers: 'update_dataTable'
             },{
+                id:'networkOptions'
+                ,dispatch: 'networkOptions_updated'
+                ,triggers: 'update_networkOptions'
+            },{
                 id:'loadingProgress'
                 ,dispatch: 'loadingProgress_updated'
                 ,triggers: 'update_loadingProgress'
@@ -132,28 +136,173 @@ domino.settings({
             container.find('div.progress').show()
             container.find('div.progress div.bar').css('width', '100%')
             container.find('div.progress div.bar').text('Parsing...')
-            D.dispatchEvent('task_initialized', {})
+            D.dispatchEvent('task_pending', {})
         }
 
-        this.triggers.events['task_initialized'] = function(){
+        this.triggers.events['task_pending'] = function(){
             var scopusnet_data = build_scopusDoiLinks(fileLoader.reader.result)
             container.find('div.progress').removeClass('progress-striped')
             container.find('div.progress').removeClass('active')
             if(scopusnet_data){
-                container.find('div.progress div.bar').addClass('bar-success')
-                container.find('div.progress div.bar').text('Parsing successful')
                 D.dispatchEvent('update_dataTable', {
                     'dataTable': scopusnet_data
                 })
+                D.dispatchEvent('task_success', {})
             } else {
-                container.find('div.progress div.bar').addClass('bar-danger')
-                container.find('div.progress div.bar').text('Parsing failed')
+                D.dispatchEvent('task_fail', {})
             }
+        }
+
+        this.triggers.events['task_success'] = function(){
+            container.find('div.progress div.bar').addClass('bar-success')
+            container.find('div.progress div.bar').text('Parsing successful')
+        }
+
+        this.triggers.events['task_fail'] = function(){
+            container.find('div.progress div.bar').addClass('bar-danger')
+            container.find('div.progress div.bar').text('Parsing failed')
         }
     })
     
-
+    
     // Type of network
+    D.addModule(function(){
+        domino.module.call(this)
+
+        var container = $('#typeofnet')
+
+        $(document).ready(function(e){
+            container.html('<div style="height: 25px;"><select class="input-block-level" disabled></select></div>')
+        })
+        
+        this.triggers.events['dataTable_updated'] = function(){
+            var networkOptions = []
+                ,data = D.get('dataTable')
+                ,authorsColumn
+                ,authorKeywordsColumn
+            
+            data[0].forEach(function(d, i){
+                if(d == 'Authors')
+                    authorsColumn = i
+                if(d == 'Author Keywords')
+                    authorKeywordsColumn = i
+            })
+
+            if( authorsColumn !== undefined && authorKeywordsColumn !== undefined )
+                networkOptions.push({
+                    label: 'Authors and Keywords (from authors)'
+                    ,settings: {
+                        mode: 'bipartite'
+                        ,nodesColumnId1: authorsColumn
+                        ,nodesSeparator1: ','
+                        ,nodesColumnId2: authorKeywordsColumn
+                        ,nodesSeparator2: ';'
+                    }
+                })
+
+            D.dispatchEvent('update_networkOptions', {
+                'networkOptions': networkOptions
+            })
+        }
+
+        this.triggers.events['networkOptions_updated'] = function(){
+            var networkOptions = D.get('networkOptions')
+            container.find('select').html('').append(
+                networkOptions.map(function(option, i){
+                    return $('<option/>').attr('value',i).text(option.label)
+                })
+            ).removeAttr('disabled')
+        }
+    })
+
+    // Build button
+    D.addModule(function(){
+        domino.module.call(this)
+
+        var container = $('#build')
+
+        $(document).ready(function(e){
+            container.html('<div style="height: 35px"><button class="btn btn-block disabled"><i class="icon-cog"></i> Build network</button></div><div style="height: 25px;"><div class="progress progress-striped active"><div class="bar" style="width: 0%;"></div></div></div>')
+        })
+        
+        this.triggers.events['networkOptions_updated'] = function(){
+            var button = container.find('button')
+                ,progress = container.find('div.progress')
+                ,bar = progress.find('div.bar')
+            button.removeClass('disabled').click(function(){
+                if(!button.hasClass('disabled')){
+                    button.addClass('disabled')
+                    progress.show()
+                    bar.css('width', '100%').text('Building...')
+                    D.dispatchEvent('build_pending', {})
+                }
+            })
+        }
+
+        this.triggers.events['build_pending'] = function(){
+            var networkOptions = D.get('networkOptions')
+                ,data = D.get('dataTable')
+                ,optionId = $('#typeofnet').find('select').val()
+                ,option = networkOptions[optionId]
+
+            option.settings.jsonCallback = function(json){
+                D.dispatchEvent('build_success', {})
+                json.attributes.description = 'Network extracted from a Scopus file on ScienceScape ( http://tools.medialab.sciences-po.fr/sciencescape )'
+                console.log('Network: ',json)
+                
+                // Instanciate sigma.js and customize it :
+                var sigInst = sigma.init(document.getElementById('sigma-example')).drawingProperties({
+                    defaultLabelColor: '#666'
+                })
+
+                json.nodes.forEach(function(node){
+                    sigInst.addNode(node.id,{
+                        'x': Math.random()
+                        ,'y': Math.random()
+                        //,'color': cluster['color']
+                    })
+                })
+
+                json.links.forEach(function(link, i){
+                    sigInst.addEdge(i,link.sourceID,link.targetID)
+                })
+
+  // Start the ForceAtlas2 algorithm
+  // (requires "sigma.forceatlas2.js" to be included)
+  sigInst.startForceAtlas2();
+
+  var isRunning = true;
+  document.getElementById('stop-layout').addEventListener('click',function(){
+    if(isRunning){
+      isRunning = false;
+      sigInst.stopForceAtlas2();
+      document.getElementById('stop-layout').childNodes[0].nodeValue = 'Start Layout';
+    }else{
+      isRunning = true;
+      sigInst.startForceAtlas2();
+      document.getElementById('stop-layout').childNodes[0].nodeValue = 'Stop Layout';
+    }
+  },true);
+  document.getElementById('rescale-graph').addEventListener('click',function(){
+    sigInst.position(0,0,1).draw();
+  },true);
+
+
+            }
+            table2net.buildGraph(data, option.settings)
+
+        }
+        this.triggers.events['build_success'] = function(){
+            var button = container.find('button')
+                ,progress = container.find('div.progress')
+                ,bar = progress.find('div.bar')
+            button.removeClass('disabled')
+            progress.removeClass('progress-striped').removeClass('active')
+            bar.addClass('bar-success').text('Build successful')
+        }
+    })
+
+
 
 
     // Preview network

@@ -19,6 +19,31 @@
                 padding-top: 60px;
                 padding-bottom: 40px;
             }
+
+
+
+            /* sigma */
+            .sigma-parent {
+                position: relative;
+                border-radius: 4px;
+                -moz-border-radius: 4px;
+                -webkit-border-radius: 4px;
+                background: #EEE;
+                height: 500px;
+            }
+
+            .sigma-expand {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+            }
+
+            .buttons-container{
+                padding-bottom: 8px;
+                padding-top: 12px;
+            }
         </style>
 
     </head>
@@ -63,22 +88,15 @@
                 <div class="span4">
                     <h4>Upload your Scopus CSV file</h4>
                     <div id="scopusextract"><span class="muted">file uploader</span></div>
+                    <br/>
                     <h4>Parsing</h4>
                     <div id="parsing"><span class="muted">parsing</span></div>
                     <br/>
+                    <h4>Type of network</h4>
+                    <div id="typeofnet"><span class="muted">type of network to extract</span></div>
                     <br/>
-                    <h4>2. Type of network</h4>
-                    <!-- <p>
-                        <label class="checkbox">
-                            <input type="checkbox" value="" checked="true">
-                            Add DOI links
-                        </label>
-                    </p> -->
-                    <br/>
-                    <h4>3. Download network</h4>
-                    <p>
-                        <button class="btn disabled" id="scopusextract_download" onclick="downloadScopusextract()"><i class="icon-download"></i> Build and download GEXF</button>
-                    </p>
+                    <h4>Build network</h4>
+                    <div id="build"><span class="muted">build</span></div>
                     <br/>
                     <h4>Help</h4>
                     <p>
@@ -87,10 +105,14 @@
                 </div>
                 <div class="span8">
                     <h4>Network preview</h4>
-                    <div class="sigmaDiv" style="width:100%; height: 400px; border: 1px solid #CCC;"></div>
-                    <br/>
-                    <br/>
-                    <br/>
+                    <div class="sigma-parent" id="sigma-example-parent">
+                        <div class="sigma-expand" id="sigma-example"></div>
+                    </div>
+                    <div class="buttons-container">
+                        <button class="btn" id="stop-layout">Stop Layout</button>
+                        <button class="btn" id="rescale-graph">Rescale Graph</button>
+                    </div>
+                        <!-- <div class="sigmaDiv" style="width:100%; height: 400px; border: 1px solid #CCC;"></div> -->
                 </div>
             </div>
         </div>
