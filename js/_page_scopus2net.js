@@ -1,12 +1,12 @@
 domino.settings({
     shortcutPrefix: "::" // Hack: preventing a bug related to a port in a URL for Ajax
-    ,name: "main"
     ,verbose: true
 })
 
 ;(function($, domino, undefined){
     var D = new domino({
-        properties: [
+        name: "main"
+        ,properties: [
             {
                 id:'inputCSVfiles'
                 ,dispatch: 'inputCSVfiles_updated'
@@ -16,6 +16,10 @@ domino.settings({
                 ,dispatch: 'dataTable_updated'
                 ,triggers: 'update_dataTable'
             },{
+                id:'networkJson'
+                ,dispatch: 'networkJson_updated'
+                ,triggers: 'update_networkJson'
+            },{
                 id:'networkOptions'
                 ,dispatch: 'networkOptions_updated'
                 ,triggers: 'update_networkOptions'
@@ -24,6 +28,18 @@ domino.settings({
                 ,dispatch: 'loadingProgress_updated'
                 ,triggers: 'update_loadingProgress'
                 ,value: 0
+            },{
+                id:'minDegreeThreshold'
+                // ,type: 'integer'
+                ,value: 2
+                ,dispatch: 'minDegreeThreshold_updated'
+                ,triggers: 'update_minDegreeThreshold'
+            },{
+                id:'removeMostConnected'
+                ,type: 'boolean'
+                ,value: true
+                ,dispatch: 'removeMostConnected_updated'
+                ,triggers: 'update_removeMostConnected'
             }
         ],services: [
         ],hacks:[
@@ -38,6 +54,10 @@ domino.settings({
 
         this.triggers.events['loadingProgress_updated'] = function(d) {
             // console.log('Loading progress', D.get('loadingProgress'))
+        }
+
+        this.triggers.events['networkJson_updated'] = function(d) {
+            console.log('Network: ',D.get('networkJson'))
         }
     })
 
@@ -172,7 +192,7 @@ domino.settings({
         var container = $('#typeofnet')
 
         $(document).ready(function(e){
-            container.html('<div style="height: 25px;"><select class="input-block-level" disabled></select></div>')
+            container.html('<form><fieldset><label>Type of network</label><select class="input-block-level" disabled></select></fieldset></form>')
         })
         
         this.triggers.events['dataTable_updated'] = function(){
@@ -245,60 +265,43 @@ domino.settings({
                 ,data = D.get('dataTable')
                 ,optionId = $('#typeofnet').find('select').val()
                 ,option = networkOptions[optionId]
-                ,colors = ["#637CB5", "#C34E7B", "#66903C", "#C55C32", "#B25AC9"]
-                ,colorsByType = {}
-
-            option.types.forEach(function(type, i){
-                colorsByType[type] = colors[i]
-            })
 
             option.settings.jsonCallback = function(json){
                 D.dispatchEvent('build_success', {})
                 json.attributes.description = 'Network extracted from a Scopus file on ScienceScape ( http://tools.medialab.sciences-po.fr/sciencescape )'
                 json_graph_api.buildIndexes(json)
 
-                console.log('Network: ',json)
-                
-                // Instanciate sigma.js and customize it :
-                var sigInst = sigma.init(document.getElementById('sigma-example')).drawingProperties({
-                    defaultLabelColor: '#666'
-                })
-
-                json.nodes.forEach(function(node){
-                    sigInst.addNode(node.id,{
-                        'x': Math.random()
-                        ,'y': Math.random()
-                        ,label: node.label
-                        ,size: 1 + 0.1 * Math.sqrt(node.inEdges.length + node.outEdges.length)
-                        ,'color': colorsByType[node.attributes_byId['attr_type']]
+                if(D.get('removeMostConnected')){
+                    // Cleaning
+                    var highestDegree = d3.max(json.nodes.map(function(node){return node.inEdges.length + node.outEdges.length}))
+                    json.nodes.forEach(function(node){
+                        if(node.inEdges.length + node.outEdges.length > 0.7 * highestDegree){
+                            console.log('remove ', node.label)
+                            node.hidden = true
+                        }
                     })
+                    json_graph_api.removeHidden(json)
+                }
+                D.dispatchEvent('update_networkJson', {
+                    networkJson: json
                 })
 
-                json.edges.forEach(function(link, i){
-                    sigInst.addEdge(i,link.sourceID,link.targetID)
-                })
-
-  // Start the ForceAtlas2 algorithm
-  // (requires "sigma.forceatlas2.js" to be included)
-  sigInst.startForceAtlas2();
-
-  var isRunning = true;
-  document.getElementById('stop-layout').addEventListener('click',function(){
-    if(isRunning){
-      isRunning = false;
-      sigInst.stopForceAtlas2();
-      document.getElementById('stop-layout').childNodes[0].nodeValue = 'Start Layout';
-    }else{
-      isRunning = true;
-      sigInst.startForceAtlas2();
-      document.getElementById('stop-layout').childNodes[0].nodeValue = 'Stop Layout';
-    }
-  },true);
-  document.getElementById('rescale-graph').addEventListener('click',function(){
-    sigInst.position(0,0,1).draw();
-  },true);
-
-
+                var threshold = D.get('minDegreeThreshold')
+                if(threshold>0){
+                    // Recursive cleaning
+                    var modif = true
+                    while(modif){
+                        modif = false
+                        json.nodes.forEach(function(node){
+                            if(node.inEdges.length + node.outEdges.length < threshold){
+                                modif = true
+                                node.hidden = true
+                            }
+                        })
+                        json_graph_api.removeHidden(json)
+                    }
+                }
+                
             }
             table2net.buildGraph(data, option.settings)
 
@@ -314,10 +317,91 @@ domino.settings({
     })
 
 
+    // Settings
+    D.addModule(function(){
+        domino.module.call(this)
 
+        $(document).ready(function(e){
+            $('#removeMostConnected').attr('checked', D.get('removeMostConnected'))
+                .click(function(){
+                    D.dispatchEvent('update_removeMostConnected', {removeMostConnected: $('#removeMostConnected').attr('checked')})
+                })
+        })
 
-    // Preview network
-    
+        $(document).ready(function(e){
+            $('#minDegreeThreshold').val(D.get('minDegreeThreshold'))
+                .change(function(){
+                    D.dispatchEvent('update_minDegreeThreshold', {minDegreeThreshold: $('#minDegreeThreshold').val()})
+                })
+        })
+    })
+
+    // Preview network (sigma)
+    D.addModule(function(){
+        domino.module.call(this)
+
+        var container = $('#sigmaDiv')
+
+        $(document).ready(function(e){
+            container.html('<div class="sigma-parent"><div class="sigma-expand" id="sigma-example"></div></div><div class="buttons-container"><button class="btn" id="stop-layout">Stop Layout</button><button class="btn" id="rescale-graph">Rescale Graph</button></div>')
+        })
+
+        this.triggers.events['networkJson_updated'] = function(){
+            var json = D.get('networkJson')
+                ,networkOptions = D.get('networkOptions')
+                ,optionId = $('#typeofnet').find('select').val()
+                ,option = networkOptions[optionId]
+                ,colors = ["#637CB5", "#C34E7B", "#66903C", "#C55C32", "#B25AC9"]
+                ,colorsByType = {}
+
+            option.types.forEach(function(type, i){
+                colorsByType[type] = colors[i]
+            })
+
+            // Instanciate sigma.js and customize it :
+            var sigInst = sigma.init(document.getElementById('sigma-example')).drawingProperties({
+                defaultLabelColor: '#666'
+                ,edgeColor: 'default'
+                ,defaultEdgeColor: '#ccc'
+            })
+
+            json.nodes.forEach(function(node){
+                sigInst.addNode(node.id,{
+                    'x': Math.random()
+                    ,'y': Math.random()
+                    ,label: node.label
+                    ,size: 1 + 0.1 * Math.sqrt(node.inEdges.length + node.outEdges.length)
+                    ,'color': colorsByType[node.attributes_byId['attr_type']]
+                })
+            })
+
+            json.edges.forEach(function(link, i){
+                sigInst.addEdge(i,link.sourceID,link.targetID)
+            })
+
+            // Start the ForceAtlas2 algorithm
+            sigInst.startForceAtlas2()
+
+            var isRunning = true;
+            document.getElementById('stop-layout').addEventListener('click',function(){
+                if(isRunning){
+                    isRunning = false;
+                    sigInst.stopForceAtlas2();
+                    document.getElementById('stop-layout').childNodes[0].nodeValue = 'Start Layout';
+                }else{
+                    isRunning = true;
+                    sigInst.startForceAtlas2();
+                    document.getElementById('stop-layout').childNodes[0].nodeValue = 'Stop Layout';
+                }
+            },true)
+            document.getElementById('rescale-graph').addEventListener('click',function(){
+                sigInst.position(0,0,1).draw();
+            },true)
+
+        }
+
+    })
+                
 
     //// Data processing
     var scopusnet_data = '';

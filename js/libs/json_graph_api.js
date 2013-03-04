@@ -1,5 +1,5 @@
 // Mathieu Jacomy @ Sciences Po Médialab & WebAtlas
-// version 0.28
+// version 0.3
 var json_graph_api = {
 	parseGEXF: function(gexf){
 		var viz_error="http:///www.gexf.net/1.1draft/viz";	// Vis namespace (there was an error sooner)
@@ -260,6 +260,28 @@ var json_graph_api = {
 		return String(expression).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 	},
 	
+	removeHidden: function(graph){
+		var hiddenNodes = graph.nodes.filter(function(node){return node.hidden !== undefined && node.hidden})
+			,hiddenIds = hiddenNodes.map(function(node){return node.id})
+		
+		// nodes
+		graph.nodes = graph.nodes.filter(function(node){return node.hidden === undefined || !node.hidden})
+		
+		// nodes by id
+		var new_nodes_byId = {}
+		for(id in graph.nodes_byId){
+			if(!hiddenIds.some(function(hid){return hid == id})){
+				new_nodes_byId[id] = graph.nodes_byId[id]
+			}
+		}
+		graph.nodes_byId = new_nodes_byId
+
+		// edges
+		graph.edges = graph.edges.filter(function(edge){
+			return !hiddenIds.some(function(hid){return hid == edge.sourceID || hid == edge.targetID}) 
+		})
+	},
+
 	getBackbone: function(graph, removeHidden){
 		if(removeHidden === undefined)
 			removeHidden = false;

@@ -28,7 +28,7 @@
                 border-radius: 4px;
                 -moz-border-radius: 4px;
                 -webkit-border-radius: 4px;
-                background: #EEE;
+                background: #F9F9F9;
                 height: 500px;
             }
 
@@ -92,9 +92,25 @@
                     <h4>Parsing</h4>
                     <div id="parsing"><span class="muted">parsing</span></div>
                     <br/>
-                    <h4>Type of network</h4>
+                    <h4>Settings</h4>
                     <div id="typeofnet"><span class="muted">type of network to extract</span></div>
-                    <br/>
+                    <form>
+                        <fieldset>
+                            <label>Filtering settings</label>
+                            <!-- <span class="help-block">Example block-level help text here.</span> -->
+                            <label class="checkbox">
+                                <input id="removeMostConnected" type="checkbox"> Remove overconnected nodes
+                            </label>
+                            <select id="minDegreeThreshold">
+                                <option value="0">Keep all</option>
+                                <option value="1">Keep only connected nodes</option>
+                                <option value="2">Keep nodes connected to 2+ neighbors</option>
+                                <option value="3">Keep nodes connected to 3+ neighbors</option>
+                                <option value="4">Keep nodes connected to 4+ neighbors</option>
+                                <option value="5">Keep nodes connected to 5+ neighbors</option>
+                            </select>
+                        </fieldset>
+                    </form>
                     <h4>Build network</h4>
                     <div id="build"><span class="muted">build</span></div>
                     <br/>
@@ -105,14 +121,7 @@
                 </div>
                 <div class="span8">
                     <h4>Network preview</h4>
-                    <div class="sigma-parent" id="sigma-example-parent">
-                        <div class="sigma-expand" id="sigma-example"></div>
-                    </div>
-                    <div class="buttons-container">
-                        <button class="btn" id="stop-layout">Stop Layout</button>
-                        <button class="btn" id="rescale-graph">Rescale Graph</button>
-                    </div>
-                        <!-- <div class="sigmaDiv" style="width:100%; height: 400px; border: 1px solid #CCC;"></div> -->
+                    <div id="sigmaDiv"><span class="muted">network preview</span></div>
                 </div>
             </div>
         </div>
