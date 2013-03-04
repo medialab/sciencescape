@@ -29,7 +29,7 @@
                 -moz-border-radius: 4px;
                 -webkit-border-radius: 4px;
                 background: #F9F9F9;
-                height: 500px;
+                height: 300px;
             }
 
             .sigma-expand {

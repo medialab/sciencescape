@@ -370,7 +370,6 @@ domino.settings({
         }
     })
 
-
     // Settings
     D.addModule(function(){
         domino.module.call(this)
@@ -397,7 +396,7 @@ domino.settings({
         var container = $('#sigmaDiv')
 
         $(document).ready(function(e){
-            container.html('<div class="sigma-parent"><div class="sigma-expand" id="sigma-example"></div></div><div class="buttons-container"><button class="btn" id="stop-layout">Stop Layout</button><button class="btn" id="rescale-graph">Rescale Graph</button></div>')
+            container.html('<div class="buttons-container"><button class="btn" id="stop-layout">Stop Layout</button><button class="btn" id="rescale-graph">Rescale Graph</button></div><div class="sigma-parent"><div class="sigma-expand" id="sigma-example"></div></div>')
         })
 
         this.triggers.events['networkJson_updated'] = function(){
@@ -457,7 +456,6 @@ domino.settings({
                 sigmaInstance: sigmaInstance
             })
         }
-
     })
     
     // Download graph button     
@@ -491,7 +489,8 @@ domino.settings({
                             node.x = sigmaNode.x
                             node.y = sigmaNode.y
                             node.size = sigmaNode.size
-                            node.color = sigmaNode.color
+                            var rgb = chroma.hex(sigmaNode.color).rgb
+                            node.color = {r:rgb[0], g:rgb[1], b:rgb[2]}
                         }
                     })
 
