@@ -404,6 +404,7 @@ domino.settings({
                 var threshold = D.get('minDegreeThreshold')
                     ,poorlyConnectedNodesRemoved = []
                 if(threshold>0){
+                    
                     // Recursive cleaning
                     var modif = true
                     while(modif){

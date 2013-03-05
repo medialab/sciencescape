@@ -279,6 +279,9 @@ var json_graph_api = {
 		graph.edges = graph.edges.filter(function(edge){
 			return !hiddenIds.some(function(hid){return hid == edge.sourceID || hid == edge.targetID}) 
 		})
+
+		// Reindexing
+		json_graph_api.buildIndexes(graph)
 	},
 
 	getBackbone: function(graph, removeHidden){
