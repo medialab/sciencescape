@@ -46,7 +46,7 @@ domino.settings({
             },{
                 id:'minDegreeThreshold'
                 // ,type: 'integer'
-                ,value: 2
+                ,value: 1
                 ,dispatch: 'minDegreeThreshold_updated'
                 ,triggers: 'update_minDegreeThreshold'
             },{
@@ -435,17 +435,46 @@ domino.settings({
                     mostConnectedNodesRemoved: mostConnectedNodesRemoved
                 })
 
-                var threshold = D.get('minDegreeThreshold')
+                var threshold
+                    ,recursive
                     ,poorlyConnectedNodesRemoved = []
-                if(threshold>0){
+                
+                switch(D.get('minDegreeThreshold')){
+                    case '0':
+                        threshold = 0
+                        recursive = false
+                        break
+                    case '1':
+                        threshold = 1
+                        recursive = false
+                        break
+                    case '2r':
+                        threshold = 2
+                        recursive = true
+                        break
+                    case '3':
+                        threshold = 3
+                        recursive = false
+                        break
+                    case '4':
+                        threshold = 4
+                        recursive = false
+                        break
+                    case '5':
+                        threshold = 5
+                        recursive = false
+                        break
 
+                }
+                
+                if(threshold>0){
                     // Recursive cleaning
                     var modif = true
                     while(modif){
                         modif = false
                         json.nodes.forEach(function(node){
                             if(node.inEdges.length + node.outEdges.length < threshold){
-                                modif = true
+                                modif = recursive // Actually recur only if recursive
                                 node.hidden = true
                                 poorlyConnectedNodesRemoved.push(node)
                             }

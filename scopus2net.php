@@ -108,11 +108,11 @@
                             </label>
                             <select id="minDegreeThreshold" class="input-block-level">
                                 <option value="0">No filter</option>
-                                <option value="1">Remove nodes with no link</option>
-                                <option value="2">Get only nodes with 2+ links</option>
-                                <option value="3">Get only nodes with 3+ links</option>
-                                <option value="4">Get only nodes with 4+ links</option>
-                                <option value="5">Get only nodes with 5+ links</option>
+                                <option value="1">Remove disconnected nodes</option>
+                                <option value="2r">Get only nodes with 2+ links (recursive)</option>
+                                <option value="3">Remove nodes with less than 3 links</option>
+                                <option value="4">Remove nodes with less than 4 links</option>
+                                <option value="5">Remove nodes with less than 5 links</option>
                             </select>
                         </fieldset>
                     </form>
