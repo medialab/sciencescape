@@ -109,12 +109,12 @@
                                 <input id="removeMostConnected" type="checkbox"> Remove overconnected nodes
                             </label>
                             <select id="minDegreeThreshold" class="input-block-level">
-                                <option value="0">Keep all</option>
-                                <option value="1">Keep nodes connected to 1+ neighbors</option>
-                                <option value="2">Keep nodes connected to 2+ neighbors</option>
-                                <option value="3">Keep nodes connected to 3+ neighbors</option>
-                                <option value="4">Keep nodes connected to 4+ neighbors</option>
-                                <option value="5">Keep nodes connected to 5+ neighbors</option>
+                                <option value="0">No filter</option>
+                                <option value="1">Remove nodes with no link</option>
+                                <option value="2">Get only nodes with 2+ links</option>
+                                <option value="3">Get only nodes with 3+ links</option>
+                                <option value="4">Get only nodes with 4+ links</option>
+                                <option value="5">Get only nodes with 5+ links</option>
                             </select>
                         </fieldset>
                     </form>
