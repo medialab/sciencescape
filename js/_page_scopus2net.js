@@ -510,6 +510,7 @@ domino.settings({
                 defaultLabelColor: '#666'
                 ,edgeColor: 'default'
                 ,defaultEdgeColor: '#ccc'
+                ,defaultNodeColor: '#999'
             })
 
             json.nodes.forEach(function(node){

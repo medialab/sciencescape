@@ -5,7 +5,7 @@
         
         // Settings
         ns.settings = settings || {}
-        ns.table = table
+        ns.table = table.slice(0)
 
         if(ns.settings.jsonCallback === undefined && ns.settings.gexfCallback === undefined){
             console.log('Table2net: at least one callback required (jsonCallback or gexfCallback)')
