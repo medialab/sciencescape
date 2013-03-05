@@ -161,17 +161,8 @@ domino.settings({
         }
 
         this.triggers.events['task_pending'] = function(){
-            var scopusnet_data = build_scopusDoiLinks(fileLoader.reader.result)
             container.find('div.progress').removeClass('progress-striped')
             container.find('div.progress').removeClass('active')
-            if(scopusnet_data){
-                D.dispatchEvent('update_dataTable', {
-                    'dataTable': scopusnet_data
-                })
-                D.dispatchEvent('task_success', {})
-            } else {
-                D.dispatchEvent('task_fail', {})
-            }
         }
 
         this.triggers.events['task_success'] = function(){
@@ -185,6 +176,26 @@ domino.settings({
         }
     })
     
+    // Parsing
+    D.addModule(function(){
+        domino.module.call(this)
+
+        this.triggers.events['task_pending'] = function(){
+            var scopusnet_data = build_scopusDoiLinks(fileLoader.reader.result)
+            if(scopusnet_data){
+                setTimeout(function(){
+                    D.dispatchEvent('update_dataTable', {
+                        'dataTable': scopusnet_data
+                    })
+                }, 200)
+
+                D.dispatchEvent('task_success', {})
+            } else {
+                D.dispatchEvent('task_fail', {})
+            }
+        }
+    })
+
     // Alerts
     D.addModule(function(){
         domino.module.call(this)
@@ -358,7 +369,10 @@ domino.settings({
 
                 
             }
-            table2net.buildGraph(data, option.settings)
+            setTimeout(function(){
+                table2net.buildGraph(data, option.settings)
+            }, 1000)
+            
 
         }
         this.triggers.events['build_success'] = function(){
