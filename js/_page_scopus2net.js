@@ -586,7 +586,7 @@ domino.settings({
         var container = $('#sigmaButtons')
 
         $(document).ready(function(e){
-            container.html('<button class="btn" id="layoutSwitch">Stop Layout</button> <button class="btn" id="rescaleGraph"><i class="icon-resize-full"/> Rescale Graph</button>')
+            container.html('<div class="btn-group"><button class="btn btn-small" id="layoutSwitch">Stop Layout</button> <button class="btn btn-small" id="rescaleGraph"><i class="icon-resize-full"/> Rescale Graph</button></div>')
             updateLayoutSwitch()
             container.find('#layoutSwitch').click(function(){
                 D.dispatchEvent('update_layoutRunning', {
