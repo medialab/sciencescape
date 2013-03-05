@@ -13,6 +13,10 @@ domino.settings({
                 ,dispatch: 'inputCSVfiles_updated'
                 ,triggers: 'update_inputCSVfiles'
             },{
+                id:'inputCSVfileUploader'
+                ,dispatch: 'inputCSVfileUploader_updated'
+                ,triggers: 'update_inputCSVfileUploader'
+            },{
                 id:'dataTable'
                 ,dispatch: 'dataTable_updated'
                 ,triggers: 'update_dataTable'
@@ -99,6 +103,10 @@ domino.settings({
                 var bar = container.find('div.progress .bar')
                 bar.css('width', '0%')
                 
+                var fileLoader = new FileLoader()
+                D.dispatchEvent('update_inputCSVfileUploader', {
+                    inputCSVfileUploader: fileLoader
+                })
                 fileLoader.read(files, {
                     onloadstart: function(evt){
                         D.dispatchEvent('loading_started')
@@ -150,11 +158,13 @@ domino.settings({
         var container = $('#parsing')
 
         $(document).ready(function(e){
-            container.html('<div style="height: 25px;"><div class="progress progress-striped active"><div class="bar" style="width: 0%;"></div></div></div>')
+            container.html('<div style="height: 25px;"><div class="progress" style="display: none"><div class="bar" style="width: 0%;"></div></div></div>')
         })
         
         this.triggers.events['loading_completed'] = function(){
             container.find('div.progress').show()
+            container.find('div.progress').addClass('progress-striped')
+            container.find('div.progress').addClass('active')
             container.find('div.progress div.bar').css('width', '100%')
             container.find('div.progress div.bar').text('Parsing...')
             D.dispatchEvent('task_pending', {})
@@ -176,12 +186,13 @@ domino.settings({
         }
     })
     
-    // Parsing
+    // Processing: parsing
     D.addModule(function(){
         domino.module.call(this)
 
         this.triggers.events['task_pending'] = function(){
-            var scopusnet_data = build_scopusDoiLinks(fileLoader.reader.result)
+            var fileLoader = D.get('inputCSVfileUploader')
+                ,scopusnet_data = build_scopusDoiLinks(fileLoader.reader.result)
             if(scopusnet_data){
                 setTimeout(function(){
                     D.dispatchEvent('update_dataTable', {
@@ -404,7 +415,7 @@ domino.settings({
                 var threshold = D.get('minDegreeThreshold')
                     ,poorlyConnectedNodesRemoved = []
                 if(threshold>0){
-                    
+
                     // Recursive cleaning
                     var modif = true
                     while(modif){

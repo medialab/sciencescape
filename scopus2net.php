@@ -95,8 +95,6 @@
                 <div class="span4">
                     <h4>Upload your Scopus CSV file</h4>
                     <div id="scopusextract"><span class="muted">file uploader</span></div>
-                    <br/>
-                    <h4>Parsing</h4>
                     <div id="parsing"><span class="muted">parsing</span></div>
                     <br/>
                     <h4>Settings</h4>
