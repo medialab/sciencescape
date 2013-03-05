@@ -391,7 +391,7 @@ domino.settings({
                             return node.attributes_byId['attr_type'] == type
                         }).length
                     })
-                console.log('totalPerType', totalPerType)
+                
                 if(D.get('removeMostConnected')){
                     var total = json.nodes.length
                     // Cleaning
@@ -498,8 +498,15 @@ domino.settings({
                 colorsByType[type] = colors[i]
             })
 
+            // Kill old sigma if needed
+            var oldSigmaInstance = D.get('sigmaInstance')
+            if(oldSigmaInstance !== undefined){
+                oldSigmaInstance.emptyGraph() // .kill() is not currently implemented
+                container.find('#sigma-example').html('')
+            }
+
             // Instanciate sigma.js and customize it :
-            sigmaInstance = sigma.init(document.getElementById('sigma-example')).drawingProperties({
+            var sigmaInstance = sigma.init(document.getElementById('sigma-example')).drawingProperties({
                 defaultLabelColor: '#666'
                 ,edgeColor: 'default'
                 ,defaultEdgeColor: '#ccc'
