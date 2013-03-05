@@ -328,6 +328,18 @@ domino.settings({
                     }
                 })
 
+            if( authorKeywordsColumn !== undefined && titleColumn !== undefined )
+                networkOptions.push({
+                    label: 'Keywords connected by papers'
+                    ,types: ['Author Keywords']
+                    ,settings: {
+                        mode: 'normal'
+                        ,nodesColumnId: authorKeywordsColumn
+                        ,nodesSeparator: ';'
+                        ,linksColumnId: titleColumn
+                    }
+                })
+
             D.dispatchEvent('update_networkOptions', {
                 'networkOptions': networkOptions
             })
