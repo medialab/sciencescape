@@ -20,6 +20,8 @@ if(isset($twitterText) && $twitterText != ""){
 					<p>
                         We used:
                         <br/>
+                        <a href="http://sigmajs.org/">Sigma.js</a>,
+                        <a href="http://dominojs.org/">Domino.js</a>,
                         <a href="https://github.com/eligrey/FileSaver.js/">FileSaver.js</a>,
                         <a href="http://twitter.github.com/bootstrap/">Bootstrap</a>,
                         <a href="http://jquery.com/">jQuery</a>,
