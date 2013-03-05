@@ -38,6 +38,12 @@ domino.settings({
                 ,dispatch: 'sigmaInstance_updated'
                 ,triggers: 'update_sigmaInstance'
             },{
+                id:'layoutRunning'
+                ,type: 'boolean'
+                ,value: false
+                ,dispatch: 'layoutRunning_updated'
+                ,triggers: 'update_layoutRunning'
+            },{
                 id:'minDegreeThreshold'
                 // ,type: 'integer'
                 ,value: 2
@@ -249,7 +255,7 @@ domino.settings({
             )
         }
     })
-
+    
     // Type of network
     D.addModule(function(){
         domino.module.call(this)
@@ -480,10 +486,10 @@ domino.settings({
     D.addModule(function(){
         domino.module.call(this)
 
-        var container = $('#sigmaDiv')
+        var container = $('#sigmaContainer')
 
         $(document).ready(function(e){
-            container.html('<div class="buttons-container"><button class="btn" id="stop-layout">Stop Layout</button><button class="btn" id="rescale-graph">Rescale Graph</button></div><div class="sigma-parent"><div class="sigma-expand" id="sigma-example"></div></div>')
+            container.html('<div class="sigma-parent"><div class="sigma-expand" id="sigma-example"></div></div>')
         })
 
         this.triggers.events['networkJson_updated'] = function(){
@@ -501,11 +507,14 @@ domino.settings({
             // Kill old sigma if needed
             var oldSigmaInstance = D.get('sigmaInstance')
             if(oldSigmaInstance !== undefined){
+                D.dispatchEvent('update_layoutRunning', {
+                    layoutRunning: !D.get('layoutRunning')
+                })
                 oldSigmaInstance.emptyGraph() // .kill() is not currently implemented
                 container.find('#sigma-example').html('')
             }
 
-            // Instanciate sigma.js and customize it :
+            // Instanciate sigma.js and customize it
             var sigmaInstance = sigma.init(document.getElementById('sigma-example')).drawingProperties({
                 defaultLabelColor: '#666'
                 ,edgeColor: 'default'
@@ -513,6 +522,7 @@ domino.settings({
                 ,defaultNodeColor: '#999'
             })
 
+            // Populate
             json.nodes.forEach(function(node){
                 sigmaInstance.addNode(node.id,{
                     'x': Math.random()
@@ -522,34 +532,93 @@ domino.settings({
                     ,'color': colorsByType[node.attributes_byId['attr_type']]
                 })
             })
-
             json.edges.forEach(function(link, i){
                 sigmaInstance.addEdge(i,link.sourceID,link.targetID)
             })
 
-            // Start the ForceAtlas2 algorithm
-            sigmaInstance.startForceAtlas2()
-            sigmaInstance.forceatlas2.setAutoSettings()
-
-            var isRunning = true;
-            document.getElementById('stop-layout').addEventListener('click',function(){
-                if(isRunning){
-                    isRunning = false;
-                    sigmaInstance.stopForceAtlas2();
-                    document.getElementById('stop-layout').childNodes[0].nodeValue = 'Start Layout';
-                }else{
-                    isRunning = true;
-                    sigmaInstance.startForceAtlas2();
-                    document.getElementById('stop-layout').childNodes[0].nodeValue = 'Stop Layout';
-                }
-            },true)
-            document.getElementById('rescale-graph').addEventListener('click',function(){
-                sigmaInstance.position(0,0,1).draw();
-            },true)
-
             D.dispatchEvent('update_sigmaInstance', {
                 sigmaInstance: sigmaInstance
             })
+
+            // Start the ForceAtlas2 algorithm
+            D.dispatchEvent('update_layoutRunning', {
+                layoutRunning: true
+            })
+        }
+    })
+    
+    // ForceAtlas
+    D.addModule(function(){
+        domino.module.call(this)
+
+        this.triggers.events['layoutRunning_updated'] = function(){
+            var sigmaInstance = D.get('sigmaInstance')
+                ,layoutRunning = D.get('layoutRunning')
+            if(layoutRunning){
+                sigmaInstance.startForceAtlas2()
+            } else {
+                sigmaInstance.stopForceAtlas2()
+            }
+        }
+
+    })
+
+    // Sigma buttons
+    D.addModule(function(){
+        domino.module.call(this)
+
+        var container = $('#sigmaButtons')
+
+        $(document).ready(function(e){
+            container.html('<button class="btn" id="layoutSwitch">Stop Layout</button> <button class="btn" id="rescaleGraph"><i class="icon-resize-full"/> Rescale Graph</button>')
+            updateLayoutSwitch()
+            container.find('#layoutSwitch').click(function(){
+                D.dispatchEvent('update_layoutRunning', {
+                    layoutRunning: !D.get('layoutRunning')
+                })
+            })
+            updateRescaleGraph()
+            container.find('#rescaleGraph').click(function(){
+                var sigmaInstance = D.get('sigmaInstance')
+                if(sigmaInstance !== undefined)
+                    sigmaInstance.position(0,0,1).draw()
+            })
+        })
+
+        function updateLayoutSwitch(){
+            var button = container.find('#layoutSwitch')
+                ,layoutRunning = D.get('layoutRunning')
+                ,sigmaInstance = D.get('sigmaInstance')
+            if(sigmaInstance === undefined){
+                button.html('<i class="icon-play"/> Start layout')
+                button.addClass('disabled')
+            } else {
+                button.removeClass('disabled')
+                if(layoutRunning){
+                    button.html('<i class="icon-stop"/> Stop layout')
+                } else {
+                    button.html('<i class="icon-play"/> Start layout')
+                }
+            }
+        }
+
+        function updateRescaleGraph(){
+            var button = container.find('#rescaleGraph')
+                ,sigmaInstance = D.get('sigmaInstance')
+            if(sigmaInstance === undefined){
+                button.addClass('disabled')
+            } else {
+                button.removeClass('disabled')
+            }
+        }
+
+        this.triggers.events['sigmaInstance_updated'] = function(){
+            updateLayoutSwitch()
+            updateRescaleGraph()
+        }
+
+        this.triggers.events['layoutRunning_updated'] = function(){
+            updateLayoutSwitch()
         }
     })
     

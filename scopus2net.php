@@ -47,9 +47,9 @@
                 left: 0;
             }
 
-            .buttons-container{
-                padding-bottom: 8px;
-                padding-top: 12px;
+            #sigmaButtons{
+                padding-bottom: 4px;
+                padding-top: 4px;
             }
         </style>
 
@@ -128,7 +128,8 @@
                 </div>
                 <div class="span8">
                     <h4>Network preview</h4>
-                    <div id="sigmaDiv"><span class="muted">network preview</span></div>
+                    <div id="sigmaButtons"><span class="muted">sigma buttons</span></div>
+                    <div id="sigmaContainer"><span class="muted">network preview</span></div>
                     <div id="alerts"></div>
                 </div>
             </div>
