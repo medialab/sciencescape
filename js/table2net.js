@@ -106,63 +106,62 @@
         }
 
         if(ns.settings.jsonCallback !== undefined){
-            ns.settings.jsonCallback({
-                attributes: {
-                    source: 'table2net'
-                }
-                ,nodesAttributes:[
-                        {
-                            id: 'attr_type'
-                            ,title: 'Type'
-                            ,type: 'string'
-                        },{
-                            id: 'global_occurrences'
-                            ,title: 'Occurrences Count'
-                            ,type: 'integer'
-                        }
-                    ].concat(
-                        (ns.settings.mode == 'bipartite')?(
-                            ns.settings.nodesMetadataColumnIds1.map(function(colId){
-                                return {
-                                    id: 'attr_1_' + colId
-                                    ,title: tableHeader[colId]
-                                    ,type: 'string'
-                                }
-                            }).concat(ns.settings.nodesMetadataColumnIds2.map(function(colId){
-                                return {
-                                    id: 'attr_2_' + colId
-                                    ,title: tableHeader[colId]
-                                    ,type: 'string'
-                                }
-                            }))
-                        ):(
-                            ns.settings.nodesMetadataColumnIds.map(function(colId){
-                                return {
-                                    id: colId
-                                    ,title: tableHeader[colId]
-                                    ,type: 'string'
-                                }
-                            })
-                        )
+            var nodesAttributes = [
+                    {
+                        id: 'attr_type'
+                        ,title: 'Type'
+                        ,type: 'string'
+                    },{
+                        id: 'global_occurrences'
+                        ,title: 'Occurrences Count'
+                        ,type: 'integer'
+                    }
+                ].concat(
+                    (ns.settings.mode == 'bipartite')?(
+                        ns.settings.nodesMetadataColumnIds1.map(function(colId){
+                            return {
+                                id: 'attr_1_' + colId
+                                ,title: tableHeader[colId]
+                                ,type: 'string'
+                            }
+                        }).concat(ns.settings.nodesMetadataColumnIds2.map(function(colId){
+                            return {
+                                id: 'attr_2_' + colId
+                                ,title: tableHeader[colId]
+                                ,type: 'string'
+                            }
+                        }))
+                    ):(
+                        ns.settings.nodesMetadataColumnIds.map(function(colId){
+                            return {
+                                id: colId
+                                ,title: tableHeader[colId]
+                                ,type: 'string'
+                            }
+                        })
                     )
-                ,edgesAttributes: [
-                        {
-                            id: 'attr_type'
-                            ,title: 'Type'
-                            ,type: 'string'
-                        },{
-                            id: 'matchings_count'
-                            ,title: 'Matchings Count'
-                            ,type: 'integer'
-                        }
-                    ].concat(ns.settings.linksMetadataColumnIds.map(function(colId){
-                        return {
-                            id: colId
-                            ,title: tableHeader[colId]
-                            ,type: 'string'
-                        }
-                    }))
-                ,nodes: ns.nodes.map(function(d){
+                )
+
+            var edgesAttributes = [
+                    {
+                        id: 'attr_type'
+                        ,title: 'Type'
+                        ,type: 'string'
+                    },{
+                        id: 'matchings_count'
+                        ,title: 'Matchings Count'
+                        ,type: 'integer'
+                    }
+                ].concat(ns.settings.linksMetadataColumnIds.map(function(colId){
+                    return {
+                        id: colId
+                        ,title: tableHeader[colId]
+                        ,type: 'string'
+                    }
+                }))
+
+            var nodesId = []
+            var nodes = ns.nodes.map(function(d){
                     var id = ns.dehydrate_expression(tableHeader[d.colId])+"_"+$.md5(d.node)
                         ,label = d.node
                         ,type = tableHeader[d.colId]
@@ -208,7 +207,7 @@
                                     ns.settings.nodesMetadataColumnIds.map(function(colId){
                                         var currentAttValue = ""
                                             ,attValues = d.tableRows.map(function(rowId){
-                                                return table[rowId][colId]
+                                                return ns.table[rowId][colId]
                                             }).sort(function(a, b) {
                                                 return a < b ? -1 : a > b ? 1 : 0
                                             }).filter(function(attValue){
@@ -220,9 +219,11 @@
                                     })
                                 )
                             )
+                    nodesId.push(id)
                     return {id:id, label:label, attributes:attributes}
                 })
-                ,edges: ns.links.map(function(d){
+            
+            var edges = ns.links.map(function(d){
                     var sourceId = ns.dehydrate_expression(tableHeader[d.sourceColId])+"_"+$.md5(d.source)
                         ,targetId = ns.dehydrate_expression(tableHeader[d.targetColId])+"_"+$.md5(d.target)
                         ,attributes = [
@@ -231,7 +232,7 @@
                         ].concat(ns.settings.linksMetadataColumnIds.map(function(colId){
                             var currentAttValue = ""
                                 ,attValues = d.tableRows.map(function(rowId){
-                                    return table[rowId][colId]
+                                    return ns.table[rowId][colId]
                                 }).sort(function(a, b) {
                                     return a < b ? -1 : a > b ? 1 : 0
                                 }).filter(function(attValue){
@@ -244,6 +245,27 @@
 
                     return {sourceID: sourceId, targetID: targetId, attributes: attributes}
                 })
+            
+            // In JSON we ensure that the nodes connecting edges actually exist (citation mode)
+            if(ns.settings.mode == 'citation'){
+                edges = edges.filter(function(edge){
+                    
+                    return nodesId.some(function(id){
+                        return edge.sourceID == id
+                    }) && nodesId.some(function(id){
+                        return edge.targetID == id
+                    })
+                })
+            }
+
+            ns.settings.jsonCallback({
+                attributes: {
+                    source: 'table2net'
+                }
+                ,nodesAttributes: nodesAttributes
+                ,edgesAttributes: edgesAttributes
+                ,nodes: nodes
+                ,edges: edges
             })
         }
         
@@ -300,7 +322,7 @@
                     content.push("\n" +  '<spells>')
                     var years = []
                     d.tableRows.forEach(function(rowId){
-                        var year = table[rowId][ns.settings.timeSeriesColumnId]
+                        var year = ns.table[rowId][ns.settings.timeSeriesColumnId]
                         if(!years.some(function(y){return y == year})){
                             years.push(year);
                         }
@@ -323,7 +345,7 @@
                             if(type == tableHeader[ns.settings.nodesColumnId1]){
                                 var currentAttValue = ""
                                     ,attValues = d.tableRows.map(function(rowId){
-                                        return table[rowId][colId]
+                                        return ns.table[rowId][colId]
                                     }).sort(function(a, b) {
                                         return a < b ? -1 : a > b ? 1 : 0
                                     }).filter(function(attValue){
@@ -339,9 +361,9 @@
                         } else {
                             var attValuesPerYear = []
                             d.tableRows.forEach(function(rowId){
-                                var year = table[rowId][ns.settings.timeSeriesColumnId]
+                                var year = ns.table[rowId][ns.settings.timeSeriesColumnId]
                                     ,attValuesThisYear = attValuesPerYear[year] || []
-                                    ,attValue = table[rowId][colId]
+                                    ,attValue = ns.table[rowId][colId]
                                 attValuesThisYear.push(attValue)
                                 attValuesPerYear[year] = attValuesThisYear
                             })
@@ -368,7 +390,7 @@
                             if(type == tableHeader[ns.settings.nodesColumnId2]){
                                 var currentAttValue = ""
                                     ,attValues = d.tableRows.map(function(rowId){
-                                        return table[rowId][colId]
+                                        return ns.table[rowId][colId]
                                     }).sort(function(a, b) {
                                         return a < b ? -1 : a > b ? 1 : 0
                                     }).filter(function(attValue){
@@ -384,9 +406,9 @@
                         } else {
                             var attValuesPerYear = []
                             d.tableRows.forEach(function(rowId){
-                                var year = table[rowId][ns.settings.timeSeriesColumnId]
+                                var year = ns.table[rowId][ns.settings.timeSeriesColumnId]
                                     ,attValuesThisYear = attValuesPerYear[year] || []
-                                    ,attValue = table[rowId][colId]
+                                    ,attValue = ns.table[rowId][colId]
                                 attValuesThisYear.push(attValue)
                                 attValuesPerYear[year] = attValuesThisYear
                             })
@@ -413,7 +435,7 @@
                         if(!ns.settings.timeSeries){
                             var currentAttValue = ""
                                 ,attValues = d.tableRows.map(function(rowId){
-                                    return table[rowId][colId];
+                                    return ns.table[rowId][colId];
                                 }).sort(function(a, b) {
                                     return a < b ? -1 : a > b ? 1 : 0
                                 }).filter(function(attValue){
@@ -426,9 +448,9 @@
                         } else {
                             attValuesPerYear = []
                             d.tableRows.forEach(function(rowId){
-                                var year = table[rowId][dynColumnId]
+                                var year = ns.table[rowId][dynColumnId]
                                     ,attValuesThisYear = attValuesPerYear[year] || []
-                                    ,attValue = table[rowId][colId]
+                                    ,attValue = ns.table[rowId][colId]
                                 attValuesThisYear.push(attValue)
                                 
                                 attValuesPerYear[year] = attValuesThisYear
@@ -469,7 +491,7 @@
                     content.push("\n" +  '<spells>');
                     var years = []
                     d.tableRows.forEach(function(rowId){
-                        var year = table[rowId][dynColumnId]
+                        var year = ns.table[rowId][dynColumnId]
                         if(!years.some(function(y){return y == year})){
                             years.push(year)
                         }
@@ -490,7 +512,7 @@
                     if(!ns.settings.timeSeries){
                         var currentAttValue = ""
                             ,attValues = d.tableRows.map(function(rowId){
-                                return table[rowId][colId]
+                                return ns.table[rowId][colId]
                             }).sort(function(a, b) {
                                 return a < b ? -1 : a > b ? 1 : 0
                             }).filter(function(attValue){
@@ -503,9 +525,9 @@
                     } else {
                         attValuesPerYear = []
                         d.tableRows.forEach(function(rowId){
-                            var year = table[rowId][dynColumnId]
+                            var year = ns.table[rowId][dynColumnId]
                                 ,attValuesThisYear = attValuesPerYear[year] || []
-                                ,attValue = table[rowId][colId]
+                                ,attValue = ns.table[rowId][colId]
                             attValuesThisYear.push(attValue)
                             
                             attValuesPerYear[year] = attValuesThisYear
@@ -610,11 +632,11 @@
             // Linked nodes
             var linkedNodesList;
             if(!nodesMultiples){
-                linkedNodesList = [ns.clean_expression(table[i][nodesColumnId])];
+                linkedNodesList = [ns.clean_expression(ns.table[i][nodesColumnId])];
             } else {
                 // We clean the linkedNodesList like we did with the nodesList before...
-                if(table[i][nodesColumnId]){
-                    linkedNodesList = table[i][nodesColumnId].split(nodesSeparator).map(function(d){
+                if(ns.table[i][nodesColumnId]){
+                    linkedNodesList = ns.table[i][nodesColumnId].split(nodesSeparator).map(function(d){
                         return ns.clean_expression(d);
                     })
                     .filter(function(d){
@@ -721,7 +743,7 @@
             // Linked nodes
             var linkedNodesList;
             if(!nodesMultiples_1){
-                var linkedNode = ns.clean_expression(table[i][nodesColumnId_1]);
+                var linkedNode = ns.clean_expression(ns.table[i][nodesColumnId_1]);
                 linkedNodesList = [linkedNode];
             } else {
                 // We clean the linkedNodesList like we did with the nodesList before...
@@ -824,8 +846,6 @@
         // localLinks.push({source:node1, target:node2, sourceColId:nodesColumnId, targetColId:nodesColumnId, tableRows:d.tableRows});
 
         var linksList = ns.table.map(function(d,i){return {source:d[nodesColumnId], sourceColId:nodesColumnId, target:d[linksColumnId], targetColId:nodesColumnId, tableRows:[i]};});
-        
-        
         
         // Unfold by Source if there are multiples
         if(nodesMultiples){

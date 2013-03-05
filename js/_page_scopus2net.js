@@ -252,14 +252,24 @@ domino.settings({
         this.triggers.events['dataTable_updated'] = function(){
             var networkOptions = []
                 ,data = D.get('dataTable')
+                ,titleColumn
                 ,authorsColumn
                 ,authorKeywordsColumn
+                ,doiCitedColumn
+                ,doiColumn
+
             
             data[0].forEach(function(d, i){
+                if(d == 'Title')
+                    titleColumn = i
                 if(d == 'Authors')
                     authorsColumn = i
                 if(d == 'Author Keywords')
                     authorKeywordsColumn = i
+                if(d == 'Cited papers having a DOI')
+                    doiCitedColumn = i
+                if(d == 'DOI')
+                    doiColumn = i
             })
 
             if( authorsColumn !== undefined && authorKeywordsColumn !== undefined )
@@ -272,6 +282,32 @@ domino.settings({
                         ,nodesSeparator1: ','
                         ,nodesColumnId2: authorKeywordsColumn
                         ,nodesSeparator2: ';'
+                    }
+                })
+
+            if( authorsColumn !== undefined && titleColumn !== undefined )
+                networkOptions.push({
+                    label: 'Authors linked by co-publication'
+                    ,types: ['Authors']
+                    ,settings: {
+                        mode: 'normal'
+                        ,nodesColumnId: authorsColumn
+                        ,nodesSeparator: ','
+                        ,linksColumnId: titleColumn
+                    }
+                })
+
+            if( doiColumn !== undefined && doiCitedColumn !== undefined && titleColumn !== undefined )
+                networkOptions.push({
+                    label: 'Papers and citations (DOI)'
+                    ,types: ['DOI']
+                    ,fetchTitles: true
+                    ,settings: {
+                        mode: 'citation'
+                        ,nodesColumnId: doiColumn
+                        ,nodesMetadataColumnIds: [titleColumn]
+                        ,citationLinksColumnId: doiCitedColumn
+                        ,citationLinksSeparator: ';'
                     }
                 })
 
@@ -325,12 +361,30 @@ domino.settings({
                 json.attributes.description = 'Network extracted from a Scopus file on ScienceScape ( http://tools.medialab.sciences-po.fr/sciencescape )'
                 json_graph_api.buildIndexes(json)
 
+                // Put label for citation mode
+                if(option.fetchTitles){
+                    json.nodes.forEach(function(node){
+                        node.label = node.attributes_byId['attr_title']
+                    })
+                }
+
                 var mostConnectedNodesRemoved = []
+                    ,totalPerType = option.types.map(function(type){
+                        return json.nodes.filter(function(node){
+                            return node.attributes_byId['attr_type'] == type
+                        }).length
+                    })
+                console.log('totalPerType', totalPerType)
                 if(D.get('removeMostConnected')){
                     var total = json.nodes.length
                     // Cleaning
                     json.nodes.forEach(function(node){
-                        if(node.inEdges.length + node.outEdges.length > 0.5 * total){
+                        if(
+                            node.inEdges.length + node.outEdges.length > 0.5 * total
+                            || totalPerType.some(function(typeTotal){
+                                node.inEdges.length + node.outEdges.length > 0.5 * typeTotal
+                            })
+                        ){
                             mostConnectedNodesRemoved.push(node)
                             node.hidden = true
                         }
@@ -433,13 +487,12 @@ domino.settings({
                 ,defaultEdgeColor: '#ccc'
             })
 
-            console.log('At sigma inst: ', 'json.nodes.length', json.nodes.length, 'json.nodes_byId', Object.keys(json.nodes_byId).length)
             json.nodes.forEach(function(node){
                 sigmaInstance.addNode(node.id,{
                     'x': Math.random()
                     ,'y': Math.random()
                     ,label: node.label
-                    ,size: 1 + 0.1 * Math.sqrt(node.inEdges.length + node.outEdges.length)
+                    ,size: 1 + Math.log(1 + 0.1 * ( node.inEdges.length + node.outEdges.length ) )
                     ,'color': colorsByType[node.attributes_byId['attr_type']]
                 })
             })
@@ -450,6 +503,7 @@ domino.settings({
 
             // Start the ForceAtlas2 algorithm
             sigmaInstance.startForceAtlas2()
+            sigmaInstance.forceatlas2.setAutoSettings()
 
             var isRunning = true;
             document.getElementById('stop-layout').addEventListener('click',function(){
