@@ -350,17 +350,22 @@ domino.settings({
         var container = $('#build')
 
         $(document).ready(function(e){
-            container.html('<div style="height: 35px"><button class="btn btn-block disabled"><i class="icon-cog"></i> Build network</button></div><div style="height: 25px;"><div class="progress progress-striped active"><div class="bar" style="width: 0%;"></div></div></div>')
+            container.html('<div style="height: 35px"><button class="btn btn-block disabled"><i class="icon-cog"></i> Build network</button></div><div style="height: 25px;"><div class="progress"><div class="bar" style="width: 0%;"></div></div></div>')
         })
         
         this.triggers.events['networkOptions_updated'] = function(){
             var button = container.find('button')
                 ,progress = container.find('div.progress')
                 ,bar = progress.find('div.bar')
+
+            progress.addClass('progress-striped').addClass('active')
+
             button.removeClass('disabled').click(function(){
                 if(!button.hasClass('disabled')){
                     button.addClass('disabled')
                     progress.show()
+                    progress.addClass('progress-striped').addClass('active')
+                    bar.removeClass('bar-success')
                     bar.css('width', '100%').text('Building...')
                     D.dispatchEvent('build_pending', {})
                 }
@@ -560,7 +565,6 @@ domino.settings({
                 sigmaInstance.stopForceAtlas2()
             }
         }
-
     })
 
     // Sigma buttons
