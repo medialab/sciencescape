@@ -1,6 +1,6 @@
 domino.settings({
     shortcutPrefix: "::" // Hack: preventing a bug related to a port in a URL for Ajax
-    ,verbose: true
+    ,verbose: false
 })
 
 ;(function($, domino, undefined){
@@ -46,7 +46,7 @@ domino.settings({
             },{
                 id:'minDegreeThreshold'
                 // ,type: 'integer'
-                ,value: 1
+                ,value: '1'
                 ,dispatch: 'minDegreeThreshold_updated'
                 ,triggers: 'update_minDegreeThreshold'
             },{
@@ -439,7 +439,7 @@ domino.settings({
                     ,recursive
                     ,poorlyConnectedNodesRemoved = []
                 
-                switch(D.get('minDegreeThreshold')){
+                switch(''+D.get('minDegreeThreshold')){
                     case '0':
                         threshold = 0
                         recursive = false
