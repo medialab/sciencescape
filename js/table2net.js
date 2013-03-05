@@ -134,7 +134,7 @@
                     ):(
                         ns.settings.nodesMetadataColumnIds.map(function(colId){
                             return {
-                                id: colId
+                                id: 'attr_'+colId
                                 ,title: tableHeader[colId]
                                 ,type: 'string'
                             }
@@ -154,7 +154,7 @@
                     }
                 ].concat(ns.settings.linksMetadataColumnIds.map(function(colId){
                     return {
-                        id: colId
+                        id: 'attr_'+colId
                         ,title: tableHeader[colId]
                         ,type: 'string'
                     }

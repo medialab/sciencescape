@@ -363,9 +363,15 @@ domino.settings({
 
                 // Put label for citation mode
                 if(option.fetchTitles){
-                    json.nodes.forEach(function(node){
-                        node.label = node.attributes_byId['attr_title']
+                    var titleAttributeId
+                    json.nodesAttributes.forEach(function(na){
+                        if(na.title == 'Title')
+                            titleAttributeId = na.id
                     })
+                    if(titleAttributeId !== undefined)
+                        json.nodes.forEach(function(node){
+                            node.label = node.attributes_byId[titleAttributeId]
+                        })
                 }
 
                 var mostConnectedNodesRemoved = []
