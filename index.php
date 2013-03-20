@@ -46,7 +46,7 @@
                 </div>
                 <div class="span5">
                     <div class="abstract">
-                        <p><strong>Helpers for scientometrics.</strong> Convert files, get networks, visualize stuff from Scopus or Web of Science.</p>
+                        <p><strong>Helpers for scientometrics.</strong> Convert files, get networks, visualize stuff from Scopus or Web of Knowledge.</p>
                     </div>
                 </div>
             </div>
@@ -105,12 +105,12 @@
                 </div>
 
                 <div class="span4">
-                    <h2>Web of Science DOI Links</h2>
+                    <h2>Web of Knowledge DOI Links</h2>
                     <p class="text-info">
-                        Adds the list of citation links where there are DOI references, in a WoS file (classic or CSV).
+                        Adds the list of citation links where there are DOI references, in a WoK file (classic or CSV).
                     </p>
                     <br/>
-                    <h4>1. Upload your WoS file (or CSV)</h4>
+                    <h4>1. Upload your WoK file (or CSV)</h4>
                         <div id="wosdoilinks" style="height: 50px">
                             <div class="input">
                                 <input type="file" name="file" id='wosdoilinks_input'/>
@@ -139,12 +139,12 @@
                     <br/>
                     <h4>Help</h4>
                     <p>
-                        <strong>This script does the same thing, but for Web of Science.</strong>
+                        <strong>This script does the same thing, but for Web of Knowledge.</strong>
                         It extracts the DOIs from the references and adds them to a new column "DOI_CITED".
                         You may use the resulting CSV to build a network with Table2Net.
                     </p>
                     <p>
-                        <strong>Supported file formats</strong> are CSV as well as the WoS-specific format, usually a .txt file.
+                        <strong>Supported file formats</strong> are CSV as well as the WoK-specific format, usually a .txt file.
                         <strong>The detection is automatic.</strong> Just upload your file and the right algorithm will apply.
                     </p>
                     
@@ -152,12 +152,12 @@
                 </div>
 
                 <div class="span4">
-                    <h2>Web of Science to CSV</h2>
+                    <h2>Web of Knowledge to CSV</h2>
                     <p class="text-info">
-                        Get a CSV from a web of science specific file.
+                        Get a CSV from a web of Knowledge specific file.
                     </p>
                     <br/>
-                    <h4>1. Upload your WoS file</h4>
+                    <h4>1. Upload your WoK file</h4>
                         <div id="woscsv" style="height: 50px">
                             <div class="input">
                                 <input type="file" name="file" id='woscsv_input'/>
@@ -178,7 +178,7 @@
                     <br/>
                     <h4>Help</h4>
                     <p>
-                        If you have a classic WOS export (text format, organized by two-letter codes and beginning with "FN"), it will be converted to a <a href="http://en.wikipedia.org/wiki/CSV">CSV file</a> containing the same information.
+                        If you have a classic WOK export (text format, organized by two-letter codes and beginning with "FN"), it will be converted to a <a href="http://en.wikipedia.org/wiki/CSV">CSV file</a> containing the same information.
                     </p>
                     
 
@@ -189,9 +189,9 @@
             </div>
             <div class="row">
                 <div class="span4">
-                    <h2>WoS tags explanation</h2>
+                    <h2>WoK tags explanation</h2>
                     <p class="text-info">
-                        The two letter "field tags" in the Web of Science files are documented <a href="http://images.webofknowledge.com/WOK45/help/WOS/h_fieldtags.html">on this page</a>.
+                        The two letter "field tags" in the Web of Knowledge files are documented <a href="http://images.webofknowledge.com/WOK45/help/WOS/h_fieldtags.html">on this page</a>.
                         Our tools add the explicit name to the field tag according to this list:
                     </p>
                     <ul id="fieldTags"></ul>
