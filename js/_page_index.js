@@ -54,7 +54,6 @@ var fieldTags = [
     {tag:"AR",  name:"Article Number"},
     {tag:"PG",  name:"Page Count"},
     {tag:"DI",  name:"Digital Object Identifier (DOI)"},
-    {tag:"SC",  name:"Subject Category"},
     {tag:"GA",  name:"Document Delivery Number"},
     {tag:"UT",  name:"Unique Article Identifier"},
     {tag:"ER",  name:"End of Record"},
@@ -261,6 +260,7 @@ function downloadWosdoilinks(){
 
 function downloadWoscsv(){
     if(!$('#woscsv_download').hasClass('disabled')){
+        console.log(woscsv_data[1])
         var headers = woscsv_data.shift();
 
         var content = []
@@ -367,10 +367,14 @@ function convert_wos_to_CSV(wos, extractDOI){
                 currentItem = new Object();
             } else {
                 if(currentItem[currentFieldTag]){
-                    if(currentFieldTag=="TI" || currentFieldTag=="SO" || currentFieldTag=="AB"){
-                        currentItem[currentFieldTag] += " " + line.substring(3);
-                    } else {
+                    if(currentFieldTag=="AU"
+                        || currentFieldTag=="AF"
+                        || currentFieldTag=="C1"
+                        || currentFieldTag=="CR"
+                    ){
                         currentItem[currentFieldTag] += "|" + line.substring(3);
+                    } else {
+                        currentItem[currentFieldTag] += " " + line.substring(3);
                     }
                     
                     // Extract citations
