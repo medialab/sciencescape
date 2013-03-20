@@ -259,6 +259,7 @@ domino.settings({
                     yearMax= Math.max(yearMax, year)
                 }
             })
+            console.log('years boundaries ',yearMin,yearMax)
             kwData.forEach(function(kw, i){
                 // Data
                 var data = {}
@@ -284,19 +285,29 @@ domino.settings({
 
                     // Prepare DOM
                     var row = $('<div class="row"/>')
-                        ,timeline = $('<div class="span8"/>').append(
+                        ,timeline = $('<div class="span9"/>').append(
                             $('<div/>').attr('id', '_'+$.md5(kw.node))
                         )
-                    row.append($('<div class="span4"/>').append(
-                        $('<h3/>').text(kw.node))
-                    )
                     row.append(timeline)
+                    row.append($('<div class="span3"/>').append(
+                        $('<strong/>').text(kw.node))
+                    )
                     $('#timelines').append(row)
                     
-                    // D3
-                    var width = timeline.width(),
-                        height = 80
+                    // Mouseover
+                    var width = timeline.width()
+                    timeline.mousemove(function(e){
+                        var x = e.offsetX
+                            ,ergonomyOffset = width / (2 * (yearMax - yearMin))     // So that you see the tooltip of a year around its peak
+                            ,year = yearMin + Math.floor((yearMax - yearMin)*(x+ergonomyOffset)/width)
+                            ,count = data[year]
+                        timeline.attr('title', year+": "+count+' papers tagged')
+                    })
 
+                    // D3
+                    var height = 30
+                        ,x = d3.scale.linear().domain([yearMin, yearMax]).range([0, width])
+                    
                     var chart = d3.horizon()
                         .width(width)
                         .height(height)
@@ -310,7 +321,12 @@ domino.settings({
                         .attr("height", height)
 
                     // Render the chart.
-                    svg.data([flatData]).call(chart);
+                    svg.data([flatData]).call(chart)
+
+                    svg.append("g")
+                        .attr("class", "x grid")
+                        .attr("transform", "translate(0," + height + ")")
+                        .call(d3.svg.axis().scale(x).tickSubdivide(1).tickSize(-height));
                 }
             })
         }

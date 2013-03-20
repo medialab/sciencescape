@@ -26,13 +26,29 @@
 
             #horizon-controls {
               position: absolute;
-              width: 940px;
               padding: 10px;
               z-index: 1;
             }
 
             #horizon-bands {
               float: right;
+            }
+
+
+            .grid line {
+              stroke: #fff;
+            }
+
+            .grid line.minor {
+              stroke-width: .5px;
+            }
+
+            .grid text {
+              display: none;
+            }
+
+            path.domain {
+              display: none;
             }
 
         </style>
