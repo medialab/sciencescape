@@ -10,7 +10,15 @@
                     <div class="nav-collapse collapse">
                         <ul class="nav">
                             <!--<li class="active"><a href="#">Gaga</a></li>-->
-                            <li><a href="scopus2net.php">Scopus2Net</a></li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                    Scopus
+                                    <b class="caret"></b>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="scopus2net.php">Scopus2Net</a></li>
+                                </ul>
+                            </li>
                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                                     Web of Knowledge
@@ -22,7 +30,7 @@
                                     <li><a href="wok_journals_evolution.php">Journals: Evolution</a></li>
                                     <li><a href="wok_journals_topPerYear.php">Journals: Top per year</a></li>
                                 </ul>
-                              </li>
+                            </li>
                         </ul>
                         <div class="pull-right">
                             <ul class="nav">
