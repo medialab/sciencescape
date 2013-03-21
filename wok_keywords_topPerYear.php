@@ -19,25 +19,11 @@
                 padding-bottom: 40px;
             }
 
-            /*svg {
-              position: absolute;
-              top: 0;
-            }*/
-
-            .grid line {
-              stroke: #fff;
+            .kw{
+                cursor:default;
             }
-
-            .grid line.minor {
-              stroke-width: .5px;
-            }
-
-            .grid text {
-              display: none;
-            }
-
-            path.domain {
-              display: none;
+            .kw.highlight{
+                background-color: #FFFF99;
             }
 
         </style>

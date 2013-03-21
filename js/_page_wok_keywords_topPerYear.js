@@ -288,12 +288,12 @@ domino.settings({
 
             var currentRow
             data.forEach(function(yearData, i){
-                if(i%3 == 0){
+                if(i%4 == 0){
                     currentRow = $('<div class="row"/>')
                     $('#content').append(currentRow)
                 }
                 currentRow.append(
-                    $('<div class="span4"/>').append(
+                    $('<div class="span3"/>').append(
                         $('<h3/>').text(yearData.year)
                     ).append(
                         $('<ul/>').append(
@@ -301,8 +301,17 @@ domino.settings({
                                 return j<10
                             }).map(function(kw){
                                 return $('<li/>')
-                                    .append($('<strong/>').text(kw.keyword))
-                                    .append($('<span class="text-info"/>').text(' '+kw.count+' paper'+( (kw.count>1)?('s'):('') )))
+                                    .append(
+                                        $('<strong/>')
+                                            .text(kw.keyword)
+                                            .addClass('kw')
+                                            .addClass('kw_'+$.md5(kw.keyword))
+                                            .mouseenter(function(){
+                                                $('.kw.kw_'+$.md5(kw.keyword)).addClass('highlight')
+                                            }).mouseleave(function(){
+                                                $('.kw.kw_'+$.md5(kw.keyword)).removeClass('highlight')
+                                            })
+                                    ).append($('<span class="text-info"/>').text(' '+kw.count+' paper'+( (kw.count>1)?('s'):('') )))
                             })
                         )
                     )
