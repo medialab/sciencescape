@@ -21,6 +21,12 @@ domino.settings({
                 ,triggers: 'update_loadingProgress'
                 ,value: 0
             },{
+                id:'normalize'
+                ,dispatch: 'normalize_updated'
+                ,triggers: 'update_normalize'
+                ,type: 'boolean'
+                ,value: false
+            },{
                 id:'dataTable'
                 ,dispatch: 'dataTable_updated'
                 ,triggers: 'update_dataTable'
@@ -43,6 +49,13 @@ domino.settings({
                 triggers:['dataTable_updated']
                 ,method: function(){
                     D.dispatchEvent('extraction_init')
+                }
+            },{
+                // Redraw when 'normalize' is enabled or disabled
+                triggers:['normalize_updated']
+                ,method: function(){
+                    if(D.get('keywordData') !== undefined)
+                        buildAndShow()
                 }
             }
         ]
@@ -238,104 +251,142 @@ domino.settings({
         }
     })
 
-    // Draw the timlines
+    // Draw the timelines
     D.addModule(function(){
         domino.module.call(this)
 
-        this.triggers.events['keywordData_updated'] = function(){
-            var kwData = D.get('keywordData')
-                ,table = D.get('dataTable')
-                ,yearColId = -1
-            table[0].forEach(function(txt, i){
-                if(txt == 'PY (Year Published)' || txt == 'PY')
-                    yearColId = i
-            })
-            kwData.sort(function(a,b){return b.tableRows.length-a.tableRows.length})
-            var yearMin = 10000
-                ,yearMax = 0
-            table.forEach(function(tableRow){
-                var year = tableRow[yearColId]
-                if(year && year>0 && year < 10000){
-                    yearMin = Math.min(yearMin, year)
-                    yearMax= Math.max(yearMax, year)
-                }
-            })
-            kwData.forEach(function(kw, i){
-                // Data
-                var data = {}
-                for(var y=yearMin; y<=yearMax; y++){
-                    data[y] = 0
-                }
-                kw.tableRows.forEach(function(tableRow){
-                    var year = table[tableRow][yearColId]
-                    if(data[year] === undefined){
-                        data[year] = 1
-                        console.log('unknown year', kw)
-                    } else {
-                        data[year]++
-                    }
-                })
-                var flatData = []
-                for(year in data){
-                    if(Date.UTC(year, 0))
-                        flatData.push([Date.UTC(year, 0), data[year]])
-                }
-
-                if(kw.tableRows.length>=10){
-
-                    // Prepare DOM
-                    var row = $('<div class="row"/>')
-                        ,timeline = $('<div class="span9"/>').append(
-                            $('<div/>').attr('id', '_'+$.md5(kw.node))
-                        )
-                    row.append(timeline)
-                    row.append($('<div class="span3"/>').append(
-                            $('<strong/>').text(kw.node)
-                        ).append(
-                            $('<span class="text-info"/>').text(' ('+kw.tableRows.length+')')
-                        )
-                    )
-                    $('#timelines').append(row)
-                    
-                    // Mouseover
-                    var width = timeline.width()
-                    timeline.mousemove(function(e){
-                        var x = e.offsetX
-                            ,ergonomyOffset = width / (2 * (yearMax - yearMin))     // So that you see the tooltip of a year around its peak
-                            ,year = yearMin + Math.floor((yearMax - yearMin)*(x+ergonomyOffset)/width)
-                            ,count = data[year]
-                        timeline.attr('title', year+": "+count+' paper'+( (count>1)?('s'):('') ))
-                    })
-
-                    // D3
-                    var height = 32
-                        ,x = d3.scale.linear().domain([yearMin, yearMax]).range([0, width])
-                    
-                    var chart = d3.horizon()
-                        .width(width)
-                        .height(height)
-                        .bands(3)
-                        .mode("offset")
-                        .interpolate("monotone")
-
-                    // var svg = d3.select('#timelines').append("svg")
-                    var svg = d3.select('#_'+$.md5(kw.node)).append("svg")
-                        .attr("width", width)
-                        .attr("height", height)
-
-                    // Render the chart.
-                    svg.data([flatData]).call(chart)
-
-                    svg.append("g")
-                        .attr("class", "x grid")
-                        .attr("transform", "translate(0," + height + ")")
-                        .call(d3.svg.axis().scale(x).tickSubdivide(1).tickSize(-height));
-                }
-            })
-        }
+        this.triggers.events['keywordData_updated'] = buildAndShow
     })
 
+    // Normalize checkbox
+    D.addModule(function(){
+        domino.module.call(this)
+
+        $('#normalize').click(function(){
+            D.dispatchEvent('update_normalize', {
+                normalize: $('#normalize').is(':checked')
+            })
+        })
+    })
+    
+    
+
     //// Data processing
+    function buildAndShow(){
+        $('#timelines').html('')
+
+        var kwData = D.get('keywordData')
+            ,table = D.get('dataTable')
+            ,yearColId = -1
+        table[0].forEach(function(txt, i){
+            if(txt == 'PY (Year Published)' || txt == 'PY')
+                yearColId = i
+        })
+        kwData.sort(function(a,b){return b.tableRows.length-a.tableRows.length})
+        var yearMin = 10000
+            ,yearMax = 0
+        table.forEach(function(tableRow){
+            var year = tableRow[yearColId]
+            if(year && year>0 && year < 10000){
+                yearMin = Math.min(yearMin, year)
+                yearMax= Math.max(yearMax, year)
+            }
+        })
+
+        var totalPerYear = {}
+        if(D.get('normalize')){
+            for(var y=yearMin; y<=yearMax; y++){
+                totalPerYear[y] = 0
+            }
+            for(var ii=1; ii<table.length; ii++){
+                var y = table[ii][yearColId]
+                if(totalPerYear[y] !== undefined)
+                    totalPerYear[y]++
+                else
+                    console.log('undefined year',y)
+            }
+        }
+
+        kwData.forEach(function(kw, i){
+            // Data
+            var data = {}
+            for(var y=yearMin; y<=yearMax; y++){
+                data[y] = 0
+            }
+            kw.tableRows.forEach(function(tableRow){
+                var year = table[tableRow][yearColId]
+                if(data[year] === undefined){
+                    data[year] = 1
+                    console.log('unknown year', kw)
+                } else {
+                    data[year]++
+                }
+            })
+            
+            if(D.get('normalize')){
+                for(var y=yearMin; y<=yearMax; y++){
+                    data[y] = Math.round(1000 * data[y]/totalPerYear[y]) / 1000
+                }
+            }
+
+            var flatData = []
+            for(year in data){
+                if(Date.UTC(year, 0))
+                    flatData.push([Date.UTC(year, 0), data[year]])
+            }
+
+
+            if(kw.tableRows.length>=10){
+                // Prepare DOM
+                var row = $('<div class="row"/>')
+                    ,timeline = $('<div class="span9"/>').append(
+                        $('<div/>').attr('id', '_'+$.md5(kw.node))
+                    )
+                row.append(timeline)
+                row.append($('<div class="span3"/>').append(
+                        $('<strong/>').text(kw.node)
+                    ).append(
+                        $('<span class="text-info"/>').text(' ('+kw.tableRows.length+')')
+                    )
+                )
+                $('#timelines').append(row)
+                
+                // Mouseover
+                var width = timeline.width()
+                timeline.mousemove(function(e){
+                    var x = e.offsetX
+                        ,ergonomyOffset = width / (2 * (yearMax - yearMin))     // So that you see the tooltip of a year around its peak
+                        ,year = yearMin + Math.floor((yearMax - yearMin)*(x+ergonomyOffset)/width)
+                        ,count = data[year]
+                    timeline.attr('title', year+": "+count+' paper'+( (count>1)?('s'):('') ))
+                })
+
+                // D3
+                var height = 32
+                    ,x = d3.scale.linear().domain([yearMin, yearMax]).range([0, width])
+                
+                var chart = d3.horizon()
+                    .width(width)
+                    .height(height)
+                    .bands(3)
+                    .mode("offset")
+                    .interpolate("monotone")
+
+                // var svg = d3.select('#timelines').append("svg")
+                var svg = d3.select('#_'+$.md5(kw.node)).append("svg")
+                    .attr("width", width)
+                    .attr("height", height)
+
+                // Render the chart.
+                svg.data([flatData]).call(chart)
+
+                svg.append("g")
+                    .attr("class", "x grid")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(d3.svg.axis().scale(x).tickSubdivide(1).tickSize(-height));
+            }
+        })
+    }
     function build_wosDoiLinks(wos){
         if ( wos.substring(0,2) != "FN" ){
             return build_DoiLinks(wos, d3.csv.parseRows, 'CR', 'DOI_CITED')

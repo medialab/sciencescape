@@ -19,13 +19,10 @@
                 padding-bottom: 40px;
             }
 
-            /*svg {
-              position: absolute;
-              top: 0;
-            }*/
             svg{
                 margin-bottom: 4px;
             }
+
             .grid line {
               stroke: #fff;
             }
@@ -91,6 +88,13 @@
                 </div>
                 <div class="span4">
                     <div id="extraction"><span class="muted">extraction</span></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="span4">
+                    <label class="checkbox">
+                        <input id="normalize" type="checkbox"> Normalize
+                    </label>
                 </div>
             </div>
             <div id="timelines"/>
