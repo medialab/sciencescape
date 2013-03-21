@@ -278,6 +278,7 @@ domino.settings({
         var kwData = D.get('keywordData')
             ,table = D.get('dataTable')
             ,yearColId = -1
+            ,normalize = D.get('normalize')
         table[0].forEach(function(txt, i){
             if(txt == 'PY (Year Published)' || txt == 'PY')
                 yearColId = i
@@ -294,7 +295,7 @@ domino.settings({
         })
 
         var totalPerYear = {}
-        if(D.get('normalize')){
+        if(normalize){
             for(var y=yearMin; y<=yearMax; y++){
                 totalPerYear[y] = 0
             }
@@ -308,35 +309,35 @@ domino.settings({
         }
 
         kwData.forEach(function(kw, i){
-            // Data
-            var data = {}
-            for(var y=yearMin; y<=yearMax; y++){
-                data[y] = 0
-            }
-            kw.tableRows.forEach(function(tableRow){
-                var year = table[tableRow][yearColId]
-                if(data[year] === undefined){
-                    data[year] = 1
-                    console.log('unknown year', kw)
-                } else {
-                    data[year]++
-                }
-            })
-            
-            if(D.get('normalize')){
-                for(var y=yearMin; y<=yearMax; y++){
-                    data[y] = Math.round(1000 * data[y]/totalPerYear[y]) / 1000
-                }
-            }
-
-            var flatData = []
-            for(year in data){
-                if(Date.UTC(year, 0))
-                    flatData.push([Date.UTC(year, 0), data[year]])
-            }
-
-
             if(kw.tableRows.length>=10){
+                // Data
+                var data = {}
+                for(var y=yearMin; y<=yearMax; y++){
+                    data[y] = 0
+                }
+                kw.tableRows.forEach(function(tableRow){
+                    var year = table[tableRow][yearColId]
+                    if(data[year] === undefined){
+                        data[year] = 1
+                        console.log('unknown year', kw)
+                    } else {
+                        data[year]++
+                    }
+                })
+                
+                var flatData = []
+                if(normalize){
+                    for(year in data){
+                        if(Date.UTC(year, 0))
+                            flatData.push([Date.UTC(year, 0), Math.round(1000 * data[year]/totalPerYear[year]) / 1000])
+                    }
+                } else {
+                    for(year in data){
+                        if(Date.UTC(year, 0))
+                            flatData.push([Date.UTC(year, 0), data[year]])
+                    }
+                }
+            
                 // Prepare DOM
                 var row = $('<div class="row"/>')
                     ,timeline = $('<div class="span9"/>').append(
@@ -358,7 +359,8 @@ domino.settings({
                         ,ergonomyOffset = width / (2 * (yearMax - yearMin))     // So that you see the tooltip of a year around its peak
                         ,year = yearMin + Math.floor((yearMax - yearMin)*(x+ergonomyOffset)/width)
                         ,count = data[year]
-                    timeline.attr('title', year+": "+count+' paper'+( (count>1)?('s'):('') ))
+                    timeline.attr('title', year + ": " + count + ((normalize)?('/'+totalPerYear[year]):(''))
+                        + ' paper' + ((count>1)?('s'):('')) + ((normalize)?(' (' + (Math.round(1000 * data[year]/totalPerYear[year])/1000) +')'):('') ))
                 })
 
                 // D3

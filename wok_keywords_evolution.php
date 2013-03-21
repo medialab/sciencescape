@@ -75,7 +75,9 @@
                 <div class="span12">
                     <h2>Keywords Evolution</h2>
                     <p class="text-info">
-                        
+                        Upload a Web of Knowledge file containing author keywords (code 'DE') and published year (code 'PY'),
+                        and visualize the evolution of most important keywords (&gt;10 papers in the file).
+                        The normalization divides by the total count of papers each year.
                     </p>
                 </div>
             </div>
