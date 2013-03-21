@@ -74,7 +74,7 @@
 
             <div class="row">
                 <div class="span12">
-                    <h2>Keywords Dynamics</h2>
+                    <h2>Top keywords per year</h2>
                     <p class="text-info">
                         
                     </p>
@@ -91,7 +91,7 @@
                     <div id="extraction"><span class="muted">extraction</span></div>
                 </div>
             </div>
-            <div id="timelines"/>
+            <div id="content"/>
         </div>
 
         <?php include("includes/footer.php"); ?>
@@ -99,7 +99,7 @@
         <?php include("includes/codebottom.php"); ?>
 
         <script src="js/libs/horizon.js"></script>
-        <script src="js/_page_wok_keywords_evolution.js"></script>
+        <script src="js/_page_wok_keywords_topPerYear.js"></script>
 
         <script>
             // document.getElementById('scopusextract_input').addEventListener('change', fileLoader.handleFileSelect, false);

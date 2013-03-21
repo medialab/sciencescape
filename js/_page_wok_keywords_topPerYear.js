@@ -238,7 +238,7 @@ domino.settings({
         }
     })
 
-    // Draw the timlines
+    // Display the result
     D.addModule(function(){
         domino.module.call(this)
 
@@ -261,76 +261,52 @@ domino.settings({
                 }
             })
             kwData.forEach(function(kw, i){
-                // Data
-                var data = {}
+                kw.yearly = {}
                 for(var y=yearMin; y<=yearMax; y++){
-                    data[y] = 0
+                    kw.yearly[y] = 0
                 }
                 kw.tableRows.forEach(function(tableRow){
                     var year = table[tableRow][yearColId]
-                    if(data[year] === undefined){
-                        data[year] = 1
+                    if(kw.yearly[year] === undefined){
+                        kw.yearly[year] = 1
                         console.log('unknown year', kw)
                     } else {
-                        data[year]++
+                        kw.yearly[year]++
                     }
                 })
-                var flatData = []
-                for(year in data){
-                    if(Date.UTC(year, 0))
-                        flatData.push([Date.UTC(year, 0), data[year]])
+            })
+
+            var data = []
+            for(var y=yearMin; y<=yearMax; y++){
+                data.push({
+                    year:y
+                    ,keywords:kwData.map(function(kw){
+                        return {keyword:kw.node, count:kw.yearly[y]}
+                    }).sort(function(a,b){return b.count-a.count})
+                })
+            }
+
+            var currentRow
+            data.forEach(function(yearData, i){
+                if(i%3 == 0){
+                    currentRow = $('<div class="row"/>')
+                    $('#content').append(currentRow)
                 }
-
-                if(kw.tableRows.length>=10){
-
-                    // Prepare DOM
-                    var row = $('<div class="row"/>')
-                        ,timeline = $('<div class="span9"/>').append(
-                            $('<div/>').attr('id', '_'+$.md5(kw.node))
-                        )
-                    row.append(timeline)
-                    row.append($('<div class="span3"/>').append(
-                            $('<strong/>').text(kw.node)
-                        ).append(
-                            $('<span class="text-info"/>').text(' ('+kw.tableRows.length+')')
+                currentRow.append(
+                    $('<div class="span4"/>').append(
+                        $('<h3/>').text(yearData.year)
+                    ).append(
+                        $('<ul/>').append(
+                            yearData.keywords.filter(function(d,j){
+                                return j<10
+                            }).map(function(kw){
+                                return $('<li/>')
+                                    .append($('<strong/>').text(kw.keyword))
+                                    .append($('<span class="text-info"/>').text(' '+kw.count+' paper'+( (kw.count>1)?('s'):('') )))
+                            })
                         )
                     )
-                    $('#timelines').append(row)
-                    
-                    // Mouseover
-                    var width = timeline.width()
-                    timeline.mousemove(function(e){
-                        var x = e.offsetX
-                            ,ergonomyOffset = width / (2 * (yearMax - yearMin))     // So that you see the tooltip of a year around its peak
-                            ,year = yearMin + Math.floor((yearMax - yearMin)*(x+ergonomyOffset)/width)
-                            ,count = data[year]
-                        timeline.attr('title', year+": "+count+' paper'+( (count>1)?('s'):('') ))
-                    })
-
-                    // D3
-                    var height = 24
-                        ,x = d3.scale.linear().domain([yearMin, yearMax]).range([0, width])
-                    
-                    var chart = d3.horizon()
-                        .width(width)
-                        .height(height)
-                        .bands(3)
-                        .mode("offset")
-                        .interpolate("monotone")
-
-                    // var svg = d3.select('#timelines').append("svg")
-                    var svg = d3.select('#_'+$.md5(kw.node)).append("svg")
-                        .attr("width", width)
-                        .attr("height", height)
-
-                    // Render the chart.
-                    svg.data([flatData]).call(chart)
-
-                    svg.append("g")
-                        .attr("class", "x grid")
-                        .attr("transform", "translate(0," + height + ")")
-                        .call(d3.svg.axis().scale(x).tickSubdivide(1).tickSize(-height));
-                }
+                )
             })
         }
     })
