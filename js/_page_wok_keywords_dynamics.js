@@ -259,7 +259,6 @@ domino.settings({
                     yearMax= Math.max(yearMax, year)
                 }
             })
-            console.log('years boundaries ',yearMin,yearMax)
             kwData.forEach(function(kw, i){
                 // Data
                 var data = {}
@@ -281,7 +280,7 @@ domino.settings({
                         flatData.push([Date.UTC(year, 0), data[year]])
                 }
 
-                if(i<100){
+                if(kw.tableRows.length>=10){
 
                     // Prepare DOM
                     var row = $('<div class="row"/>')
@@ -290,7 +289,10 @@ domino.settings({
                         )
                     row.append(timeline)
                     row.append($('<div class="span3"/>').append(
-                        $('<strong/>').text(kw.node))
+                            $('<strong/>').text(kw.node)
+                        ).append(
+                            $('<span class="text-info"/>').text(' ('+kw.tableRows.length+')')
+                        )
                     )
                     $('#timelines').append(row)
                     
@@ -301,7 +303,7 @@ domino.settings({
                             ,ergonomyOffset = width / (2 * (yearMax - yearMin))     // So that you see the tooltip of a year around its peak
                             ,year = yearMin + Math.floor((yearMax - yearMin)*(x+ergonomyOffset)/width)
                             ,count = data[year]
-                        timeline.attr('title', year+": "+count+' papers tagged')
+                        timeline.attr('title', year+": "+count+' paper'+( (count>1)?('s'):('') ))
                     })
 
                     // D3
@@ -313,7 +315,7 @@ domino.settings({
                         .height(height)
                         .bands(3)
                         .mode("offset")
-                        .interpolate("basis")
+                        .interpolate("monotone")
 
                     // var svg = d3.select('#timelines').append("svg")
                     var svg = d3.select('#_'+$.md5(kw.node)).append("svg")
