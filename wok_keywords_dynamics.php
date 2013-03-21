@@ -24,17 +24,6 @@
               top: 0;
             }*/
 
-            #horizon-controls {
-              position: absolute;
-              padding: 10px;
-              z-index: 1;
-            }
-
-            #horizon-bands {
-              float: right;
-            }
-
-
             .grid line {
               stroke: #fff;
             }

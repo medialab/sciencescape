@@ -219,6 +219,7 @@ domino.settings({
             })
             if(kwColId>=0){
                 table2net.table = table.slice(0)
+                table2net.table.shift()
                 var keywords = table2net.getNodes(kwColId, true, ';')
                 if(keywords){
                     setTimeout(function(){
@@ -307,7 +308,7 @@ domino.settings({
                     })
 
                     // D3
-                    var height = 30
+                    var height = 24
                         ,x = d3.scale.linear().domain([yearMin, yearMax]).range([0, width])
                     
                     var chart = d3.horizon()
