@@ -23,7 +23,9 @@
               position: absolute;
               top: 0;
             }*/
-
+            svg{
+                margin-bottom: 4px;
+            }
             .grid line {
               stroke: #fff;
             }

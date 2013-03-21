@@ -308,7 +308,7 @@ domino.settings({
                     })
 
                     // D3
-                    var height = 24
+                    var height = 32
                         ,x = d3.scale.linear().domain([yearMin, yearMax]).range([0, width])
                     
                     var chart = d3.horizon()
