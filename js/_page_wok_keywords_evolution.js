@@ -323,9 +323,9 @@ domino.settings({
                     // content
                     for(item in data){
                         row = [item]
-                        for(year in years){
+                        years.forEach(function(year){
                             row.push(data[item][year] || 0)
-                        }
+                        })
                         content.push('\n'+row.map(csvElement).join(','))
                     }
 
@@ -462,7 +462,7 @@ domino.settings({
                     .call(d3.svg.axis().scale(x).tickSubdivide(1).tickSize(-height));
             }
         })
-        return keywordsByYear;
+        return keywordsByYear
     }
     function build_wosDoiLinks(wos){
         if ( wos.substring(0,2) != "FN" ){

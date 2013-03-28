@@ -34,6 +34,10 @@ domino.settings({
                 id:'journalData'
                 ,dispatch: 'journalData_updated'
                 ,triggers: 'update_journalData'
+            },{
+                id:'csvData'
+                ,dispatch: 'csvData_updated'
+                ,triggers: 'update_csvData'
             }
         ],services: [
         ],hacks:[
@@ -54,8 +58,12 @@ domino.settings({
                 // Redraw when 'normalize' is enabled or disabled
                 triggers:['normalize_updated']
                 ,method: function(){
-                    if(D.get('journalData') !== undefined)
-                        buildAndShow()
+                    if(D.get('journalData') !== undefined){
+                        var itemByYear = buildAndShow()
+                        D.dispatchEvent('update_csvData', {
+                            csvData: itemByYear
+                        })
+                    }
                 }
             }
         ]
@@ -255,7 +263,12 @@ domino.settings({
     D.addModule(function(){
         domino.module.call(this)
 
-        this.triggers.events['journalData_updated'] = buildAndShow
+        this.triggers.events['journalData_updated'] = function(){
+            var itemByYear = buildAndShow()
+            D.dispatchEvent('update_csvData', {
+                csvData: itemByYear
+            })
+        }
     })
 
     // Normalize checkbox
@@ -269,6 +282,63 @@ domino.settings({
         })
     })
     
+    // Download button     
+    D.addModule(function(){
+        domino.module.call(this)
+
+        var container = $('#download')
+
+        $(document).ready(function(e){
+            container.html('<div style="height: 25px"><button class="btn btn-block disabled"><i class="icon-download"></i> Download CSV</button></div>')
+        })
+        
+        this.triggers.events['csvData_updated'] = function(){
+            var button = container.find('button')
+
+            button.removeClass('disabled').click(function(){
+                if(!button.hasClass('disabled')){
+                    button.addClass('disabled')
+                    
+                    var data = D.get('csvData')
+                        ,csv = []
+
+                    var years = []
+                    // Get the list of items
+                    for(item in data){
+                        for(year in data[item]){
+                            years.push(year)
+                        }
+                    }
+                    years = extractCases(years)
+
+                    var csvElement = function(txt){
+                        txt = ''+txt //cast
+                        return '"'+txt.replace(/"/gi, '""')+'"'
+                    }
+
+                    var content = []
+                    // headline
+                    content.push(['"items"'].concat(years.map(csvElement).join(',')))
+                    
+                    // content
+                    for(item in data){
+                        row = [item]
+                        years.forEach(function(year){
+                            row.push(data[item][year] || 0)
+                        })
+                        content.push('\n'+row.map(csvElement).join(','))
+                    }
+
+                    // Download
+                    var blob = new Blob(content, {'type':'text/csv;charset=utf-8'})
+                        ,filename = "Table.csv"
+                    if(navigator.userAgent.match(/firefox/i))
+                       alert('Note:\nFirefox does not handle file names, so you will have to rename this file to\n\"'+filename+'\""\nor some equivalent.')
+                    saveAs(blob, filename)
+                }
+            })
+        }
+    })
     
 
     //// Data processing
@@ -308,6 +378,8 @@ domino.settings({
             }
         }
 
+        var itemsByYear = {}
+
         kwData.forEach(function(kw, i){
             if(kw.tableRows.length>=10){
                 // Data
@@ -324,6 +396,8 @@ domino.settings({
                         data[year]++
                     }
                 })
+
+                itemsByYear[kw.node] = data
                 
                 var flatData = []
                 if(normalize){
@@ -385,9 +459,10 @@ domino.settings({
                 svg.append("g")
                     .attr("class", "x grid")
                     .attr("transform", "translate(0," + height + ")")
-                    .call(d3.svg.axis().scale(x).tickSubdivide(1).tickSize(-height));
+                    .call(d3.svg.axis().scale(x).tickSubdivide(1).tickSize(-height))
             }
         })
+        return itemsByYear
     }
     function build_wosDoiLinks(wos){
         if ( wos.substring(0,2) != "FN" ){
@@ -519,6 +594,27 @@ domino.settings({
         return String(expression).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
     function log(t){$("#log").text($("#log").text()+t);};
+
+    var extractCases = function(data_array, elementAccessor){
+        if(elementAccessor === undefined)
+            elementAccessor = function(x){return x}
+        
+        var temp_result = data_array.map(function(d){
+            return {id:elementAccessor(d), content:d}
+        }).sort(function(a, b) {
+            return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+        });
+        
+        // Merge Doubles
+        var result = []
+        for (var i = 0; i < temp_result.length; i++) {
+            if (i==0 || temp_result[i - 1].id != temp_result[i].id) {
+                result.push(temp_result[i].content)
+            }
+        }
+        
+        return result
+    }
 
 })(jQuery, domino)
 

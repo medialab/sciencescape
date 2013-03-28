@@ -39,9 +39,8 @@
               display: none;
             }
 
-
-            .horizonkey{
-                margin-bottom: 8px;
+            #timelines{
+                margin-top: 30px;
             }
 
         </style>
@@ -103,8 +102,17 @@
                         <input id="normalize" type="checkbox"> Normalize
                     </label>
                 </div>
+                <div class="span4">
+                </div>
+                <div class="span4">
+                    <div id="download"><span class="muted">download</span></div>
+                </div>
             </div>
-            <div id="timelines"/>
+            <div class="row">
+                <div class="span12">
+                    <div id="timelines"></div>
+                </div>
+            </div>
         </div>
 
         <?php include("includes/footer.php"); ?>
