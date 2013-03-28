@@ -21,19 +21,13 @@ domino.settings({
                 ,triggers: 'update_loadingProgress'
                 ,value: 0
             },{
-                id:'normalize'
-                ,dispatch: 'normalize_updated'
-                ,triggers: 'update_normalize'
-                ,type: 'boolean'
-                ,value: false
-            },{
                 id:'dataTable'
                 ,dispatch: 'dataTable_updated'
                 ,triggers: 'update_dataTable'
             },{
-                id:'journalData'
-                ,dispatch: 'journalData_updated'
-                ,triggers: 'update_journalData'
+                id:'papersVolume'
+                ,dispatch: 'papersVolume_updated'
+                ,triggers: 'update_papersVolume'
             }
         ],services: [
         ],hacks:[
@@ -54,7 +48,7 @@ domino.settings({
                 // Redraw when 'normalize' is enabled or disabled
                 triggers:['normalize_updated']
                 ,method: function(){
-                    if(D.get('journalData') !== undefined)
+                    if(D.get('papersVolume') !== undefined)
                         buildAndShow()
                 }
             }
@@ -225,19 +219,19 @@ domino.settings({
 
         this.triggers.events['extraction_pending'] = function(){
             var table = D.get('dataTable')
-                ,kwColId = -1
+                ,yearColId = -1
             table[0].forEach(function(txt, i){
-                if(txt == 'SO (Publication Name)' || txt == 'SO')
-                    kwColId = i
+                if(txt == 'PY (Year Published)' || txt == 'PY')
+                    yearColId = i
             })
-            if(kwColId>=0){
+            if(yearColId>=0){
                 table2net.table = table.slice(0)
                 table2net.table.shift()
-                var journals = table2net.getNodes(kwColId, true, ';')
-                if(journals){
+                var years = table2net.getNodes(yearColId, true, ';')
+                if(years){
                     setTimeout(function(){
-                        D.dispatchEvent('update_journalData', {
-                            'journalData': journals
+                        D.dispatchEvent('update_papersVolume', {
+                            'papersVolume': years
                         })
                     }, 200)
 
@@ -255,139 +249,107 @@ domino.settings({
     D.addModule(function(){
         domino.module.call(this)
 
-        this.triggers.events['journalData_updated'] = buildAndShow
+        this.triggers.events['papersVolume_updated'] = buildAndShow
     })
 
-    // Normalize checkbox
-    D.addModule(function(){
-        domino.module.call(this)
-
-        $('#normalize').click(function(){
-            D.dispatchEvent('update_normalize', {
-                normalize: $('#normalize').is(':checked')
-            })
-        })
-    })
-    
     
 
     //// Data processing
     function buildAndShow(){
-        $('#timelines').html('')
+        $('#timeline').html('')
 
-        var kwData = D.get('journalData')
+        var years = D.get('papersVolume')
             ,table = D.get('dataTable')
             ,yearColId = -1
-            ,normalize = D.get('normalize')
         table[0].forEach(function(txt, i){
             if(txt == 'PY (Year Published)' || txt == 'PY')
                 yearColId = i
         })
-        kwData.sort(function(a,b){return b.tableRows.length-a.tableRows.length})
+        years.sort(function(a,b){return parseInt(a.node)-parseInt(b.node)})
         var yearMin = 10000
             ,yearMax = 0
-        table.forEach(function(tableRow){
-            var year = tableRow[yearColId]
+        years.forEach(function(yItem){
+            var year = parseInt(yItem.node)
             if(year && year>0 && year < 10000){
                 yearMin = Math.min(yearMin, year)
                 yearMax= Math.max(yearMax, year)
             }
         })
 
-        var totalPerYear = {}
-        if(normalize){
-            for(var y=yearMin; y<=yearMax; y++){
-                totalPerYear[y] = 0
-            }
-            for(var ii=1; ii<table.length; ii++){
-                var y = table[ii][yearColId]
-                if(totalPerYear[y] !== undefined)
-                    totalPerYear[y]++
-                else
-                    console.log('undefined year',y)
+        // Initialize data (we do that in case of missing years in the source)
+        var data = {}
+        for(var y=yearMin; y<=yearMax; y++){
+            data[y] = 0
+        }
+
+        // Populate data
+        years.forEach(function(yItem){
+            var year = parseInt(yItem.node)
+            if(Date.UTC(year, 0))
+                data[year] = yItem.tableRows.length
+        })
+
+        var flatData = []
+        for(var year in data ){
+            if(Date.UTC(year, 0)){
+                flatData.push([year, data[year]])
+                // flatData.push([Date.UTC(year, 0), data[year]])
             }
         }
 
-        kwData.forEach(function(kw, i){
-            if(kw.tableRows.length>=10){
-                // Data
-                var data = {}
-                for(var y=yearMin; y<=yearMax; y++){
-                    data[y] = 0
-                }
-                kw.tableRows.forEach(function(tableRow){
-                    var year = table[tableRow][yearColId]
-                    if(data[year] === undefined){
-                        data[year] = 1
-                        console.log('unknown year', kw)
-                    } else {
-                        data[year]++
-                    }
-                })
-                
-                var flatData = []
-                if(normalize){
-                    for(year in data){
-                        if(Date.UTC(year, 0))
-                            flatData.push([Date.UTC(year, 0), Math.round(1000 * data[year]/totalPerYear[year]) / 1000])
-                    }
-                } else {
-                    for(year in data){
-                        if(Date.UTC(year, 0))
-                            flatData.push([Date.UTC(year, 0), data[year]])
-                    }
-                }
-            
-                // Prepare DOM
-                var row = $('<div class="row"/>')
-                    ,timeline = $('<div class="span8"/>').append(
-                        $('<div/>').attr('id', '_'+$.md5(kw.node))
-                    )
-                row.append(timeline)
-                row.append($('<div class="span4 horizonkey"/>').append(
-                        $('<strong/>').text(kw.node)
-                    ).append(
-                        $('<span class="text-info"/>').text(' ('+kw.tableRows.length+')')
-                    )
-                )
-                $('#timelines').append(row)
-                
-                // Mouseover
-                var width = timeline.width()
-                timeline.mousemove(function(e){
-                    var x = e.offsetX
-                        ,ergonomyOffset = width / (2 * (yearMax - yearMin))     // So that you see the tooltip of a year around its peak
-                        ,year = yearMin + Math.floor((yearMax - yearMin)*(x+ergonomyOffset)/width)
-                        ,count = data[year]
-                    timeline.attr('title', year + ": " + count + ((normalize)?('/'+totalPerYear[year]):(''))
-                        + ' journal' + ((count>1)?('s'):('')) + ((normalize)?(' (' + (Math.round(1000 * data[year]/totalPerYear[year])/1000) +')'):('') ))
-                })
+        // Prepare DOM
+        var row = $('<div class="row"/>')
+            ,timeline = $('<div class="span12"/>').append(
+                $('<div/>').attr('id', 'volume')
+            ).append(
+                $('<strong class="pull-right"/>').text('Volume of published papers each year')
+            )
+        row.append(timeline)
+        $('#timeline').append(row)
 
-                // D3
-                var height = 32
-                    ,x = d3.scale.linear().domain([yearMin, yearMax]).range([0, width])
-                
-                var chart = d3.horizon()
-                    .width(width)
-                    .height(height)
-                    .bands(3)
-                    .mode("offset")
-                    .interpolate("monotone")
-
-                // var svg = d3.select('#timelines').append("svg")
-                var svg = d3.select('#_'+$.md5(kw.node)).append("svg")
-                    .attr("width", width)
-                    .attr("height", height)
-
-                // Render the chart.
-                svg.data([flatData]).call(chart)
-
-                svg.append("g")
-                    .attr("class", "x grid")
-                    .attr("transform", "translate(0," + height + ")")
-                    .call(d3.svg.axis().scale(x).tickSubdivide(1).tickSize(-height));
-            }
+        // Mouseover
+        var width = timeline.width()
+        timeline.mousemove(function(e){
+            var x = e.offsetX
+                ,ergonomyOffset = width / (2 * (yearMax - yearMin))     // So that you see the tooltip of a year around its peak
+                ,year = yearMin + Math.floor((yearMax - yearMin)*(x+ergonomyOffset)/width)
+                ,count = data[year]
+            timeline.attr('title', year + ": " + count
+                + ' paper' + ((count>1)?('s'):('')))
         })
+
+        // D3
+        var height = 300
+            ,parse = d3.time.format("%Y").parse
+            ,x = d3.time.scale().domain([parse(''+yearMin), parse(''+yearMax)]).range([0, width])
+            ,margin_bottom = 12
+        
+        var chart = d3.horizon()
+            .width(width)
+            .height(height)
+            .x(function(d) { return parse(d[0]) })
+            .y(function(d) { return d[1] })
+            .bands(1)
+            .mode("offset")
+            .interpolate("monotone")
+
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .tickSubdivide(1)
+            .tickSize(-height)
+
+        var svg = d3.select('#volume').append("svg")
+            .attr("width", width)
+            .attr("height", height+margin_bottom)
+
+        // Render the chart.
+        svg.data([flatData]).call(chart)
+
+        svg.append("g")
+            .attr("class", "x grid")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis)
+
     }
     function build_wosDoiLinks(wos){
         if ( wos.substring(0,2) != "FN" ){

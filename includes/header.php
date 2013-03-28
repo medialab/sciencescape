@@ -25,10 +25,11 @@
                                     <b class="caret"></b>
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a href="wok_keywords_evolution.php">Keywords: Evolution</a></li>
-                                    <li><a href="wok_keywords_topPerYear.php">Keywords: Top per year</a></li>
-                                    <li><a href="wok_journals_evolution.php">Journals: Evolution</a></li>
-                                    <li><a href="wok_journals_topPerYear.php">Journals: Top per year</a></li>
+                                    <li><a href="wok_papersvolume_evolution.php">Papers volume through time</a></li>
+                                    <li><a href="wok_keywords_evolution.php">Keywords through time</a></li>
+                                    <li><a href="wok_keywords_topPerYear.php">Keywords through time: Top per year</a></li>
+                                    <li><a href="wok_journals_evolution.php">Journals through time</a></li>
+                                    <li><a href="wok_journals_topPerYear.php">Journals through time: Top per year</a></li>
                                 </ul>
                             </li>
                         </ul>
