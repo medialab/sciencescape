@@ -293,6 +293,7 @@ domino.settings({
                 ,titleColumn
                 ,authorsColumn
                 ,authorKeywordsColumn
+                ,sourceTitleColumn
                 ,doiCitedColumn
                 ,doiColumn
 
@@ -304,6 +305,8 @@ domino.settings({
                     authorsColumn = i
                 if(d == 'Author Keywords')
                     authorKeywordsColumn = i
+                if(d == 'Source title')
+                    sourceTitleColumn = i
                 if(d == 'Cited papers having a DOI')
                     doiCitedColumn = i
                 if(d == 'DOI')
@@ -320,6 +323,30 @@ domino.settings({
                         ,nodesSeparator1: ','
                         ,nodesColumnId2: authorKeywordsColumn
                         ,nodesSeparator2: ';'
+                    }
+                })
+
+            if( authorsColumn !== undefined && authorKeywordsColumn !== undefined )
+                networkOptions.push({
+                    label: 'Authors and Source titles'
+                    ,types: ['Authors', 'Source title']
+                    ,settings: {
+                        mode: 'bipartite'
+                        ,nodesColumnId1: authorsColumn
+                        ,nodesSeparator1: ','
+                        ,nodesColumnId2: sourceTitleColumn
+                    }
+                })
+
+            if( sourceTitleColumn !== undefined && authorKeywordsColumn !== undefined )
+                networkOptions.push({
+                    label: 'Source titles and Keywords (from authors)'
+                    ,types: ['Author Keywords', 'Source title']
+                    ,settings: {
+                        mode: 'bipartite'
+                        ,nodesColumnId1: authorKeywordsColumn
+                        ,nodesSeparator1: ';'
+                        ,nodesColumnId2: sourceTitleColumn
                     }
                 })
 
@@ -351,7 +378,7 @@ domino.settings({
 
             if( authorKeywordsColumn !== undefined && titleColumn !== undefined )
                 networkOptions.push({
-                    label: 'Keywords connected by papers'
+                    label: 'Keywords (from authors) connected by papers'
                     ,types: ['Author Keywords']
                     ,settings: {
                         mode: 'normal'
