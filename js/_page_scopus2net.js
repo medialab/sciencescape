@@ -1,6 +1,6 @@
 domino.settings({
     shortcutPrefix: "::" // Hack: preventing a bug related to a port in a URL for Ajax
-    ,verbose: false
+    ,verbose: true
 })
 
 ;(function($, domino, undefined){
@@ -66,6 +66,22 @@ domino.settings({
             }
         ],services: [
         ],hacks:[
+            {
+                // Events that need to be declared somewhere
+                triggers: ['loading_started', 'loading_completed', 'task_pending', 'task_success', 'task_fail', 'build_pending', 'build_success', 'build_fail']
+            },{
+                triggers: ['ui_toggleLayoutRunning']
+                ,method: function(e){
+                    this.update('layoutRunning', !this.get('layoutRunning'))
+                }
+            },{
+                triggers: ['ui_rescaleGraph']
+                ,method: function(e){
+                    var sigmaInstance = this.get('sigmaInstance')
+                    if(sigmaInstance !== undefined)
+                        sigmaInstance.position(0,0,1).draw()
+                }
+            }
         ]
     })
 
@@ -75,12 +91,12 @@ domino.settings({
     D.addModule(function(){
         domino.module.call(this)
 
-        this.triggers.events['loadingProgress_updated'] = function(d) {
-            // console.log('Loading progress', D.get('loadingProgress'))
+        this.triggers.events['loadingProgress_updated'] = function(provider, e) {
+            console.log('Loading progress', provider.get('loadingProgress'))
         }
 
-        this.triggers.events['networkJson_updated'] = function(d) {
-            console.log('Network: ',D.get('networkJson'))
+        this.triggers.events['networkJson_updated'] = function(provider, e) {
+            console.log('Network: ', provider.get('networkJson'))
         }
     })
 
@@ -88,21 +104,22 @@ domino.settings({
     D.addModule(function(){
         domino.module.call(this)
 
-        var container = $('#scopusextract')
+        var _self = this
+            ,container = $('#scopusextract')
 
         $(document).ready(function(e){
             container.html('<div style="height: 50px"><div class="input"><input type="file" name="file"/><span class="help-block">Note: you can drag and drop a file</span></div><div class="progress" style="display: none;"><div class="bar" style="width: 0%;"></div></div></div>')
             container.find('input').on('change', function(evt){
                 var target = evt.target || evt.srcElement
-                D.dispatchEvent('update_inputCSVfiles', {
+                _self.dispatchEvent('update_inputCSVfiles', {
                     inputCSVfiles: target.files
                 })
             })
         })
 
         
-        this.triggers.events['inputCSVfiles_updated'] = function(){
-            var files = D.get('inputCSVfiles')
+        this.triggers.events['inputCSVfiles_updated'] = function(provider, e){
+            var files = provider.get('inputCSVfiles')
             if( files !== undefined && files.length >0 ){
                 container.find('div.input').hide()
                 container.find('div.progress').show()
@@ -110,20 +127,20 @@ domino.settings({
                 bar.css('width', '0%')
                 
                 var fileLoader = new FileLoader()
-                D.dispatchEvent('update_inputCSVfileUploader', {
+                _self.dispatchEvent('update_inputCSVfileUploader', {
                     inputCSVfileUploader: fileLoader
                 })
                 fileLoader.read(files, {
                     onloadstart: function(evt){
-                        D.dispatchEvent('loading_started')
+                        _self.dispatchEvent('loading_started')
                     },
                     onload: function(evt){
-                        D.dispatchEvent('loading_completed')
+                        _self.dispatchEvent('loading_completed')
                     },
                     onprogress: function(evt){
                         // evt is an ProgressEvent
                         if (evt.lengthComputable) {
-                            D.dispatchEvent('update_loadingProgress', {
+                            _self.dispatchEvent('update_loadingProgress', {
                                 loadingProgress: Math.round((evt.loaded / evt.total) * 100)
                             })
                         }
@@ -132,8 +149,8 @@ domino.settings({
             }
         }
 
-        this.triggers.events['loadingProgress_updated'] = function(){
-            var percentLoaded = +D.get('loadingProgress')
+        this.triggers.events['loadingProgress_updated'] = function(provider, e){
+            var percentLoaded = +provider.get('loadingProgress')
             // Increase the progress bar length.
             if (percentLoaded < 100) {
                 var bar = container.find('div.progress .bar')
@@ -142,13 +159,13 @@ domino.settings({
             }
         }
 
-        this.triggers.events['loading_started'] = function(){
+        this.triggers.events['loading_started'] = function(provider, e){
             var bar = container.find('div.progress .bar')
             bar.removeClass("bar-success")
             bar.removeClass("bar-warning")
         }
 
-        this.triggers.events['loading_completed'] = function(){
+        this.triggers.events['loading_completed'] = function(provider, e){
             // Ensure that the progress bar displays 100% at the end.
             var bar = container.find('div.progress .bar')
             bar.addClass('bar-success')
@@ -161,32 +178,33 @@ domino.settings({
     D.addModule(function(){
         domino.module.call(this)
 
-        var container = $('#parsing')
+        var _self = this
+            ,container = $('#parsing')
 
         $(document).ready(function(e){
             container.html('<div style="height: 25px;"><div class="progress" style="display: none"><div class="bar" style="width: 0%;"></div></div></div>')
         })
         
-        this.triggers.events['loading_completed'] = function(){
+        this.triggers.events['loading_completed'] = function(provider, e){
             container.find('div.progress').show()
             container.find('div.progress').addClass('progress-striped')
             container.find('div.progress').addClass('active')
             container.find('div.progress div.bar').css('width', '100%')
             container.find('div.progress div.bar').text('Parsing...')
-            D.dispatchEvent('task_pending', {})
+            _self.dispatchEvent('task_pending', {})
         }
 
-        this.triggers.events['task_pending'] = function(){
+        this.triggers.events['task_pending'] = function(provider, e){
             container.find('div.progress').removeClass('progress-striped')
             container.find('div.progress').removeClass('active')
         }
 
-        this.triggers.events['task_success'] = function(){
+        this.triggers.events['task_success'] = function(provider, e){
             container.find('div.progress div.bar').addClass('bar-success')
             container.find('div.progress div.bar').text('Parsing successful')
         }
 
-        this.triggers.events['task_fail'] = function(){
+        this.triggers.events['task_fail'] = function(provider, e){
             container.find('div.progress div.bar').addClass('bar-danger')
             container.find('div.progress div.bar').text('Parsing failed')
         }
@@ -196,19 +214,21 @@ domino.settings({
     D.addModule(function(){
         domino.module.call(this)
 
-        this.triggers.events['task_pending'] = function(){
-            var fileLoader = D.get('inputCSVfileUploader')
+        var _self = this
+
+        this.triggers.events['task_pending'] = function(provider, e){
+            var fileLoader = provider.get('inputCSVfileUploader')
                 ,scopusnet_data = build_scopusDoiLinks(fileLoader.reader.result)
             if(scopusnet_data){
                 setTimeout(function(){
-                    D.dispatchEvent('update_dataTable', {
+                    _self.dispatchEvent('update_dataTable', {
                         'dataTable': scopusnet_data
                     })
                 }, 200)
 
-                D.dispatchEvent('task_success', {})
+                _self.dispatchEvent('task_success', {})
             } else {
-                D.dispatchEvent('task_fail', {})
+                _self.dispatchEvent('task_fail', {})
             }
         }
     })
@@ -217,8 +237,8 @@ domino.settings({
     D.addModule(function(){
         domino.module.call(this)
 
-        this.triggers.events['networkJson_updated'] = function(){
-            var networkJson = D.get('networkJson')
+        this.triggers.events['networkJson_updated'] = function(provider, e){
+            var networkJson = provider.get('networkJson')
             $('#alerts').append(
                 $('<div class="alert"/>')
                     .addClass('alert-success')
@@ -230,8 +250,8 @@ domino.settings({
             )
         }
 
-        this.triggers.events['mostConnectedNodesRemoved_updated'] = function(){
-            var overconnected = D.get('mostConnectedNodesRemoved')
+        this.triggers.events['mostConnectedNodesRemoved_updated'] = function(provider, e){
+            var overconnected = provider.get('mostConnectedNodesRemoved')
             $('#alerts').append(
                 $('<div class="alert"/>')
                     .addClass('alert-warning')
@@ -243,12 +263,12 @@ domino.settings({
             )
         }
 
-        this.triggers.events['poorlyConnectedNodesRemoved_updated'] = function(){
+        this.triggers.events['poorlyConnectedNodesRemoved_updated'] = function(provider, e){
             $('#alerts').append(
                 $('<div class="alert"/>')
                     .addClass('alert-warning')
                     .append(
-                        $('<span/>').text(D.get('poorlyConnectedNodesRemoved').length+' nodes were removed because they did not have enough neighbors')
+                        $('<span/>').text(provider.get('poorlyConnectedNodesRemoved').length+' nodes were removed because they did not have enough neighbors')
                     ).append(
                         $('<button type="button" class="close" data-dismiss="alert">&times;</button>')
                     )
@@ -260,15 +280,16 @@ domino.settings({
     D.addModule(function(){
         domino.module.call(this)
 
-        var container = $('#typeofnet')
+        var _self = this
+            ,container = $('#typeofnet')
 
         $(document).ready(function(e){
             container.html('<form><fieldset><label>Type of network</label><select class="input-block-level" disabled></select></fieldset></form>')
         })
         
-        this.triggers.events['dataTable_updated'] = function(){
+        this.triggers.events['dataTable_updated'] = function(provider, e){
             var networkOptions = []
-                ,data = D.get('dataTable')
+                ,data = provider.get('dataTable')
                 ,titleColumn
                 ,authorsColumn
                 ,authorKeywordsColumn
@@ -340,13 +361,13 @@ domino.settings({
                     }
                 })
 
-            D.dispatchEvent('update_networkOptions', {
+            _self.dispatchEvent('update_networkOptions', {
                 'networkOptions': networkOptions
             })
         }
 
-        this.triggers.events['networkOptions_updated'] = function(){
-            var networkOptions = D.get('networkOptions')
+        this.triggers.events['networkOptions_updated'] = function(provider, e){
+            var networkOptions = provider.get('networkOptions')
             container.find('select').html('').append(
                 networkOptions.map(function(option, i){
                     return $('<option/>').attr('value',i).text(option.label)
@@ -359,13 +380,14 @@ domino.settings({
     D.addModule(function(){
         domino.module.call(this)
 
-        var container = $('#build')
+        var _self = this
+            ,container = $('#build')
 
         $(document).ready(function(e){
             container.html('<div style="height: 35px"><button class="btn btn-block disabled"><i class="icon-cog"></i> Build network</button></div><div style="height: 25px;"><div class="progress"><div class="bar" style="width: 0%;"></div></div></div>')
         })
         
-        this.triggers.events['networkOptions_updated'] = function(){
+        this.triggers.events['networkOptions_updated'] = function(provider, e){
             var button = container.find('button')
                 ,progress = container.find('div.progress')
                 ,bar = progress.find('div.bar')
@@ -379,19 +401,19 @@ domino.settings({
                     progress.addClass('progress-striped').addClass('active')
                     bar.removeClass('bar-success')
                     bar.css('width', '100%').text('Building...')
-                    D.dispatchEvent('build_pending', {})
+                    _self.dispatchEvent('build_pending', {})
                 }
             })
         }
 
-        this.triggers.events['build_pending'] = function(){
-            var networkOptions = D.get('networkOptions')
-                ,data = D.get('dataTable')
+        this.triggers.events['build_pending'] = function(provider, e){
+            var networkOptions = provider.get('networkOptions')
+                ,data = provider.get('dataTable')
                 ,optionId = $('#typeofnet').find('select').val()
                 ,option = networkOptions[optionId]
 
             option.settings.jsonCallback = function(json){
-                D.dispatchEvent('build_success', {})
+                _self.dispatchEvent('build_success', {})
                 json.attributes.description = 'Network extracted from a Scopus file on ScienceScape ( http://tools.medialab.sciences-po.fr/sciencescape )'
                 json_graph_api.buildIndexes(json)
 
@@ -415,7 +437,7 @@ domino.settings({
                         }).length
                     })
                 
-                if(D.get('removeMostConnected')){
+                if(provider.get('removeMostConnected')){
                     var total = json.nodes.length
                     // Cleaning
                     json.nodes.forEach(function(node){
@@ -431,7 +453,7 @@ domino.settings({
                     })
                     json_graph_api.removeHidden(json)
                 }
-                D.dispatchEvent('update_mostConnectedNodesRemoved', {
+                _self.dispatchEvent('update_mostConnectedNodesRemoved', {
                     mostConnectedNodesRemoved: mostConnectedNodesRemoved
                 })
 
@@ -439,7 +461,7 @@ domino.settings({
                     ,recursive
                     ,poorlyConnectedNodesRemoved = []
                 
-                switch(''+D.get('minDegreeThreshold')){
+                switch(''+provider.get('minDegreeThreshold')){
                     case '0':
                         threshold = 0
                         recursive = false
@@ -483,11 +505,11 @@ domino.settings({
                     }
                 }
 
-                D.dispatchEvent('update_poorlyConnectedNodesRemoved', {
+                _self.dispatchEvent('update_poorlyConnectedNodesRemoved', {
                     poorlyConnectedNodesRemoved: poorlyConnectedNodesRemoved
                 })
 
-                D.dispatchEvent('update_networkJson', {
+                _self.dispatchEvent('update_networkJson', {
                     networkJson: json
                 })
 
@@ -499,7 +521,7 @@ domino.settings({
             
 
         }
-        this.triggers.events['build_success'] = function(){
+        this.triggers.events['build_success'] = function(provider, e){
             var button = container.find('button')
                 ,progress = container.find('div.progress')
                 ,bar = progress.find('div.bar')
@@ -510,20 +532,22 @@ domino.settings({
     })
 
     // Settings
-    D.addModule(function(){
+    D.addModule(function(d){
         domino.module.call(this)
 
+        var _self = this
+
         $(document).ready(function(e){
-            $('#removeMostConnected').attr('checked', D.get('removeMostConnected'))
+            $('#removeMostConnected').attr('checked', d.get('removeMostConnected'))
                 .click(function(){
-                    D.dispatchEvent('update_removeMostConnected', {removeMostConnected: $('#removeMostConnected').attr('checked')})
+                    _self.dispatchEvent('update_removeMostConnected', {removeMostConnected: $('#removeMostConnected').attr('checked')})
                 })
         })
 
         $(document).ready(function(e){
-            $('#minDegreeThreshold').val(D.get('minDegreeThreshold'))
+            $('#minDegreeThreshold').val(d.get('minDegreeThreshold'))
                 .change(function(){
-                    D.dispatchEvent('update_minDegreeThreshold', {minDegreeThreshold: $('#minDegreeThreshold').val()})
+                    _self.dispatchEvent('update_minDegreeThreshold', {minDegreeThreshold: $('#minDegreeThreshold').val()})
                 })
         })
     })
@@ -532,15 +556,16 @@ domino.settings({
     D.addModule(function(){
         domino.module.call(this)
 
-        var container = $('#sigmaContainer')
+        var _self = this
+            ,container = $('#sigmaContainer')
 
         $(document).ready(function(e){
             container.html('<div class="sigma-parent"><div class="sigma-expand" id="sigma-example"></div></div>')
         })
 
-        this.triggers.events['networkJson_updated'] = function(){
-            var json = D.get('networkJson')
-                ,networkOptions = D.get('networkOptions')
+        this.triggers.events['networkJson_updated'] = function(provider, e){
+            var json = provider.get('networkJson')
+                ,networkOptions = provider.get('networkOptions')
                 ,optionId = $('#typeofnet').find('select').val()
                 ,option = networkOptions[optionId]
                 ,colors = ["#637CB5", "#C34E7B", "#66903C", "#C55C32", "#B25AC9"]
@@ -551,10 +576,10 @@ domino.settings({
             })
 
             // Kill old sigma if needed
-            var oldSigmaInstance = D.get('sigmaInstance')
+            var oldSigmaInstance = provider.get('sigmaInstance')
             if(oldSigmaInstance !== undefined){
-                D.dispatchEvent('update_layoutRunning', {
-                    layoutRunning: !D.get('layoutRunning')
+                _self.dispatchEvent('update_layoutRunning', {
+                    layoutRunning: !provider.get('layoutRunning')
                 })
                 oldSigmaInstance.emptyGraph() // .kill() is not currently implemented
                 container.find('#sigma-example').html('')
@@ -582,12 +607,12 @@ domino.settings({
                 sigmaInstance.addEdge(i,link.sourceID,link.targetID)
             })
 
-            D.dispatchEvent('update_sigmaInstance', {
+            _self.dispatchEvent('update_sigmaInstance', {
                 sigmaInstance: sigmaInstance
             })
 
             // Start the ForceAtlas2 algorithm
-            D.dispatchEvent('update_layoutRunning', {
+            _self.dispatchEvent('update_layoutRunning', {
                 layoutRunning: true
             })
         }
@@ -597,9 +622,11 @@ domino.settings({
     D.addModule(function(){
         domino.module.call(this)
 
-        this.triggers.events['layoutRunning_updated'] = function(){
-            var sigmaInstance = D.get('sigmaInstance')
-                ,layoutRunning = D.get('layoutRunning')
+        var _self = this
+
+        this.triggers.events['layoutRunning_updated'] = function(provider, e){
+            var sigmaInstance = provider.get('sigmaInstance')
+                ,layoutRunning = provider.get('layoutRunning')
             if(layoutRunning){
                 sigmaInstance.startForceAtlas2()
             } else {
@@ -612,28 +639,42 @@ domino.settings({
     D.addModule(function(){
         domino.module.call(this)
 
-        var container = $('#sigmaButtons')
+        var _self = this
+            ,container = $('#sigmaButtons')
 
         $(document).ready(function(e){
             container.html('<div class="btn-group"><button class="btn btn-small" id="layoutSwitch">Stop Layout</button> <button class="btn btn-small" id="rescaleGraph"><i class="icon-resize-full"/> Rescale Graph</button></div>')
+            
+            container.find('#layoutSwitch').click(function(){
+                _self.dispatchEvent('ui_toggleLayoutRunning')
+            })
+            container.find('#rescaleGraph').click(function(){
+                _self.dispatchEvent('ui_rescaleGraph')
+            })
+
+            _self.dispatchEvent('sigmaInstance_updated')
+
+            /* // OLD
             updateLayoutSwitch()
             container.find('#layoutSwitch').click(function(){
-                D.dispatchEvent('update_layoutRunning', {
+                // TODO: DECLARE A HACK
+                _self.dispatchEvent('update_layoutRunning', {
                     layoutRunning: !D.get('layoutRunning')
                 })
             })
             updateRescaleGraph()
             container.find('#rescaleGraph').click(function(){
+                // TODO: DECLARE A HACK
                 var sigmaInstance = D.get('sigmaInstance')
                 if(sigmaInstance !== undefined)
                     sigmaInstance.position(0,0,1).draw()
-            })
+            })*/
         })
 
-        function updateLayoutSwitch(){
+        function updateLayoutSwitch(provider, e){
             var button = container.find('#layoutSwitch')
-                ,layoutRunning = D.get('layoutRunning')
-                ,sigmaInstance = D.get('sigmaInstance')
+                ,layoutRunning = provider.get('layoutRunning')
+                ,sigmaInstance = provider.get('sigmaInstance')
             if(sigmaInstance === undefined){
                 button.html('<i class="icon-play"/> Start layout')
                 button.addClass('disabled')
@@ -647,9 +688,9 @@ domino.settings({
             }
         }
 
-        function updateRescaleGraph(){
+        function updateRescaleGraph(provider, e){
             var button = container.find('#rescaleGraph')
-                ,sigmaInstance = D.get('sigmaInstance')
+                ,sigmaInstance = provider.get('sigmaInstance')
             if(sigmaInstance === undefined){
                 button.addClass('disabled')
             } else {
@@ -657,13 +698,13 @@ domino.settings({
             }
         }
 
-        this.triggers.events['sigmaInstance_updated'] = function(){
-            updateLayoutSwitch()
-            updateRescaleGraph()
+        this.triggers.events['sigmaInstance_updated'] = function(provider, e){
+            updateLayoutSwitch(provider, e)
+            updateRescaleGraph(provider, e)
         }
 
-        this.triggers.events['layoutRunning_updated'] = function(){
-            updateLayoutSwitch()
+        this.triggers.events['layoutRunning_updated'] = function(provider, e){
+            updateLayoutSwitch(provider, e)
         }
     })
     
@@ -671,23 +712,24 @@ domino.settings({
     D.addModule(function(){
         domino.module.call(this)
 
-        var container = $('#download')
+        var _self = this
+            ,container = $('#download')
 
         $(document).ready(function(e){
             container.html('<div style="height: 25px"><button class="btn btn-block disabled"><i class="icon-download"></i> Download network</button></div>')
         })
         
-        this.triggers.events['networkJson_updated'] = function(){
+        this.triggers.events['networkJson_updated'] = function(provider, e){
             var button = container.find('button')
 
             button.removeClass('disabled').click(function(){
                 if(!button.hasClass('disabled')){
                     button.addClass('disabled')
                     
-                    var json = D.get('networkJson')
+                    var json = provider.get('networkJson')
 
                     // Get layout properties from sigma
-                    var sigmaInstance = D.get('sigmaInstance')
+                    var sigmaInstance = provider.get('sigmaInstance')
                     sigmaInstance.iterNodes(function(sigmaNode){
                         var node = json.nodes_byId[sigmaNode.id]
                         if(node === undefined){
