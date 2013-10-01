@@ -294,8 +294,14 @@ domino.settings({
                 ,authorsColumn
                 ,authorKeywordsColumn
                 ,sourceTitleColumn
+                ,abbrSourceTitleColumn
                 ,doiCitedColumn
                 ,doiColumn
+                ,languageColumn
+                ,doctypeColumn
+                ,citedByColumn
+                ,correspondenceAddressColumn
+                ,affiliationsColumn
 
             
             data[0].forEach(function(d, i){
@@ -307,10 +313,23 @@ domino.settings({
                     authorKeywordsColumn = i
                 if(d == 'Source title')
                     sourceTitleColumn = i
+                if(d == 'Abbreviated Source Title')
+                    abbrSourceTitleColumn = i
                 if(d == 'Cited papers having a DOI')
                     doiCitedColumn = i
                 if(d == 'DOI')
                     doiColumn = i
+                if(d == 'Language of Original Document')
+                    languageColumn = i
+                if(d == 'Document Type')
+                    doctypeColumn = i
+                if(d == 'Cited by')
+                    citedByColumn = i
+                if(d == 'Correspondence Address')
+                    correspondenceAddressColumn = i
+                if(d == 'Affiliations')
+                    affiliationsColumn = i
+
             })
 
             if( authorsColumn !== undefined && authorKeywordsColumn !== undefined )
@@ -321,8 +340,18 @@ domino.settings({
                         mode: 'bipartite'
                         ,nodesColumnId1: authorsColumn
                         ,nodesSeparator1: ','
+                        ,nodesMetadataColumnIds1: [
+                                sourceTitleColumn
+                                ,abbrSourceTitleColumn
+                                ,languageColumn
+                                ,citedByColumn
+                                ,affiliationsColumn
+                            ].filter(function(d){return d!==undefined})
                         ,nodesColumnId2: authorKeywordsColumn
                         ,nodesSeparator2: ';'
+                        ,nodesMetadataColumnIds2: [
+                                citedByColumn
+                            ].filter(function(d){return d!==undefined})
                     }
                 })
 
@@ -333,8 +362,20 @@ domino.settings({
                     ,settings: {
                         mode: 'bipartite'
                         ,nodesColumnId1: authorsColumn
+                        ,nodesMetadataColumnIds1: [
+                                sourceTitleColumn
+                                ,abbrSourceTitleColumn
+                                ,languageColumn
+                                ,citedByColumn
+                                ,affiliationsColumn
+                            ].filter(function(d){return d!==undefined})
                         ,nodesSeparator1: ','
                         ,nodesColumnId2: sourceTitleColumn
+                        ,nodesMetadataColumnIds2: [
+                                abbrSourceTitleColumn
+                                ,languageColumn
+                                ,citedByColumn
+                            ].filter(function(d){return d!==undefined})
                     }
                 })
 
@@ -346,7 +387,15 @@ domino.settings({
                         mode: 'bipartite'
                         ,nodesColumnId1: authorKeywordsColumn
                         ,nodesSeparator1: ';'
+                        ,nodesMetadataColumnIds1: [
+                                citedByColumn
+                            ].filter(function(d){return d!==undefined})
                         ,nodesColumnId2: sourceTitleColumn
+                        ,nodesMetadataColumnIds2: [
+                                abbrSourceTitleColumn
+                                ,languageColumn
+                                ,citedByColumn
+                            ].filter(function(d){return d!==undefined})
                     }
                 })
 
@@ -358,6 +407,13 @@ domino.settings({
                         mode: 'normal'
                         ,nodesColumnId: authorsColumn
                         ,nodesSeparator: ','
+                        ,nodesMetadataColumnIds: [
+                                sourceTitleColumn
+                                ,abbrSourceTitleColumn
+                                ,languageColumn
+                                ,citedByColumn
+                                ,affiliationsColumn
+                            ].filter(function(d){return d!==undefined})
                         ,linksColumnId: titleColumn
                     }
                 })
@@ -370,7 +426,16 @@ domino.settings({
                     ,settings: {
                         mode: 'citation'
                         ,nodesColumnId: doiColumn
-                        ,nodesMetadataColumnIds: [titleColumn]
+                        ,nodesMetadataColumnIds: [
+                                titleColumn
+                                ,sourceTitleColumn
+                                ,abbrSourceTitleColumn
+                                ,languageColumn
+                                ,doctypeColumn
+                                ,citedByColumn
+                                ,correspondenceAddressColumn
+                                ,affiliationsColumn
+                            ].filter(function(d){return d!==undefined})
                         ,citationLinksColumnId: doiCitedColumn
                         ,citationLinksSeparator: ';'
                     }
@@ -384,6 +449,9 @@ domino.settings({
                         mode: 'normal'
                         ,nodesColumnId: authorKeywordsColumn
                         ,nodesSeparator: ';'
+                        ,nodesMetadataColumnIds: [
+                                citedByColumn
+                            ].filter(function(d){return d!==undefined})
                         ,linksColumnId: titleColumn
                     }
                 })
@@ -442,6 +510,37 @@ domino.settings({
             option.settings.jsonCallback = function(json){
                 _self.dispatchEvent('build_success', {})
                 json.attributes.description = 'Network extracted from a Scopus file on ScienceScape ( http://tools.medialab.sciences-po.fr/sciencescape )'
+                
+                // Sum up the "cited by"
+                var citedByIds = []
+                json.nodesAttributes.forEach(function(attr){
+                    if(attr.title == "Cited by"){
+                        attr.type = 'integer'
+                        citedByIds.push(attr.id)
+                    }
+                })
+                console.log('citedByIds', citedByIds)
+                if(citedByIds.length>0){
+                    json.nodes.forEach(function(n){
+                        n.attributes.forEach(function(attValue){
+                            if(citedByIds.indexOf(attValue.attr) >= 0  && attValue.val !== 'n/a'){
+                                console.log('cited by', attValue.val)
+                                var valuesList = (attValue.val || "").split('|')
+                                    ,total = 0
+                                valuesList.forEach(function(textValue){
+                                    var numValue = parseInt(textValue)
+                                    if(!isNaN(numValue)){
+                                        total += numValue
+                                    }
+                                })
+                                attValue.val = ''+total
+                            }
+                        })
+                    })
+                }
+                console.log("JSON", json)
+
+                // Build indexes
                 json_graph_api.buildIndexes(json)
 
                 // Put label for citation mode
@@ -456,6 +555,8 @@ domino.settings({
                             node.label = node.attributes_byId[titleAttributeId]
                         })
                 }
+
+
 
                 var mostConnectedNodesRemoved = []
                     ,totalPerType = option.types.map(function(type){
@@ -785,55 +886,6 @@ domino.settings({
 
 
     //// Data processing
-    function downloadScopusextract(){
-        var authorsColumn
-            ,authorKeywordsColumn
-        scopusnet_data[0].forEach(function(d, i){
-            if(d == 'Authors')
-                authorsColumn = i
-            if(d == 'Author Keywords')
-                authorKeywordsColumn = i
-        })
-        if(!$('#scopusextractlinks_download').hasClass('disabled')){
-            table2net.buildGraph(scopusnet_data, {
-                mode: 'bipartite'
-                ,nodesColumnId1: authorsColumn
-                ,nodesSeparator1: ','
-                ,nodesColumnId2: authorKeywordsColumn
-                ,nodesSeparator2: ';'
-            })
-
-            /*var headers = scopusnet_data.shift()
-
-            var content = []
-            
-            content.push(headers.map(function(header){
-                return '"' + header.replace(/"/gi, '""') + '"';
-            }).join(","));
-            
-            scopusnet_data.forEach(function(items){
-                content.push("\n" + items.map(function(item){
-                    var cell = item || '';
-                    return '"' + cell.replace(/"/gi, '""') + '"';
-                }).join(","));
-            });
-            
-            $("#progress_bar_message").addClass("success_message");
-            $("#validation").addClass("open");
-            setTimeout('$("#progress_bar").removeClass("loading");', 2000);
-            
-            // Save file
-            var blob = new Blob(content, {'type':'application/gexf+xml;charset=utf-8'})
-                ,filename = "Scopus network.gexf"
-            if(navigator.userAgent.match(/firefox/i))
-               alert('Note:\nFirefox does not handle file names, so you will have to rename this file to\n\"'+filename+'\""\nor some equivalent.')
-            saveAs(blob, filename)
-            
-            */
-
-        }
-    }
-
     function build_scopusDoiLinks(csv){
         return build_DoiLinks(csv, d3.csv.parseRows, 'References', 'Cited papers having a DOI')
     }

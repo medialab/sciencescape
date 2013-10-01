@@ -174,7 +174,7 @@
                                         if(type == tableHeader[ns.settings.nodesColumnId1]){
                                             var currentAttValue = ""
                                                 ,attValues = d.tableRows.map(function(rowId){
-                                                    return table[rowId][colId]
+                                                    return ns.table[rowId][colId]
                                                 }).sort(function(a, b) {
                                                     return a < b ? -1 : a > b ? 1 : 0
                                                 }).filter(function(attValue){
@@ -190,7 +190,7 @@
                                         if(type == tableHeader[ns.settings.nodesColumnId2]){
                                             var currentAttValue = ""
                                                 ,attValues = d.tableRows.map(function(rowId){
-                                                    return table[rowId][colId]
+                                                    return ns.table[rowId][colId]
                                                 }).sort(function(a, b) {
                                                     return a < b ? -1 : a > b ? 1 : 0
                                                 }).filter(function(attValue){
