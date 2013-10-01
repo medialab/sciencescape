@@ -363,9 +363,7 @@ domino.settings({
                         mode: 'bipartite'
                         ,nodesColumnId1: authorsColumn
                         ,nodesMetadataColumnIds1: [
-                                sourceTitleColumn
-                                ,abbrSourceTitleColumn
-                                ,languageColumn
+                                languageColumn
                                 ,citedByColumn
                                 ,affiliationsColumn
                             ].filter(function(d){return d!==undefined})
@@ -373,7 +371,6 @@ domino.settings({
                         ,nodesColumnId2: sourceTitleColumn
                         ,nodesMetadataColumnIds2: [
                                 abbrSourceTitleColumn
-                                ,languageColumn
                                 ,citedByColumn
                             ].filter(function(d){return d!==undefined})
                     }
@@ -517,29 +514,34 @@ domino.settings({
                     if(attr.title == "Cited by"){
                         attr.type = 'integer'
                         citedByIds.push(attr.id)
+                        if(citedByIds.length>1){
+                            attr.title = "Cited by ("+citedByIds.length+")"
+                        }
                     }
                 })
-                console.log('citedByIds', citedByIds)
+                
                 if(citedByIds.length>0){
                     json.nodes.forEach(function(n){
                         n.attributes.forEach(function(attValue){
-                            if(citedByIds.indexOf(attValue.attr) >= 0  && attValue.val !== 'n/a'){
-                                console.log('cited by', attValue.val)
-                                var valuesList = (attValue.val || "").split('|')
-                                    ,total = 0
-                                valuesList.forEach(function(textValue){
-                                    var numValue = parseInt(textValue)
-                                    if(!isNaN(numValue)){
-                                        total += numValue
-                                    }
-                                })
-                                attValue.val = ''+total
+                            if(citedByIds.indexOf(attValue.attr) >= 0){
+                                if(attValue.val == 'n/a'){
+                                    attValue.val = ''
+                                } else {
+                                    var valuesList = (attValue.val || "").split('|')
+                                        ,total = 0
+                                    valuesList.forEach(function(textValue){
+                                        var numValue = parseInt(textValue)
+                                        if(!isNaN(numValue)){
+                                            total += numValue
+                                        }
+                                    })
+                                    attValue.val = ''+total
+                                }
                             }
                         })
                     })
                 }
-                console.log("JSON", json)
-
+                
                 // Build indexes
                 json_graph_api.buildIndexes(json)
 
