@@ -50,16 +50,6 @@ domino.settings({
                 ,dispatch: 'minDegreeThreshold_updated'
                 ,triggers: 'update_minDegreeThreshold'
             },{
-                id:'removeMostConnected'
-                ,type: 'boolean'
-                ,value: true
-                ,dispatch: 'removeMostConnected_updated'
-                ,triggers: 'update_removeMostConnected'
-            },{
-                id: 'mostConnectedNodesRemoved'
-                ,dispatch: 'mostConnectedNodesRemoved_updated'
-                ,triggers: 'update_mostConnectedNodesRemoved'
-            },{
                 id: 'poorlyConnectedNodesRemoved'
                 ,dispatch: 'poorlyConnectedNodesRemoved_updated'
                 ,triggers: 'update_poorlyConnectedNodesRemoved'
@@ -244,19 +234,6 @@ domino.settings({
                     .addClass('alert-success')
                     .append(
                         $('<span/>').text('You obtained a filtered network of '+networkJson.nodes.length+' nodes and '+networkJson.edges.length+' links (removed nodes not counted)')
-                    ).append(
-                        $('<button type="button" class="close" data-dismiss="alert">&times;</button>')
-                    )
-            )
-        }
-
-        this.triggers.events['mostConnectedNodesRemoved_updated'] = function(provider, e){
-            var overconnected = provider.get('mostConnectedNodesRemoved')
-            $('#alerts').append(
-                $('<div class="alert"/>')
-                    .addClass('alert-warning')
-                    .append(
-                        $('<span/>').text('Overconnected nodes removed: '+((overconnected.length>0)?(overconnected.map(function(node){return node.label}).join(', ')):('none')))
                     ).append(
                         $('<button type="button" class="close" data-dismiss="alert">&times;</button>')
                     )
@@ -560,61 +537,51 @@ domino.settings({
 
 
 
-                var mostConnectedNodesRemoved = []
-                    ,totalPerType = option.types.map(function(type){
-                        return json.nodes.filter(function(node){
-                            return node.attributes_byId['attr_type'] == type
-                        }).length
-                    })
-                
-                if(provider.get('removeMostConnected')){
-                    var total = json.nodes.length
-                    // Cleaning
-                    json.nodes.forEach(function(node){
-                        if(
-                            node.inEdges.length + node.outEdges.length > 0.5 * total
-                            || totalPerType.some(function(typeTotal){
-                                node.inEdges.length + node.outEdges.length > 0.5 * typeTotal
-                            })
-                        ){
-                            mostConnectedNodesRemoved.push(node)
-                            node.hidden = true
-                        }
-                    })
-                    json_graph_api.removeHidden(json)
-                }
-                _self.dispatchEvent('update_mostConnectedNodesRemoved', {
-                    mostConnectedNodesRemoved: mostConnectedNodesRemoved
-                })
-
                 var threshold
                     ,recursive
+                    ,postCleaning
                     ,poorlyConnectedNodesRemoved = []
                 
                 switch(''+provider.get('minDegreeThreshold')){
                     case '0':
                         threshold = 0
                         recursive = false
+                        postCleaning = false
                         break
                     case '1':
                         threshold = 1
                         recursive = false
+                        postCleaning = false
                         break
                     case '2r':
                         threshold = 2
                         recursive = true
+                        postCleaning = false
                         break
                     case '3':
                         threshold = 3
                         recursive = false
+                        postCleaning = false
+                        break
+                    case '2dn':
+                        threshold = 2
+                        recursive = true
+                        postCleaning = true
+                        break
+                    case '3dn':
+                        threshold = 3
+                        recursive = false
+                        postCleaning = true
                         break
                     case '4':
                         threshold = 4
                         recursive = false
+                        postCleaning = false
                         break
                     case '5':
                         threshold = 5
                         recursive = false
+                        postCleaning = false
                         break
 
                 }
@@ -634,6 +601,17 @@ domino.settings({
                         json_graph_api.removeHidden(json)
                     }
                 }
+                // Post cleaning
+                if(postCleaning){
+                    json.nodes.forEach(function(node){
+                        if(node.inEdges.length + node.outEdges.length < 1){
+                            node.hidden = true
+                            poorlyConnectedNodesRemoved.push(node)
+                        }
+                    })
+                    json_graph_api.removeHidden(json)
+                }
+                
 
                 _self.dispatchEvent('update_poorlyConnectedNodesRemoved', {
                     poorlyConnectedNodesRemoved: poorlyConnectedNodesRemoved
@@ -666,13 +644,6 @@ domino.settings({
         domino.module.call(this)
 
         var _self = this
-
-        $(document).ready(function(e){
-            $('#removeMostConnected').attr('checked', d.get('removeMostConnected'))
-                .click(function(){
-                    _self.dispatchEvent('update_removeMostConnected', {removeMostConnected: $('#removeMostConnected').attr('checked')})
-                })
-        })
 
         $(document).ready(function(e){
             $('#minDegreeThreshold').val(d.get('minDegreeThreshold'))

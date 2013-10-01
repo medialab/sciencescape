@@ -103,16 +103,15 @@
                         <fieldset>
                             <label>Filtering settings</label>
                             <!-- <span class="help-block">Example block-level help text here.</span> -->
-                            <label class="checkbox">
-                                <input id="removeMostConnected" type="checkbox"> Remove overconnected nodes
-                            </label>
                             <select id="minDegreeThreshold" class="input-block-level">
                                 <option value="0">No filter</option>
                                 <option value="1">Remove disconnected nodes</option>
-                                <option value="2r">Get only nodes with 2+ links (recursive)</option>
-                                <option value="3">Remove nodes with less than 3 links</option>
+                                <!-- <option value="2r">Get only nodes with 2+ links (recursive)</option> -->
+                                <option value="2dn">Remove nodes &lt; 2 links, then disconnected nodes</option>
+                                <option value="3dn">Remove nodes &lt; 3 links, then disconnected nodes</option>
+                                <!-- <option value="3">Remove nodes with less than 3 links</option>
                                 <option value="4">Remove nodes with less than 4 links</option>
-                                <option value="5">Remove nodes with less than 5 links</option>
+                                <option value="5">Remove nodes with less than 5 links</option> -->
                             </select>
                         </fieldset>
                     </form>
