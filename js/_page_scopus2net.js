@@ -58,7 +58,7 @@ domino.settings({
         ],hacks:[
             {
                 // Events that need to be declared somewhere
-                triggers: ['loading_started', 'loading_completed', 'task_pending', 'task_success', 'task_fail', 'build_pending', 'build_success', 'build_fail']
+                triggers: ['sigmaInstance_updated', 'loading_started', 'loading_completed', 'task_pending', 'task_success', 'task_fail', 'build_pending', 'build_success', 'build_fail']
             },{
                 triggers: ['ui_toggleLayoutRunning']
                 ,method: function(e){
@@ -754,22 +754,6 @@ domino.settings({
             })
 
             _self.dispatchEvent('sigmaInstance_updated')
-
-            /* // OLD
-            updateLayoutSwitch()
-            container.find('#layoutSwitch').click(function(){
-                // TODO: DECLARE A HACK
-                _self.dispatchEvent('update_layoutRunning', {
-                    layoutRunning: !D.get('layoutRunning')
-                })
-            })
-            updateRescaleGraph()
-            container.find('#rescaleGraph').click(function(){
-                // TODO: DECLARE A HACK
-                var sigmaInstance = D.get('sigmaInstance')
-                if(sigmaInstance !== undefined)
-                    sigmaInstance.position(0,0,1).draw()
-            })*/
         })
 
         function updateLayoutSwitch(provider, e){
