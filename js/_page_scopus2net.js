@@ -1,6 +1,6 @@
 domino.settings({
     shortcutPrefix: "::" // Hack: preventing a bug related to a port in a URL for Ajax
-    ,verbose: true
+    ,verbose: false
 })
 
 ;(function($, domino, undefined){
@@ -58,7 +58,22 @@ domino.settings({
         ],hacks:[
             {
                 // Events that need to be declared somewhere
-                triggers: ['sigmaInstance_updated', 'loading_started', 'loading_completed', 'task_pending', 'task_success', 'task_fail', 'build_pending', 'build_success', 'build_fail']
+                triggers: [
+                        'sigmaInstance_updated'
+
+                        // Loading and parsing process
+                        ,'loading_started'
+                        ,'loading_completed'
+                        ,'parsing_primed'
+                        ,'parsing_processing'
+                        ,'parsing_success'
+                        ,'parsing_fail'
+                        ,'uploadAndParsing_success'
+
+                        ,'build_processing'
+                        ,'build_success'
+                        ,'build_fail'
+                    ]
             },{
                 triggers: ['ui_toggleLayoutRunning']
                 ,method: function(e){
@@ -156,49 +171,76 @@ domino.settings({
         }
 
         this.triggers.events['loading_completed'] = function(provider, e){
-            // Ensure that the progress bar displays 100% at the end.
-            var bar = container.find('div.progress .bar')
+            var progressElement = container.find('div.progress')
+                ,bar = progressElement.find('div.bar')
             bar.addClass('bar-success')
             bar.css('width', '100%')
             bar.text('Reading: 100%')
+
+            setTimeout(function(){
+                _self.dispatchEvent('parsing_primed')
+            }, 1000)
         }
+
+        this.triggers.events['uploadAndParsing_success'] = function(provider, e){
+            container.html('<span class="tex-success">File uploaded and parsed successfully</span>')
+        }
+
     })
     
-    // Parsing progress bar
+    // Parsing progress bar (applies to the loading progress bar)
     D.addModule(function(){
         domino.module.call(this)
 
         var _self = this
-            ,container = $('#parsing')
+            ,container = $('#scopusextract')    // We reuse the uploader progress bar
 
-        $(document).ready(function(e){
-            container.html('<div style="height: 25px;"><div class="progress" style="display: none"><div class="bar" style="width: 0%;"></div></div></div>')
-        })
-        
-        this.triggers.events['loading_completed'] = function(provider, e){
-            container.find('div.progress').show()
-            container.find('div.progress').addClass('progress-striped')
-            container.find('div.progress').addClass('active')
-            container.find('div.progress div.bar').css('width', '100%')
-            container.find('div.progress div.bar').text('Parsing...')
-            _self.dispatchEvent('task_pending', {})
+        this.triggers.events['parsing_primed'] = function(provider, e){
+            var progressElement = container.find('div.progress')
+                ,bar = progressElement.find('div.bar')
+            progressElement.addClass('progress-striped')
+            progressElement.addClass('active')
+            bar.removeClass('bar-success')
+            bar.css('width', '100%')
+            bar.text('Parsing...')
+            setTimeout(function(){
+                _self.dispatchEvent('parsing_processing')
+            }, 800)
         }
 
-        this.triggers.events['task_pending'] = function(provider, e){
-            container.find('div.progress').removeClass('progress-striped')
-            container.find('div.progress').removeClass('active')
+        this.triggers.events['parsing_success'] = function(provider, e){
+            var progressElement = container.find('div.progress')
+                ,bar = progressElement.find('div.bar')
+            progressElement.removeClass('progress-striped')
+            bar.addClass('bar-success')
+            bar.text('Parsing successful')
+            setTimeout(function(){
+                _self.dispatchEvent('uploadAndParsing_success')
+            }, 500)
         }
 
-        this.triggers.events['task_success'] = function(provider, e){
-            container.find('div.progress div.bar').addClass('bar-success')
-            container.find('div.progress div.bar').text('Parsing successful')
-        }
-
-        this.triggers.events['task_fail'] = function(provider, e){
-            container.find('div.progress div.bar').addClass('bar-danger')
-            container.find('div.progress div.bar').text('Parsing failed')
+        this.triggers.events['parsing_fail'] = function(provider, e){
+            var progressElement = container.find('div.progress')
+                ,bar = progressElement.find('div.bar')
+            progressElement.removeClass('progress-striped')
+            bar.addClass('bar-danger')
+            bar.text('Parsing failed')
         }
     })
+
+    // Show Settings
+    D.addModule(function(){
+        domino.module.call(this)
+
+        var _self = this
+            ,container = $('#settingsDiv')
+
+        this.triggers.events['uploadAndParsing_success'] = function(provider, e){
+            container.show()
+        }
+
+    })
+    
     
     // Processing: parsing
     D.addModule(function(){
@@ -206,7 +248,7 @@ domino.settings({
 
         var _self = this
 
-        this.triggers.events['task_pending'] = function(provider, e){
+        this.triggers.events['parsing_processing'] = function(provider, e){
             var fileLoader = provider.get('inputCSVfileUploader')
                 ,scopusnet_data = build_scopusDoiLinks(fileLoader.reader.result)
             if(scopusnet_data){
@@ -216,40 +258,43 @@ domino.settings({
                     })
                 }, 200)
 
-                _self.dispatchEvent('task_success', {})
+                _self.dispatchEvent('parsing_success', {})
             } else {
-                _self.dispatchEvent('task_fail', {})
+                _self.dispatchEvent('parsing_fail', {})
             }
         }
     })
 
-    // Alerts
+    // Report
     D.addModule(function(){
         domino.module.call(this)
 
+        var _self = this
+            ,container = $('#report')
+            ,reportContainer = container.find('.reportText')
+
         this.triggers.events['networkJson_updated'] = function(provider, e){
             var networkJson = provider.get('networkJson')
-            $('#alerts').append(
-                $('<div class="alert"/>')
-                    .addClass('alert-success')
-                    .append(
-                        $('<span/>').text('You obtained a filtered network of '+networkJson.nodes.length+' nodes and '+networkJson.edges.length+' links (removed nodes not counted)')
-                    ).append(
-                        $('<button type="button" class="close" data-dismiss="alert">&times;</button>')
-                    )
-            )
-        }
+                ,text = ''
+                ,networkOptions = provider.get('networkOptions')
+                ,optionId = $('#typeofnet').find('select').val()
+                ,option = networkOptions[optionId]
+                ,filteringOption = $('#minDegreeThreshold').find(':selected').text()
 
-        this.triggers.events['poorlyConnectedNodesRemoved_updated'] = function(provider, e){
-            $('#alerts').append(
-                $('<div class="alert"/>')
-                    .addClass('alert-warning')
-                    .append(
-                        $('<span/>').text(provider.get('poorlyConnectedNodesRemoved').length+' nodes were removed because they did not have enough neighbors')
-                    ).append(
-                        $('<button type="button" class="close" data-dismiss="alert">&times;</button>')
-                    )
-            )
+            text +=   'Network exported with Scopus2Net - Sciences Po médialab tools'
+            text += '\n-------------------------------------------------------------'
+            text += '\n'
+            text += '\n:: Exported network'
+            text += '\nType: '+option.label
+            text += '\nNodes: '+networkJson.nodes.length
+            text += '\nEdges: '+networkJson.edges.length
+            text += '\n(These figures take filtering into account)'
+            text += '\n'
+            text += '\n:: Filtering'
+            text += '\nMode: '+filteringOption
+            text += '\nNodes removed: '+provider.get('poorlyConnectedNodesRemoved').length
+
+            reportContainer.text(text)
         }
     })
     
@@ -453,7 +498,7 @@ domino.settings({
             ,container = $('#build')
 
         $(document).ready(function(e){
-            container.html('<div style="height: 35px"><button class="btn btn-block disabled"><i class="icon-cog"></i> Build network</button></div><div style="height: 25px;"><div class="progress"><div class="bar" style="width: 0%;"></div></div></div>')
+            container.html('<div style="height: 35px"><button class="btn btn-block disabled"><i class="icon-cog"></i> Build network</button></div><div style="height: 25px;"><div class="progress" style="display:none;"><div class="bar" style="width: 100%;"></div></div></div>')
         })
         
         this.triggers.events['networkOptions_updated'] = function(provider, e){
@@ -470,12 +515,14 @@ domino.settings({
                     progress.addClass('progress-striped').addClass('active')
                     bar.removeClass('bar-success')
                     bar.css('width', '100%').text('Building...')
-                    _self.dispatchEvent('build_pending', {})
+                    setTimeout(function(){
+                        _self.dispatchEvent('build_processing', {})
+                    }, 500)
                 }
             })
         }
 
-        this.triggers.events['build_pending'] = function(provider, e){
+        this.triggers.events['build_processing'] = function(provider, e){
             var networkOptions = provider.get('networkOptions')
                 ,data = provider.get('dataTable')
                 ,optionId = $('#typeofnet').find('select').val()
@@ -636,6 +683,9 @@ domino.settings({
             button.removeClass('disabled')
             progress.removeClass('progress-striped').removeClass('active')
             bar.addClass('bar-success').text('Build successful')
+            setTimeout(function(){
+                progress.hide()
+            }, 2000)
         }
     })
 
@@ -665,6 +715,8 @@ domino.settings({
         })
 
         this.triggers.events['networkJson_updated'] = function(provider, e){
+            $('#networkDiv').show()
+
             var json = provider.get('networkJson')
                 ,networkOptions = provider.get('networkOptions')
                 ,optionId = $('#typeofnet').find('select').val()
@@ -801,7 +853,7 @@ domino.settings({
             ,container = $('#download')
 
         $(document).ready(function(e){
-            container.html('<div style="height: 25px"><button class="btn btn-block disabled"><i class="icon-download"></i> Download network</button></div>')
+            container.html('<div><button class="btn btn-small btn-primary disabled"><i class="icon-download icon-white"></i> Download network</button></div>')
         })
         
         this.triggers.events['networkJson_updated'] = function(provider, e){

@@ -20,13 +20,27 @@
                 padding-bottom: 40px;
             }
 
-
+            #uploadDiv {
+                margin-bottom: 50px;
+            }
 
             /* sigma */
             .sigma-parent {
                 position: relative;
 
-                background-color: #f8f8f8;
+                /*background-color: #f8f8f8;*/
+                
+                /* from http://www.colorzilla.com/gradient-editor/ */
+                background: rgb(242,242,242); /* Old browsers */
+                background: -moz-linear-gradient(top,  rgba(242,242,242,1) 0%, rgba(244,244,244,1) 43%, rgba(252,252,252,1) 100%); /* FF3.6+ */
+                background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(242,242,242,1)), color-stop(43%,rgba(244,244,244,1)), color-stop(100%,rgba(252,252,252,1))); /* Chrome,Safari4+ */
+                background: -webkit-linear-gradient(top,  rgba(242,242,242,1) 0%,rgba(244,244,244,1) 43%,rgba(252,252,252,1) 100%); /* Chrome10+,Safari5.1+ */
+                background: -o-linear-gradient(top,  rgba(242,242,242,1) 0%,rgba(244,244,244,1) 43%,rgba(252,252,252,1) 100%); /* Opera 11.10+ */
+                background: -ms-linear-gradient(top,  rgba(242,242,242,1) 0%,rgba(244,244,244,1) 43%,rgba(252,252,252,1) 100%); /* IE10+ */
+                background: linear-gradient(to bottom,  rgba(242,242,242,1) 0%,rgba(244,244,244,1) 43%,rgba(252,252,252,1) 100%); /* W3C */
+                filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f2f2f2', endColorstr='#fcfcfc',GradientType=0 ); /* IE6-9 */
+
+
                 border: 1px solid #e3e3e3;
                 -webkit-border-radius: 4px;
                 -moz-border-radius: 4px;
@@ -35,8 +49,8 @@
                 -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
                 box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
 
-                margin-bottom: 20px;
-                height: 300px;
+                margin-bottom: 2px;
+                height: 380px;
             }
 
             .sigma-expand {
@@ -47,10 +61,26 @@
                 left: 0;
             }
 
-            #sigmaButtons{
-                padding-bottom: 4px;
-                padding-top: 4px;
+
+            /* Report */
+            #report {
+                padding: 3px;
+                background: #eee;
+                border-radius: 3px;
             }
+            #report div.inner {
+                border: 1px solid #ccc;
+                background: #FDFDFD;
+                padding-left: 16px;
+            }
+            .reportText {
+                font-family: monospace;
+                white-space: pre;
+                margin: 1em 0px;
+                font-family: Consolas, "Liberation Mono", Courier, monospace;
+                font-size: 12px;
+            }
+
         </style>
 
     </head>
@@ -85,51 +115,63 @@
 
             <div class="row">
                 <div class="span12">
-                    <h2>Scopus to network</h2>
+                    <h2>Scopus to Network</h2>
                     <p class="text-info">
                         Extract a network from a Scopus file and download it. You may visualize it with <a href="http://gephi.org">Gephi</a>.
                     </p>
+                    <hr/>
                 </div>
             </div>
             <div class="row">
                 <div class="span4">
-                    <h4>Upload your Scopus CSV file</h4>
-                    <div id="scopusextract"><span class="muted">file uploader</span></div>
-                    <div id="parsing"><span class="muted">parsing</span></div>
-                    <br/>
-                    <h4>Settings</h4>
-                    <div id="typeofnet"><span class="muted">type of network to extract</span></div>
-                    <form>
-                        <fieldset>
-                            <label>Filtering settings</label>
-                            <!-- <span class="help-block">Example block-level help text here.</span> -->
-                            <select id="minDegreeThreshold" class="input-block-level">
-                                <option value="0">No filter</option>
-                                <option value="1">Remove disconnected nodes</option>
-                                <!-- <option value="2r">Get only nodes with 2+ links (recursive)</option> -->
-                                <option value="2dn">Remove nodes &lt; 2 links, then disconnected nodes</option>
-                                <option value="3dn">Remove nodes &lt; 3 links, then disconnected nodes</option>
-                                <!-- <option value="3">Remove nodes with less than 3 links</option>
-                                <option value="4">Remove nodes with less than 4 links</option>
-                                <option value="5">Remove nodes with less than 5 links</option> -->
-                            </select>
-                        </fieldset>
-                    </form>
-                    <h4>Build network</h4>
-                    <div id="build"><span class="muted">build</span></div>
-                    <br/>
-                    <h4>Download</h4>
-                    <div id="download"><span class="muted">download</span></div><br/>
-                    <h4>Help</h4>
-                    <p>
-                        This script is useful if you want to extract a network from a Scopus file.
-                    </p>
+                    <div id="uploadDiv">
+                        <h4>Upload your Scopus CSV file</h4>
+                        <div id="scopusextract"><span class="muted">file uploader</span></div>
+                    </div>
+                    <div id="settingsDiv" style="display: none">
+                        <h4>Settings</h4>
+                        <div id="typeofnet"><span class="muted">type of network to extract</span></div>
+                        <form>
+                            <fieldset>
+                                <label>Filtering</label>
+                                <!-- <span class="help-block">Example block-level help text here.</span> -->
+                                <select id="minDegreeThreshold" class="input-block-level">
+                                    <option value="0">No filter</option>
+                                    <option value="1">Remove disconnected nodes</option>
+                                    <!-- <option value="2r">Get only nodes with 2+ links (recursive)</option> -->
+                                    <option value="2dn">Remove nodes &lt; 2 links, then disconnected nodes</option>
+                                    <option value="3dn">Remove nodes &lt; 3 links, then disconnected nodes</option>
+                                    <!-- <option value="3">Remove nodes with less than 3 links</option>
+                                    <option value="4">Remove nodes with less than 4 links</option>
+                                    <option value="5">Remove nodes with less than 5 links</option> -->
+                                </select>
+                            </fieldset>
+                        </form>
+                        <div id="build"><span class="muted">Build network button</span></div>
+                    </div>
                 </div>
                 <div class="span8">
-                    <h4>Network preview</h4>
-                    <div id="sigmaButtons"><span class="muted">sigma buttons</span></div>
-                    <div id="sigmaContainer"><span class="muted">network preview</span></div>
-                    <div id="alerts"></div>
+                    <div id="networkDiv" style="display:none;">
+                        <h4>Network preview</h4>
+                        <div id="sigmaContainer"><span class="muted">network preview</span></div>
+                        <div class="row">
+                            <div class="span5">
+                                <div id="sigmaButtons"><span class="muted">sigma buttons</span></div>
+                            </div>
+                            <div class="span3">
+                                <div id="download" class="pull-right"><span class="muted">download</span></div><br/>
+                            </div>
+                        </div>
+                        <br/><br/>
+                        <h4>Report</h4>
+                        <div id="report">
+                            <div class="inner">
+                                <div class="reportText"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    
                 </div>
             </div>
         </div>
