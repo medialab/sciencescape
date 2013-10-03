@@ -1,6 +1,6 @@
 domino.settings({
     shortcutPrefix: "::" // Hack: preventing a bug related to a port in a URL for Ajax
-    ,verbose: false
+    ,verbose: true
 })
 
 ;(function($, domino, undefined){
@@ -250,7 +250,7 @@ domino.settings({
 
         this.triggers.events['parsing_processing'] = function(provider, e){
             var fileLoader = provider.get('inputCSVfileUploader')
-                ,scopusnet_data = build_scopusDoiLinks(fileLoader.reader.result)
+                ,scopusnet_data = build_wokDoiLinks(fileLoader.reader.result)
             if(scopusnet_data){
                 setTimeout(function(){
                     _self.dispatchEvent('update_dataTable', {
@@ -281,8 +281,8 @@ domino.settings({
                 ,option = networkOptions[optionId]
                 ,filteringOption = $('#minDegreeThreshold').find(':selected').text()
 
-            text +=   'Network exported with Scopus2Net - Sciences Po médialab tools'
-            text += '\n-------------------------------------------------------------'
+            text +=   'Network exported with Wok2Net - Sciences Po médialab tools'
+            text += '\n----------------------------------------------------------'
             text += '\n'
             text += '\n:: Exported network'
             text += '\nType: '+option.label
@@ -315,62 +315,83 @@ domino.settings({
                 ,titleColumn
                 ,authorsColumn
                 ,authorKeywordsColumn
+                ,indexKeywordsColumn
                 ,sourceTitleColumn
-                ,abbrSourceTitleColumn
                 ,doiCitedColumn
                 ,doiColumn
                 ,languageColumn
                 ,doctypeColumn
                 ,citedByColumn
                 ,correspondenceAddressColumn
-                ,affiliationsColumn
 
             
             data[0].forEach(function(d, i){
-                if(d == 'Title')
+                if(d == 'TI' || d == 'TI (Document Title)')
                     titleColumn = i
-                if(d == 'Authors')
+                if(d == 'AU' || d == 'AU (Authors)')
                     authorsColumn = i
-                if(d == 'Author Keywords')
+                if(d == 'DE' || d == 'DE (Author Keywords)')
                     authorKeywordsColumn = i
-                if(d == 'Source title')
+                if(d == 'ID' || d == 'ID (Keywords Plus®)')
+                    indexKeywordsColumn = i
+                if(d == 'SO' || d == 'SO (Publication Name)')
                     sourceTitleColumn = i
-                if(d == 'Abbreviated Source Title')
-                    abbrSourceTitleColumn = i
-                if(d == 'Cited papers having a DOI')
+                if(d == 'DOI_CITED' || d == 'DOI_CITED (Cited papers having a DOI)')
                     doiCitedColumn = i
-                if(d == 'DOI')
+                if(d == 'DI' || d == 'DI (Digital Object Identifier (DOI))')
                     doiColumn = i
-                if(d == 'Language of Original Document')
+                if(d == 'LA' || d == 'LA (Language)')
                     languageColumn = i
-                if(d == 'Document Type')
+                if(d == 'DT' || d == 'DT (Document Type)')
                     doctypeColumn = i
-                if(d == 'Cited by')
+                if(d == 'TC' || d == 'TC (Times Cited)')
                     citedByColumn = i
-                if(d == 'Correspondence Address')
+                if(d == 'C1' || d == 'C1 (Author Address)')
                     correspondenceAddressColumn = i
-                if(d == 'Affiliations')
-                    affiliationsColumn = i
 
             })
+
+            var authorsSeparator = '|'
+                ,authorKeywordsSeparator = ';'
+                ,indexKeywordsSeparator = ';'
+                ,indexKeywordsSeparator = ';'
 
             if( authorsColumn !== undefined && authorKeywordsColumn !== undefined )
                 networkOptions.push({
                     label: 'Authors and Keywords (from authors)'
-                    ,types: ['Authors', 'Author Keywords']
+                    ,types: [data[0][authorsColumn], data[0][authorKeywordsColumn]]
                     ,settings: {
                         mode: 'bipartite'
                         ,nodesColumnId1: authorsColumn
-                        ,nodesSeparator1: ','
+                        ,nodesSeparator1: authorsSeparator
                         ,nodesMetadataColumnIds1: [
                                 sourceTitleColumn
-                                ,abbrSourceTitleColumn
                                 ,languageColumn
                                 ,citedByColumn
-                                ,affiliationsColumn
                             ].filter(function(d){return d!==undefined})
                         ,nodesColumnId2: authorKeywordsColumn
-                        ,nodesSeparator2: ';'
+                        ,nodesSeparator2: authorKeywordsSeparator
+                        ,nodesMetadataColumnIds2: [
+                                citedByColumn
+                            ].filter(function(d){return d!==undefined})
+                    }
+                })
+
+            if( authorsColumn !== undefined && indexKeywordsColumn !== undefined )
+                networkOptions.push({
+                    label: 'Authors and Keywords (from WoK index)'
+                    ,types: [data[0][authorsColumn], data[0][indexKeywordsColumn]]
+                    ,settings: {
+                        mode: 'bipartite'
+                        ,nodesColumnId1: authorsColumn
+                        ,nodesSeparator1: authorsSeparator
+                        ,nodesMetadataColumnIds1: [
+                                sourceTitleColumn
+                                ,languageColumn
+                                ,citedByColumn
+                            ].filter(function(d){return d!==undefined})
+                        ,nodesColumnId2: indexKeywordsColumn
+                        ,nodesSeparator2: indexKeywordsSeparator
                         ,nodesMetadataColumnIds2: [
                                 citedByColumn
                             ].filter(function(d){return d!==undefined})
@@ -380,19 +401,17 @@ domino.settings({
             if( authorsColumn !== undefined && sourceTitleColumn !== undefined )
                 networkOptions.push({
                     label: 'Authors and Source titles'
-                    ,types: ['Authors', 'Source title']
+                    ,types: [data[0][authorsColumn], data[0][sourceTitleColumn]]
                     ,settings: {
                         mode: 'bipartite'
                         ,nodesColumnId1: authorsColumn
                         ,nodesMetadataColumnIds1: [
                                 languageColumn
                                 ,citedByColumn
-                                ,affiliationsColumn
                             ].filter(function(d){return d!==undefined})
-                        ,nodesSeparator1: ','
+                        ,nodesSeparator1: authorsSeparator
                         ,nodesColumnId2: sourceTitleColumn
                         ,nodesMetadataColumnIds2: [
-                                abbrSourceTitleColumn
                                 ,citedByColumn
                             ].filter(function(d){return d!==undefined})
                     }
@@ -401,17 +420,35 @@ domino.settings({
             if( sourceTitleColumn !== undefined && authorKeywordsColumn !== undefined )
                 networkOptions.push({
                     label: 'Source titles and Keywords (from authors)'
-                    ,types: ['Author Keywords', 'Source title']
+                    ,types: [data[0][authorKeywordsColumn], data[0][sourceTitleColumn]]
                     ,settings: {
                         mode: 'bipartite'
                         ,nodesColumnId1: authorKeywordsColumn
-                        ,nodesSeparator1: ';'
+                        ,nodesSeparator1: authorKeywordsSeparator
                         ,nodesMetadataColumnIds1: [
                                 citedByColumn
                             ].filter(function(d){return d!==undefined})
                         ,nodesColumnId2: sourceTitleColumn
                         ,nodesMetadataColumnIds2: [
-                                abbrSourceTitleColumn
+                                ,languageColumn
+                                ,citedByColumn
+                            ].filter(function(d){return d!==undefined})
+                    }
+                })
+
+            if( sourceTitleColumn !== undefined && indexKeywordsColumn !== undefined )
+                networkOptions.push({
+                    label: 'Source titles and Keywords (from WoK index)'
+                    ,types: [data[0][indexKeywordsColumn], data[0][sourceTitleColumn]]
+                    ,settings: {
+                        mode: 'bipartite'
+                        ,nodesColumnId1: indexKeywordsColumn
+                        ,nodesSeparator1: indexKeywordsSeparator
+                        ,nodesMetadataColumnIds1: [
+                                citedByColumn
+                            ].filter(function(d){return d!==undefined})
+                        ,nodesColumnId2: sourceTitleColumn
+                        ,nodesMetadataColumnIds2: [
                                 ,languageColumn
                                 ,citedByColumn
                             ].filter(function(d){return d!==undefined})
@@ -421,17 +458,15 @@ domino.settings({
             if( authorsColumn !== undefined && titleColumn !== undefined )
                 networkOptions.push({
                     label: 'Authors linked by co-publication'
-                    ,types: ['Authors']
+                    ,types: [data[0][authorsColumn]]
                     ,settings: {
                         mode: 'normal'
                         ,nodesColumnId: authorsColumn
-                        ,nodesSeparator: ','
+                        ,nodesSeparator: authorsSeparator
                         ,nodesMetadataColumnIds: [
                                 sourceTitleColumn
-                                ,abbrSourceTitleColumn
                                 ,languageColumn
                                 ,citedByColumn
-                                ,affiliationsColumn
                             ].filter(function(d){return d!==undefined})
                         ,linksColumnId: titleColumn
                     }
@@ -440,7 +475,7 @@ domino.settings({
             if( doiColumn !== undefined && doiCitedColumn !== undefined && titleColumn !== undefined )
                 networkOptions.push({
                     label: 'Papers and citations (DOI)'
-                    ,types: ['DOI']
+                    ,types: ['DI (Digital Object Identifier (DOI))']
                     ,fetchTitles: true
                     ,settings: {
                         mode: 'citation'
@@ -448,12 +483,10 @@ domino.settings({
                         ,nodesMetadataColumnIds: [
                                 titleColumn
                                 ,sourceTitleColumn
-                                ,abbrSourceTitleColumn
                                 ,languageColumn
                                 ,doctypeColumn
                                 ,citedByColumn
                                 ,correspondenceAddressColumn
-                                ,affiliationsColumn
                             ].filter(function(d){return d!==undefined})
                         ,citationLinksColumnId: doiCitedColumn
                         ,citationLinksSeparator: ';'
@@ -463,11 +496,26 @@ domino.settings({
             if( authorKeywordsColumn !== undefined && titleColumn !== undefined )
                 networkOptions.push({
                     label: 'Keywords (from authors) connected by papers'
-                    ,types: ['Author Keywords']
+                    ,types: [data[0][authorKeywordsColumn]]
                     ,settings: {
                         mode: 'normal'
                         ,nodesColumnId: authorKeywordsColumn
-                        ,nodesSeparator: ';'
+                        ,nodesSeparator: authorKeywordsSeparator
+                        ,nodesMetadataColumnIds: [
+                                citedByColumn
+                            ].filter(function(d){return d!==undefined})
+                        ,linksColumnId: titleColumn
+                    }
+                })
+
+            if( indexKeywordsColumn !== undefined && titleColumn !== undefined )
+                networkOptions.push({
+                    label: 'Keywords (from WoK index) connected by papers'
+                    ,types: [data[0][indexKeywordsColumn]]
+                    ,settings: {
+                        mode: 'normal'
+                        ,nodesColumnId: indexKeywordsColumn
+                        ,nodesSeparator: indexKeywordsSeparator
                         ,nodesMetadataColumnIds: [
                                 citedByColumn
                             ].filter(function(d){return d!==undefined})
@@ -895,8 +943,8 @@ domino.settings({
 
 
     //// Data processing
-    function build_scopusDoiLinks(csv){
-        return build_DoiLinks(csv, d3.csv.parseRows, 'References', 'Cited papers having a DOI')
+    function build_wokDoiLinks(csv){
+        return build_DoiLinks(csv, d3.csv.parseRows, 'CR (Cited References)', 'DOI_CITED')
     }
 
     function build_DoiLinks(csv, rowsParser, column, doi_column_name){
@@ -913,7 +961,7 @@ domino.settings({
             if(CR_index>=0 && CR_index < row.length){
                 // Extract DOI reference of the cited paper if applicable
                 var doi_refs = d3.merge(row[CR_index]
-                    .split(";")
+                    .split("|")
                     .map(function(ref){
                         return ref.split(",").filter(function(d){
                             return d.match(/ +DOI[ :]+.*/gi)

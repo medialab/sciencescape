@@ -25,6 +25,7 @@
                                     <b class="caret"></b>
                                 </a>
                                 <ul class="dropdown-menu">
+                                    <li><a href="wok2net.php">Wok2Net</a></li>
                                     <li><a href="wok_papersvolume_evolution.php">Papers volume through time</a></li>
                                     <li><a href="wok_keywords_evolution.php">Keywords through time</a></li>
                                     <li><a href="wok_keywords_topPerYear.php">Keywords through time: Top per year</a></li>
