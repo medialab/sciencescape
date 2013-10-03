@@ -12,20 +12,21 @@
                             <!--<li class="active"><a href="#">Gaga</a></li>-->
                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                    Scopus
+                                    For Scopus
                                     <b class="caret"></b>
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a href="scopus2net.php">Scopus2Net</a></li>
+                                    <li><a href="scopus2net.php">Scopus to Network</a></li>
+                                    <li><a href="scopus_papersvolume_evolution.php">Papers volume through time</a></li>
                                 </ul>
                             </li>
                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                    Web of Knowledge
+                                    For Web of Knowledge
                                     <b class="caret"></b>
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a href="wok2net.php">Wok2Net</a></li>
+                                    <li><a href="wok2net.php">WoK to Network</a></li>
                                     <li><a href="wok_papersvolume_evolution.php">Papers volume through time</a></li>
                                     <li><a href="wok_keywords_evolution.php">Keywords through time</a></li>
                                     <li><a href="wok_keywords_topPerYear.php">Keywords through time: Top per year</a></li>
