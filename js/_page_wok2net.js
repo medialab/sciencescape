@@ -583,11 +583,11 @@ domino.settings({
                 // Sum up the "cited by"
                 var citedByIds = []
                 json.nodesAttributes.forEach(function(attr){
-                    if(attr.title == "Cited by"){
+                    if(attr.title == "TC (Times Cited)"){
                         attr.type = 'integer'
                         citedByIds.push(attr.id)
                         if(citedByIds.length>1){
-                            attr.title = "Cited by ("+citedByIds.length+")"
+                            attr.title = "TC (Times Cited) ("+citedByIds.length+")"
                         }
                     }
                 })
