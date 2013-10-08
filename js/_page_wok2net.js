@@ -358,7 +358,7 @@ domino.settings({
 
             if( authorsColumn !== undefined && authorKeywordsColumn !== undefined )
                 networkOptions.push({
-                    label: 'Authors and Keywords (from authors)'
+                    label: 'Authors and author Keywords, coappearing in the same papers'
                     ,types: [data[0][authorsColumn], data[0][authorKeywordsColumn]]
                     ,settings: {
                         mode: 'bipartite'
@@ -379,7 +379,7 @@ domino.settings({
 
             if( authorsColumn !== undefined && indexKeywordsColumn !== undefined )
                 networkOptions.push({
-                    label: 'Authors and Keywords (from WoK index)'
+                    label: 'Authors and index Keywords, coappearing in the same papers'
                     ,types: [data[0][authorsColumn], data[0][indexKeywordsColumn]]
                     ,settings: {
                         mode: 'bipartite'
@@ -400,7 +400,7 @@ domino.settings({
 
             if( authorsColumn !== undefined && sourceTitleColumn !== undefined )
                 networkOptions.push({
-                    label: 'Authors and Source titles'
+                    label: 'Authors and Source Titles, coappearing in the same papers'
                     ,types: [data[0][authorsColumn], data[0][sourceTitleColumn]]
                     ,settings: {
                         mode: 'bipartite'
@@ -419,7 +419,7 @@ domino.settings({
 
             if( sourceTitleColumn !== undefined && authorKeywordsColumn !== undefined )
                 networkOptions.push({
-                    label: 'Source titles and Keywords (from authors)'
+                    label: 'Source Titles and author Keywords, coappearing in the same papers'
                     ,types: [data[0][authorKeywordsColumn], data[0][sourceTitleColumn]]
                     ,settings: {
                         mode: 'bipartite'
@@ -438,7 +438,7 @@ domino.settings({
 
             if( sourceTitleColumn !== undefined && indexKeywordsColumn !== undefined )
                 networkOptions.push({
-                    label: 'Source titles and Keywords (from WoK index)'
+                    label: 'Source Titles and index Keywords, coappearing in the same papers'
                     ,types: [data[0][indexKeywordsColumn], data[0][sourceTitleColumn]]
                     ,settings: {
                         mode: 'bipartite'
@@ -474,7 +474,7 @@ domino.settings({
 
             if( doiColumn !== undefined && doiCitedColumn !== undefined && titleColumn !== undefined )
                 networkOptions.push({
-                    label: 'Papers and citations (DOI)'
+                    label: 'Papers linked by Citations (when they have a DOI)'
                     ,types: ['DI (Digital Object Identifier (DOI))']
                     ,fetchTitles: true
                     ,settings: {
@@ -495,7 +495,7 @@ domino.settings({
 
             if( authorKeywordsColumn !== undefined && titleColumn !== undefined )
                 networkOptions.push({
-                    label: 'Keywords (from authors) connected by papers'
+                    label: 'author Keywords coappearing in the same papers'
                     ,types: [data[0][authorKeywordsColumn]]
                     ,settings: {
                         mode: 'normal'
@@ -510,7 +510,7 @@ domino.settings({
 
             if( indexKeywordsColumn !== undefined && titleColumn !== undefined )
                 networkOptions.push({
-                    label: 'Keywords (from WoK index) connected by papers'
+                    label: 'index Keywords coappearing in the same papers'
                     ,types: [data[0][indexKeywordsColumn]]
                     ,settings: {
                         mode: 'normal'

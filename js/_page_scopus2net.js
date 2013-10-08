@@ -356,7 +356,7 @@ domino.settings({
 
             if( authorsColumn !== undefined && authorKeywordsColumn !== undefined )
                 networkOptions.push({
-                    label: 'Authors and Keywords (from authors)'
+                    label: 'Authors and author Keywords, coappearing in the same papers'
                     ,types: ['Authors', 'Author Keywords']
                     ,settings: {
                         mode: 'bipartite'
@@ -379,7 +379,7 @@ domino.settings({
 
             if( authorsColumn !== undefined && sourceTitleColumn !== undefined )
                 networkOptions.push({
-                    label: 'Authors and Source titles'
+                    label: 'Authors and Source Titles, coappearing in the same papers'
                     ,types: ['Authors', 'Source title']
                     ,settings: {
                         mode: 'bipartite'
@@ -400,7 +400,7 @@ domino.settings({
 
             if( sourceTitleColumn !== undefined && authorKeywordsColumn !== undefined )
                 networkOptions.push({
-                    label: 'Source titles and Keywords (from authors)'
+                    label: 'Source Titles and author Keywords, coappearing in the same papers'
                     ,types: ['Author Keywords', 'Source title']
                     ,settings: {
                         mode: 'bipartite'
@@ -439,7 +439,7 @@ domino.settings({
 
             if( doiColumn !== undefined && doiCitedColumn !== undefined && titleColumn !== undefined )
                 networkOptions.push({
-                    label: 'Papers and citations (DOI)'
+                    label: 'Papers linked by Citations (when they have a DOI)'
                     ,types: ['DOI']
                     ,fetchTitles: true
                     ,settings: {
@@ -462,7 +462,7 @@ domino.settings({
 
             if( authorKeywordsColumn !== undefined && titleColumn !== undefined )
                 networkOptions.push({
-                    label: 'Keywords (from authors) connected by papers'
+                    label: 'author Keywords coappearing in the same papers'
                     ,types: ['Author Keywords']
                     ,settings: {
                         mode: 'normal'
