@@ -230,7 +230,7 @@ domino.settings({
 
         this.triggers.events['parsing_pending'] = function(provider){
             var fileLoader = provider.get('inputFileUploader')
-                ,data = build_DoiLinks(fileLoader.reader.result)
+                ,data = parse_CSV_rows(fileLoader.reader.result)
             if(data){
                 setTimeout(function(){
                     _self.dispatchEvent('update_dataTable', {
@@ -255,9 +255,10 @@ domino.settings({
             var table = provider.get('dataTable')
                 ,kwColId = -1
             table[0].forEach(function(txt, i){
-                if(txt == 'DE (Author Keywords)' || txt == 'DE')
+                if(txt == 'Author Keywords')
                     kwColId = i
             })
+            console.log('kwColId', kwColId)
             if(kwColId>=0){
                 table2net.table = table.slice(0)
                 table2net.table.shift()
@@ -375,7 +376,7 @@ domino.settings({
             ,yearColId = -1
             ,normalize = provider.get('normalize')
         table[0].forEach(function(txt, i){
-            if(txt == 'PY (Year Published)' || txt == 'PY')
+            if(txt == 'Year')
                 yearColId = i
         })
         kwData.sort(function(a,b){return b.tableRows.length-a.tableRows.length})
@@ -413,12 +414,18 @@ domino.settings({
                     data[y] = 0
                 }
                 kw.tableRows.forEach(function(tableRow){
-                    var year = table[tableRow][yearColId]
-                    if(data[year] === undefined){
-                        data[year] = 1
-                        console.log('unknown year', kw)
+                    var year = +table[tableRow][yearColId]
+                    if(isNaN(year)){
+                        console.log('Year is not a number for '+kw.node+' on row '+tableRow, [table[0], table[tableRow]])
+                    } else if (year < yearMin || year > yearMax) {
+                        console.log('Year is out of range ('+year+') for '+kw.node+' on row '+tableRow, [table[0], table[tableRow]])
                     } else {
-                        data[year]++
+                        if(data[year] === undefined){
+                            data[year] = 1
+                            console.log('unknown year', kw)
+                        } else {
+                            data[year]++
+                        }
                     }
                 })
 
@@ -436,6 +443,7 @@ domino.settings({
                             flatData.push([Date.UTC(year, 0), data[year]])
                     }
                 }
+                //console.log('flatData for '+kw.node, flatData)
 
                 // Prepare DOM
                 var row = $('<div class="row"/>')
@@ -489,120 +497,10 @@ domino.settings({
         })
         return keywordsByYear
     }
-    function build_DoiLinks(wos){
-        if ( wos.substring(0,2) != "FN" ){
-            return build_DoiLinks(wos, d3.csv.parseRows, 'CR', 'DOI_CITED')
-        } else {
-            return convert_wos_to_CSV(wos, true)
-        }
-    }
-
-    function build_DoiLinks(csv, rowsParser, column, doi_column_name){
-        var lines = rowsParser(csv)
-        var headline = lines.shift()
-        var CR_index = -1;  // Index containing the references
-        headline.forEach(function(h,i){
-            if(h == column){
-                CR_index = i
-            }
-        })
-        var csvRows = [headline]
-        lines.forEach(function(row){
-            if(CR_index>=0 && CR_index < row.length){
-                // Extract DOI reference of the cited paper if applicable
-                var doi_refs = d3.merge(row[CR_index]
-                    .split(";")
-                    .map(function(ref){
-                        return ref.split(",").filter(function(d){
-                            return d.match(/ +DOI[ :]+.*/gi)
-                        })
-                    })).map(function(doi){
-                        //return doi.trim().split(/[ :]/)[1] || ""
-                        var r = / +DOI[ :]+(.*)/gi
-                        return r.exec(doi)[1] || ''
-                    }).filter(function(doi){
-                        return doi.trim() != ""
-                    })
-                row.unshift(doi_refs.join("; "))
-            } else {
-                row.unshift("")
-            }
-            csvRows.push(row)
-        })
-        
-        headline.unshift(doi_column_name)
-        return csvRows
-    }
-
-    function convert_wos_to_CSV(wos, extractDOI){
-        var data = [];
-        var currentFieldTag = "";
-        var currentItem = {};
-        var lines = wos.split("\n");
-        if(lines.shift().substring(0,2) == "FN"){
-            lines.forEach(function(line){
-                var candidateFieldTag = line.substring(0,2);
-                if(candidateFieldTag != "  "){
-                    currentFieldTag = candidateFieldTag;
-                }
-                
-                if(currentFieldTag == "ER"){
-                    data.push(currentItem);
-                    currentItem = new Object();
-                } else {
-                    if(currentItem[currentFieldTag]){
-                        if(currentFieldTag=="AU"
-                            || currentFieldTag=="AF"
-                            || currentFieldTag=="C1"
-                            || currentFieldTag=="CR"
-                        ){
-                            currentItem[currentFieldTag] += "|" + line.substring(3);
-                        } else {
-                            currentItem[currentFieldTag] += " " + line.substring(3);
-                        }
-                        
-                        // Extract citations
-                        if(currentFieldTag=="CR" && extractDOI){
-                            // Extract DOI reference of the cited paper if applicable
-                            var doi_refs = line.substring(3).match(/DOI.*/gi);
-                            if(doi_refs && doi_refs.length>0){
-                                if(currentItem["DOI_CITED"]){
-                                    currentItem["DOI_CITED"] += "|" + doi_refs[0].split(" ")[1];
-                                } else {
-                                    currentItem["DOI_CITED"] = doi_refs[0].split(" ")[1];
-                                }
-                            }
-                        }
-                    } else {
-                        currentItem[currentFieldTag] = line.substring(3);
-                    }
-                }
-            });
-        } else {
-            alert("There is a problem with the WOS file\n(No FileName fieldtag)");
-        }
-
-        // At this point, data is a list of objects.
-        // Convert it to CSV
-
-        var headers = []
-        data.forEach(function(item){
-            for(i in item){
-                if(!headers.some(function(x){return x==i;})){
-                    headers.push(i)
-                }
-            }
-        });
-
-        var csvRows = []
-        csvRows.push(headers)
-
-        data.forEach(function(item){
-            csvRows.push(headers.map(function(header){
-                return item[header] || '';
-            }))
-        })
-        return csvRows
+    
+    function parse_CSV_rows(csv){
+        var rowsParser = d3.csv.parseRows
+        return rowsParser(csv)
     }
 
     // Utilities
