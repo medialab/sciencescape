@@ -20,11 +20,28 @@
                 padding-bottom: 40px;
             }
 
-            .so{
-                cursor:default;
+            svg{
+                margin-bottom: 4px;
             }
-            .so.highlight{
-                background-color: #FFFF99;
+
+            .grid line {
+              stroke: #fff;
+            }
+
+            .grid line.minor {
+              stroke-width: .5px;
+            }
+
+            .grid text {
+              display: none;
+            }
+
+            path.domain {
+              display: none;
+            }
+
+            #timelines{
+                margin-top: 30px;
             }
 
         </style>
@@ -61,9 +78,11 @@
 
             <div class="row">
                 <div class="span12">
-                    <h2>Top journals per year</h2>
+                    <h2>Journals Evolution</h2>
                     <p class="text-info">
-                        
+                        Upload a Scopus file containing journals ("Source title") and published year,
+                        and visualize the evolution of most important journals (&gt;10 papers).
+                        The normalization divides by the total count of papers each year.
                     </p>
                 </div>
             </div>
@@ -78,7 +97,23 @@
                     <div id="extraction"><span class="muted">extraction</span></div>
                 </div>
             </div>
-            <div id="content"/>
+            <div class="row">
+                <div class="span4">
+                    <label class="checkbox">
+                        <input id="normalize" type="checkbox"> Normalize
+                    </label>
+                </div>
+                <div class="span4">
+                </div>
+                <div class="span4">
+                    <div id="download"><span class="muted">download</span></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="span12">
+                    <div id="timelines"></div>
+                </div>
+            </div>
         </div>
 
         <?php include("includes/footer.php"); ?>
@@ -86,7 +121,7 @@
         <?php include("includes/codebottom.php"); ?>
 
         <script src="js/libs/horizon.js"></script>
-        <script src="js/_page_scopus_journals_topPerYear.js"></script>
+        <script src="js/_page_scopus_journals_evolution.js"></script>
 
         <script>
             // document.getElementById('scopusextract_input').addEventListener('change', fileLoader.handleFileSelect, false);
