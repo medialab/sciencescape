@@ -19,9 +19,9 @@
                                     <li><a href="scopus2net.php">Scopus to Network</a></li>
                                     <li><a href="scopus_papersvolume_evolution.php">Papers volume through time</a></li>
                                     <li><a href="scopus_keywords_evolution.php">Keywords through time</a></li>
-                                    <!-- <li><a href="scopus_keywords_topPerYear.php">Keywords through time: Top per year</a></li>
-                                    <li><a href="scopus_journals_evolution.php">Journals through time</a></li>
-                                    <li><a href="scopus_journals_topPerYear.php">Journals through time: Top per year</a></li> -->
+                                    <li><a href="scopus_keywords_topPerYear.php">Keywords through time: Top per year</a></li>
+                                    <!-- <li><a href="scopus_journals_evolution.php">Journals through time</a></li> -->
+                                    <!-- <li><a href="scopus_journals_topPerYear.php">Journals through time: Top per year</a></li> -->
                                 </ul>
                             </li>
                             <li class="dropdown">

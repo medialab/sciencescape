@@ -21,12 +21,6 @@ domino.settings({
                 ,triggers: 'update_loadingProgress'
                 ,value: 0
             },{
-                id:'normalize'
-                ,dispatch: 'normalize_updated'
-                ,triggers: 'update_normalize'
-                ,type: 'boolean'
-                ,value: false
-            },{
                 id:'dataTable'
                 ,dispatch: 'dataTable_updated'
                 ,triggers: 'update_dataTable'
@@ -34,10 +28,6 @@ domino.settings({
                 id:'keywordData'
                 ,dispatch: 'keywordData_updated'
                 ,triggers: 'update_keywordData'
-            },{
-                id:'csvData'
-                ,dispatch: 'csvData_updated'
-                ,triggers: 'update_csvData'
             }
         ],services: [
         ],hacks:[
@@ -67,37 +57,11 @@ domino.settings({
                 ,method: function(){
                     this.dispatchEvent('extraction_init')
                 }
-            },{
-                // Redraw when 'normalize' is enabled or disabled
-                triggers:['normalize_updated']
-                ,method: function(){
-                    if(this.get('keywordData') !== undefined){
-                        var keywordsByYear = buildAndShow(this)
-                        this.dispatchEvent('update_csvData', {
-                            csvData: keywordsByYear
-                        })
-                    }
-                }
             }
         ]
     })
 
     //// Modules
-
-    // Log stuff in the console
-    D.addModule(function(){
-        domino.module.call(this)
-
-        var _self = this
-
-        this.triggers.events['loadingProgress_updated'] = function(provider, e) {
-            // console.log('Loading progress', provider.get('loadingProgress'))
-        }
-
-        this.triggers.events['networkJson_updated'] = function(provider, e) {
-            console.log('Network: ', provider.get('networkJson'))
-        }
-    })
 
     // File loader
     D.addModule(function(){
@@ -280,138 +244,34 @@ domino.settings({
         }
     })
 
-    // Draw the timelines
+    // Display the result
     D.addModule(function(){
         domino.module.call(this)
 
         var _self = this
 
         this.triggers.events['keywordData_updated'] = function(provider, e){
-            var keywordsByYear = buildAndShow(provider)
-            _self.dispatchEvent('update_csvData', {
-                csvData: keywordsByYear
+            var kwData = provider.get('keywordData')
+                ,table = provider.get('dataTable')
+                ,yearColId = -1
+            table[0].forEach(function(txt, i){
+                if(txt == 'Year')
+                    yearColId = i
             })
-        }
-    })
-
-    // Normalize checkbox
-    D.addModule(function(){
-        domino.module.call(this)
-
-        var _self = this
-
-        $('#normalize').click(function(){
-            _self.dispatchEvent('update_normalize', {
-                normalize: $('#normalize').is(':checked')
-            })
-        })
-    })
-    
-    // Download button     
-    D.addModule(function(){
-        domino.module.call(this)
-
-        var _self = this
-            ,container = $('#download')
-
-        $(document).ready(function(e){
-            container.html('<div style="height: 25px"><button class="btn btn-block disabled"><i class="icon-download"></i> Download CSV</button></div>')
-        })
-        
-        this.triggers.events['csvData_updated'] = function(provider, e){
-            var button = container.find('button')
-
-            button.removeClass('disabled').click(function(){
-                if(!button.hasClass('disabled')){
-                    button.addClass('disabled')
-                    
-                    var data = provider.get('csvData')
-                        ,csv = []
-
-                    var years = []
-                    // Get the list of items
-                    for(item in data){
-                        for(year in data[item]){
-                            years.push(year)
-                        }
-                    }
-                    years = extractCases(years)
-
-                    var csvElement = function(txt){
-                        txt = ''+txt //cast
-                        return '"'+txt.replace(/"/gi, '""')+'"'
-                    }
-
-                    var content = []
-                    // headline
-                    content.push(['"items"'].concat(years.map(csvElement).join(',')))
-                    
-                    // content
-                    for(item in data){
-                        row = [item]
-                        years.forEach(function(year){
-                            row.push(data[item][year] || 0)
-                        })
-                        content.push('\n'+row.map(csvElement).join(','))
-                    }
-
-                    // Download
-                    var blob = new Blob(content, {'type':'text/csv;charset=utf-8'})
-                        ,filename = "Table.csv"
-                    if(navigator.userAgent.match(/firefox/i))
-                       alert('Note:\nFirefox does not handle file names, so you will have to rename this file to\n\"'+filename+'\""\nor some equivalent.')
-                    saveAs(blob, filename)
+            kwData.sort(function(a,b){return b.tableRows.length-a.tableRows.length})
+            var yearMin = 10000
+                ,yearMax = 0
+            table.forEach(function(tableRow){
+                var year = tableRow[yearColId]
+                if(year && year>0 && year < 10000){
+                    yearMin = Math.min(yearMin, year)
+                    yearMax= Math.max(yearMax, year)
                 }
             })
-        }
-    })
-    
-
-    //// Data processing
-    function buildAndShow(provider){
-        $('#timelines').html('')
-
-        var kwData = provider.get('keywordData')
-            ,table = provider.get('dataTable')
-            ,yearColId = -1
-            ,normalize = provider.get('normalize')
-        table[0].forEach(function(txt, i){
-            if(txt == 'Year')
-                yearColId = i
-        })
-        kwData.sort(function(a,b){return b.tableRows.length-a.tableRows.length})
-        var yearMin = 10000
-            ,yearMax = 0
-        table.forEach(function(tableRow){
-            var year = tableRow[yearColId]
-            if(year && year>0 && year < 10000){
-                yearMin = Math.min(yearMin, year)
-                yearMax= Math.max(yearMax, year)
-            }
-        })
-
-        var totalPerYear = {}
-        if(normalize){
-            for(var y=yearMin; y<=yearMax; y++){
-                totalPerYear[y] = 0
-            }
-            for(var ii=1; ii<table.length; ii++){
-                var y = table[ii][yearColId]
-                if(totalPerYear[y] !== undefined)
-                    totalPerYear[y]++
-                else
-                    console.log('undefined year',y)
-            }
-        }
-
-        var keywordsByYear = {}
-
-        kwData.forEach(function(kw, i){
-            if(kw.tableRows.length>=10){
-                // Data
-                var data = {}
+            kwData.forEach(function(kw, i){
+                kw.yearly = {}
                 for(var y=yearMin; y<=yearMax; y++){
-                    data[y] = 0
+                    kw.yearly[y] = 0
                 }
                 kw.tableRows.forEach(function(tableRow){
                     var year = +table[tableRow][yearColId]
@@ -420,84 +280,61 @@ domino.settings({
                     } else if (year < yearMin || year > yearMax) {
                         console.log('Year is out of range ('+year+') for '+kw.node+' on row '+tableRow, [table[0], table[tableRow]])
                     } else {
-                        if(data[year] === undefined){
-                            data[year] = 1
+                        if(kw.yearly[year] === undefined){
+                            kw.yearly[year] = 1
                             console.log('unknown year', kw)
                         } else {
-                            data[year]++
+                            kw.yearly[year]++
                         }
                     }
                 })
+            })
 
-                keywordsByYear[kw.node] = data
+            var data = []
+            for(var y=yearMin; y<=yearMax; y++){
+                data.push({
+                    year:y
+                    ,keywords:kwData.map(function(kw){
+                        return {keyword:kw.node, count:kw.yearly[y]}
+                    }).sort(function(a,b){return b.count-a.count})
+                })
+            }
 
-                var flatData = []
-                if(normalize){
-                    for(year in data){
-                        if(Date.UTC(year, 0))
-                            flatData.push([Date.UTC(year, 0), Math.round(1000 * data[year]/totalPerYear[year]) / 1000])
-                    }
-                } else {
-                    for(year in data){
-                        if(Date.UTC(year, 0))
-                            flatData.push([Date.UTC(year, 0), data[year]])
-                    }
+            var currentRow
+            data.forEach(function(yearData, i){
+                if(i%4 == 0){
+                    currentRow = $('<div class="row"/>')
+                    $('#content').append(currentRow)
                 }
-                //console.log('flatData for '+kw.node, flatData)
-
-                // Prepare DOM
-                var row = $('<div class="row"/>')
-                    ,timeline = $('<div class="span9"/>').append(
-                        $('<div/>').attr('id', '_'+$.md5(kw.node))
-                    )
-                row.append(timeline)
-                row.append($('<div class="span3"/>').append(
-                        $('<strong/>').text(kw.node)
+                currentRow.append(
+                    $('<div class="span3"/>').append(
+                        $('<h3/>').text(yearData.year)
                     ).append(
-                        $('<span class="text-info"/>').text(' ('+kw.tableRows.length+')')
+                        $('<ul/>').append(
+                            yearData.keywords.filter(function(d,j){
+                                return j<10
+                            }).map(function(kw){
+                                return $('<li/>')
+                                    .append(
+                                        $('<strong/>')
+                                            .text(kw.keyword)
+                                            .addClass('kw')
+                                            .addClass('kw_'+$.md5(kw.keyword))
+                                            .mouseenter(function(){
+                                                $('.kw.kw_'+$.md5(kw.keyword)).addClass('highlight')
+                                            }).mouseleave(function(){
+                                                $('.kw.kw_'+$.md5(kw.keyword)).removeClass('highlight')
+                                            })
+                                    ).append($('<span class="text-info"/>').text(' '+kw.count+' paper'+( (kw.count>1)?('s'):('') )))
+                            })
+                        )
                     )
                 )
-                $('#timelines').append(row)
-                
-                // Mouseover
-                var width = timeline.width()
-                timeline.mousemove(function(e){
-                    var x = e.offsetX
-                        ,ergonomyOffset = width / (2 * (yearMax - yearMin))     // So that you see the tooltip of a year around its peak
-                        ,year = yearMin + Math.floor((yearMax - yearMin)*(x+ergonomyOffset)/width)
-                        ,count = data[year]
-                    timeline.attr('title', year + ": " + count + ((normalize)?('/'+totalPerYear[year]):(''))
-                        + ' paper' + ((count>1)?('s'):('')) + ((normalize)?(' (' + (Math.round(1000 * data[year]/totalPerYear[year])/1000) +')'):('') ))
-                })
+            })
+        }
+    })
 
-                // D3
-                var height = 32
-                    ,x = d3.scale.linear().domain([yearMin, yearMax]).range([0, width])
-                
-                var chart = d3.horizon()
-                    .width(width)
-                    .height(height)
-                    .bands(3)
-                    .mode("offset")
-                    .interpolate("monotone")
-
-                // var svg = d3.select('#timelines').append("svg")
-                var svg = d3.select('#_'+$.md5(kw.node)).append("svg")
-                    .attr("width", width)
-                    .attr("height", height)
-
-                // Render the chart.
-                svg.data([flatData]).call(chart)
-
-                svg.append("g")
-                    .attr("class", "x grid")
-                    .attr("transform", "translate(0," + height + ")")
-                    .call(d3.svg.axis().scale(x).tickSubdivide(1).tickSize(-height));
-            }
-        })
-        return keywordsByYear
-    }
-    
+    //// Data processing
     function parse_CSV_rows(csv){
         var rowsParser = d3.csv.parseRows
         return rowsParser(csv)
@@ -517,27 +354,6 @@ domino.settings({
         return String(expression).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
     function log(t){$("#log").text($("#log").text()+t);};
-
-    var extractCases = function(data_array, elementAccessor){
-        if(elementAccessor === undefined)
-            elementAccessor = function(x){return x}
-        
-        var temp_result = data_array.map(function(d){
-            return {id:elementAccessor(d), content:d}
-        }).sort(function(a, b) {
-            return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
-        });
-        
-        // Merge Doubles
-        var result = []
-        for (var i = 0; i < temp_result.length; i++) {
-            if (i==0 || temp_result[i - 1].id != temp_result[i].id) {
-                result.push(temp_result[i].content)
-            }
-        }
-        
-        return result
-    }
 
 })(jQuery, domino)
 
