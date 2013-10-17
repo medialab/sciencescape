@@ -17,11 +17,11 @@
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li><a href="scopus2net.php">Scopus to Network</a></li>
-                                    <li><a href="scopus_papersvolume_evolution.php">Papers volume through time</a></li>
-                                    <li><a href="scopus_keywords_evolution.php">Keywords through time</a></li>
-                                    <li><a href="scopus_keywords_topPerYear.php">Keywords through time: Top per year</a></li>
-                                    <li><a href="scopus_journals_evolution.php">Journals through time</a></li>
-                                    <li><a href="scopus_journals_topPerYear.php">Journals through time: Top per year</a></li>
+                                    <li><a href="scopus_papersvolume_evolution.php">Papers volume over time</a></li>
+                                    <li><a href="scopus_keywords_evolution.php">Keywords over time</a></li>
+                                    <li><a href="scopus_keywords_topPerYear.php">Keywords over time: Top per year</a></li>
+                                    <li><a href="scopus_journals_evolution.php">Journals over time</a></li>
+                                    <li><a href="scopus_journals_topPerYear.php">Journals over time: Top per year</a></li>
                                     <li><a href="scopus_utils.php">Utilities</a></li>
                                 </ul>
                             </li>
@@ -32,11 +32,11 @@
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li><a href="wok2net.php">WoK to Network</a></li>
-                                    <li><a href="wok_papersvolume_evolution.php">Papers volume through time</a></li>
-                                    <li><a href="wok_keywords_evolution.php">Keywords through time</a></li>
-                                    <li><a href="wok_keywords_topPerYear.php">Keywords through time: Top per year</a></li>
-                                    <li><a href="wok_journals_evolution.php">Journals through time</a></li>
-                                    <li><a href="wok_journals_topPerYear.php">Journals through time: Top per year</a></li>
+                                    <li><a href="wok_papersvolume_evolution.php">Papers volume over time</a></li>
+                                    <li><a href="wok_keywords_evolution.php">Keywords over time</a></li>
+                                    <li><a href="wok_keywords_topPerYear.php">Keywords over time: Top per year</a></li>
+                                    <li><a href="wok_journals_evolution.php">Journals over time</a></li>
+                                    <li><a href="wok_journals_topPerYear.php">Journals over time: Top per year</a></li>
                                     <li><a href="wok_utils.php">Utilities</a></li>
                                 </ul>
                             </li>
