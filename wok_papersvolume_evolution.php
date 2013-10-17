@@ -79,7 +79,7 @@
 
             <div class="row">
                 <div class="span12">
-                    <h2>Volume of papers through time</h2>
+                    <h2>Volume of papers over time</h2>
                     <p class="text-info">
                         Upload a Web of Knowledge file and look at how many papers are published each year (in your file)
                     </p>
