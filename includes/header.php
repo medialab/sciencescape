@@ -22,7 +22,7 @@
                                     <li><a href="scopus_keywords_topPerYear.php">Keywords through time: Top per year</a></li>
                                     <li><a href="scopus_journals_evolution.php">Journals through time</a></li>
                                     <li><a href="scopus_journals_topPerYear.php">Journals through time: Top per year</a></li>
-                                    <li><a href="scopus_utils.php">Utils</a></li>
+                                    <li><a href="scopus_utils.php">Utilities</a></li>
                                 </ul>
                             </li>
                             <li class="dropdown">
@@ -37,7 +37,7 @@
                                     <li><a href="wok_keywords_topPerYear.php">Keywords through time: Top per year</a></li>
                                     <li><a href="wok_journals_evolution.php">Journals through time</a></li>
                                     <li><a href="wok_journals_topPerYear.php">Journals through time: Top per year</a></li>
-                                    <li><a href="wok_utils.php">Utils</a></li>
+                                    <li><a href="wok_utils.php">Utilities</a></li>
                                 </ul>
                             </li>
                         </ul>
