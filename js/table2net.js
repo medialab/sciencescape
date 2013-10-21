@@ -597,7 +597,7 @@
             while(nodesList_temp.length > 0){
                 nodesList_new = nodesList_new.concat(nodesList_temp.pop())
             }
-            console.log('nodesList_new', nodesList_new)
+            //console.log('nodesList_new', nodesList_new)
             nodesList = nodesList_new
         }
         
