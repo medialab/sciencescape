@@ -580,8 +580,7 @@
         
         // Unfold if there are multiples
         if(nodesMultiples){
-            nodesList = d3.merge(
-                nodesList.map(function(d){
+            var nodesList_temp = nodesList.map(function(d){
                     if(d.node){
                         return d.node.split(nodesSeparator)
                             .map(function(dd){
@@ -592,7 +591,14 @@
                         return [];
                     }
                 })
-            );
+            // nodesList = d3.merge(nodesList_temp);
+            // NB: the method above lead to a call stack overflow sometimes
+            var nodesList_new = []
+            while(nodesList_temp.length > 0){
+                nodesList_new = nodesList_new.concat(nodesList_temp.pop())
+            }
+            console.log('nodesList_new', nodesList_new)
+            nodesList = nodesList_new
         }
         
         // Clean
