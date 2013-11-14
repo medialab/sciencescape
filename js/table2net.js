@@ -744,7 +744,7 @@
         var secondaryNodesList = ns.table.map(function(d,i){
             // Here we want to keep tracking the links.
             // So we return objects that contain the secondaryNode and the list of linked nodes.
-            // There is only one linked nodes if there are no multiples for nodes, of course...
+            // There is only one linked node if there are no multiples for nodes, of course...
 
             // Linked nodes
             var linkedNodesList;
@@ -790,7 +790,8 @@
             });
         
         // Merge Doubles
-        secondaryNodesList = [];
+        secondaryNodesList = temp_secondaryNodesList
+        /*secondaryNodesList = [];
         for(var i=0; i<temp_secondaryNodesList.length; i++){
             if(i==0 || temp_secondaryNodesList[i-1].secondaryNode != temp_secondaryNodesList[i].secondaryNode) {
                 // The element is different from the previous one. We just add it, ok...
@@ -820,7 +821,7 @@
                     }
                 });
             }
-        }
+        }*/
         
         // console.log(secondaryNodesList.filter(function(d,i){return i<10;}));
         

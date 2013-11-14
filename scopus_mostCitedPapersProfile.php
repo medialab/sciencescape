@@ -110,7 +110,7 @@
 
         <?php include("includes/codebottom.php"); ?>
 
-        <script src="js/libs/sankey.js"></script>
+        <script src="js/libs/sankey_modified.js"></script>
         <script src="js/_paper_scopus_mostCitedPapersProfile.js"></script>
 
         <script>

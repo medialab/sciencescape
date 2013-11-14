@@ -21,6 +21,22 @@ domino.settings({
                 ,triggers: 'update_loadingProgress'
                 ,value: 0
             },{
+                id:'papersLimit'
+                ,type: 'number'
+                ,value: -1
+            },{
+                id:'authorsCount'
+                ,type: 'number'
+                ,value: 10
+            },{
+                id:'keywordsCount'
+                ,type: 'number'
+                ,value: 10
+            },{
+                id:'sourcesCount'
+                ,type: 'number'
+                ,value: 10
+            },{
                 id:'dataTable'
                 ,dispatch: 'dataTable_updated'
                 ,triggers: 'update_dataTable'
@@ -234,170 +250,148 @@ domino.settings({
         this.triggers.events['extraction_pending'] = function(provider, e){
             var table = provider.get('dataTable')
                 ,network = {}
+                ,limit = provider.get('papersLimit')
+                ,authorsLimit = provider.get('authorsCount')
+                ,keywordsLimit = provider.get('keywordsCount')
+                ,sourcesLimit = provider.get('sourcesCount')
 
-            console.log('table', table)
-            // TODO:
-            // Get the 100 most cited papers
-            // Parse the authors
-            // Separate main authors from "others"
-            // Parse the keywords
-            // Separate main keywords from "others"
-            // Parse the main journals
-            // Separate main journals from "others"
-            // Build the network
+            var authorsColId = -1
+                ,keywordsColId = -1
+                ,sourcesColId = -1
+                ,citedByColId = -1
+            table[0].forEach(function(txt, i){
+                if(txt == 'Authors')
+                    authorsColId = i
+                if(txt == 'Author Keywords')
+                    keywordsColId = i
+                if(txt == 'Source title')
+                    sourcesColId = i
+                if(txt == 'Cited by')
+                    citedByColId = i
+            })
+            if(authorsColId >= 0 && keywordsColId >= 0 && sourcesColId >= 0 && citedByColId >= 0){
+                // Sort and filter table
+                table = table.slice(0)
+                table.shift()
+                // table = table.sort(function(a,b){return (+b[citedByColId] || 0) - (+a[citedByColId] || 0)})
+                if(limit >0)
+                    table = table.filter(function(row,i){return i<limit && (+row[citedByColId] || 0) > 0})
 
-            network = {"nodes":[
-                    {"name":"Agricultural 'waste'"},
-                    {"name":"Bio-conversion"},
-                    {"name":"Liquid"},
-                    {"name":"Losses"},
-                    {"name":"Solid"},
-                    {"name":"Gas"},
-                    {"name":"Biofuel imports"},
-                    {"name":"Biomass imports"},
-                    {"name":"Coal imports"},
-                    {"name":"Coal"},
-                    {"name":"Coal reserves"},
-                    {"name":"District heating"},
-                    {"name":"Industry"},
-                    {"name":"Heating and cooling - commercial"},
-                    {"name":"Heating and cooling - homes"},
-                    {"name":"Electricity grid"},
-                    {"name":"Over generation / exports"},
-                    {"name":"H2 conversion"},
-                    {"name":"Road transport"},
-                    {"name":"Agriculture"},
-                    {"name":"Rail transport"},
-                    {"name":"Lighting & appliances - commercial"},
-                    {"name":"Lighting & appliances - homes"},
-                    {"name":"Gas imports"},
-                    {"name":"Ngas"},
-                    {"name":"Gas reserves"},
-                    {"name":"Thermal generation"},
-                    {"name":"Geothermal"},
-                    {"name":"H2"},
-                    {"name":"Hydro"},
-                    {"name":"International shipping"},
-                    {"name":"Domestic aviation"},
-                    {"name":"International aviation"},
-                    {"name":"National navigation"},
-                    {"name":"Marine algae"},
-                    {"name":"Nuclear"},
-                    {"name":"Oil imports"},
-                    {"name":"Oil"},
-                    {"name":"Oil reserves"},
-                    {"name":"Other waste"},
-                    {"name":"Pumped heat"},
-                    {"name":"Solar PV"},
-                    {"name":"Solar Thermal"},
-                    {"name":"Solar"},
-                    {"name":"Tidal"},
-                    {"name":"UK land based bioenergy"},
-                    {"name":"Wave"},
-                    {"name":"Wind"}
-                    ],
-                    "links":[
-                    {"source":0,"target":1,"value":124.729},
-                    {"source":1,"target":2,"value":0.597},
-                    {"source":1,"target":3,"value":26.862},
-                    {"source":1,"target":4,"value":280.322},
-                    {"source":1,"target":5,"value":81.144},
-                    {"source":6,"target":2,"value":35},
-                    {"source":7,"target":4,"value":35},
-                    {"source":8,"target":9,"value":11.606},
-                    {"source":10,"target":9,"value":63.965},
-                    {"source":9,"target":4,"value":75.571},
-                    {"source":11,"target":12,"value":10.639},
-                    {"source":11,"target":13,"value":22.505},
-                    {"source":11,"target":14,"value":46.184},
-                    {"source":15,"target":16,"value":104.453},
-                    {"source":15,"target":14,"value":113.726},
-                    {"source":15,"target":17,"value":27.14},
-                    {"source":15,"target":12,"value":342.165},
-                    {"source":15,"target":18,"value":37.797},
-                    {"source":15,"target":19,"value":4.412},
-                    {"source":15,"target":13,"value":40.858},
-                    {"source":15,"target":3,"value":56.691},
-                    {"source":15,"target":20,"value":7.863},
-                    {"source":15,"target":21,"value":90.008},
-                    {"source":15,"target":22,"value":93.494},
-                    {"source":23,"target":24,"value":40.719},
-                    {"source":25,"target":24,"value":82.233},
-                    {"source":5,"target":13,"value":0.129},
-                    {"source":5,"target":3,"value":1.401},
-                    {"source":5,"target":26,"value":151.891},
-                    {"source":5,"target":19,"value":2.096},
-                    {"source":5,"target":12,"value":48.58},
-                    {"source":27,"target":15,"value":7.013},
-                    {"source":17,"target":28,"value":20.897},
-                    {"source":17,"target":3,"value":6.242},
-                    {"source":28,"target":18,"value":20.897},
-                    {"source":29,"target":15,"value":6.995},
-                    {"source":2,"target":12,"value":121.066},
-                    {"source":2,"target":30,"value":128.69},
-                    {"source":2,"target":18,"value":135.835},
-                    {"source":2,"target":31,"value":14.458},
-                    {"source":2,"target":32,"value":206.267},
-                    {"source":2,"target":19,"value":3.64},
-                    {"source":2,"target":33,"value":33.218},
-                    {"source":2,"target":20,"value":4.413},
-                    {"source":34,"target":1,"value":4.375},
-                    {"source":24,"target":5,"value":122.952},
-                    {"source":35,"target":26,"value":839.978},
-                    {"source":36,"target":37,"value":504.287},
-                    {"source":38,"target":37,"value":107.703},
-                    {"source":37,"target":2,"value":611.99},
-                    {"source":39,"target":4,"value":56.587},
-                    {"source":39,"target":1,"value":77.81},
-                    {"source":40,"target":14,"value":193.026},
-                    {"source":40,"target":13,"value":70.672},
-                    {"source":41,"target":15,"value":59.901},
-                    {"source":42,"target":14,"value":19.263},
-                    {"source":43,"target":42,"value":19.263},
-                    {"source":43,"target":41,"value":59.901},
-                    {"source":4,"target":19,"value":0.882},
-                    {"source":4,"target":26,"value":400.12},
-                    {"source":4,"target":12,"value":46.477},
-                    {"source":26,"target":15,"value":525.531},
-                    {"source":26,"target":3,"value":787.129},
-                    {"source":26,"target":11,"value":79.329},
-                    {"source":44,"target":15,"value":9.452},
-                    {"source":45,"target":1,"value":182.01},
-                    {"source":46,"target":15,"value":19.013},
-                    {"source":47,"target":15,"value":289.366}
-                ]}
+                var usedIndex = {}
 
-            _self.dispatchEvent('extraction_success', {})
-            setTimeout(function(){
-                _self.dispatchEvent('update_sankeyNetwork', {
-                    'sankeyNetwork': network
+                table2net.table = table.slice(0)
+                var authors = table2net.getNodes(authorsColId, true, ',')
+                    .sort(function(a,b){return b.tableRows.length - a.tableRows.length})
+                if(authorsLimit > 0)
+                    authors = authors.filter(function(d,i){return i<authorsLimit})
+                    authors.forEach(function(d){
+                            var key = 'au_'+d.node
+                            usedIndex[key] = true
+                        })
+
+                table2net.table = table.slice(0)
+                var keywords = table2net.getNodes(keywordsColId, true, ';')
+                    .sort(function(a,b){return b.tableRows.length - a.tableRows.length})
+                if(keywordsLimit > 0)
+                    keywords = keywords.filter(function(d,i){return i<keywordsLimit})
+                    keywords.forEach(function(d){
+                            var key = 'kw_'+d.node
+                            usedIndex[key] = true
+                        })
+                
+                table2net.table = table.slice(0)
+                var sources = table2net.getNodes(sourcesColId, false, '')
+                    .sort(function(a,b){return b.tableRows.length - a.tableRows.length})
+                if(sourcesLimit > 0)
+                    sources = sources.filter(function(d,i){return i<sourcesLimit})
+                    sources.forEach(function(d){
+                            var key = 'so_'+d.node
+                            usedIndex[key] = true
+                        })
+
+                table2net.table = table.slice(0)
+                var authorKeywordLinks = table2net.getBipartiteLinks(authorsColId, true, ',', keywordsColId, true, ';')
+                    .filter(function(d){return usedIndex['au_'+d.source] && usedIndex['kw_'+d.target]})
+                    .sort(function(a,b){return b.tableRows.length - a.tableRows.length})
+
+                table2net.table = table.slice(0)
+                var keywordSourcesLinks = table2net.getBipartiteLinks(keywordsColId, true, ';', sourcesColId, false, '')
+                    .filter(function(d){return usedIndex['kw_'+d.source] && usedIndex['so_'+d.target]})
+                    .sort(function(a,b){return b.tableRows.length - a.tableRows.length})
+
+                // Drop unlinked nodes
+                var linkedIndex = {}
+                authorKeywordLinks.forEach(function(d){
+                    linkedIndex['au_'+d.source] = true
+                    linkedIndex['kw_'+d.target] = true
                 })
-            }, 200)
+                keywordSourcesLinks.forEach(function(d){
+                    linkedIndex['kw_'+d.source] = true
+                    linkedIndex['so_'+d.target] = true
+                })
+                authors = authors.filter(function(d){
+                    return linkedIndex['au_'+d.node]
+                })
+                keywords = keywords.filter(function(d){
+                    return linkedIndex['kw_'+d.node]
+                })
+                sources = sources.filter(function(d){
+                    return linkedIndex['so_'+d.node]
+                })
 
+                console.log('authors', authors.length, authors)
+                console.log('keywords', keywords.length, keywords)
+                console.log('sources', sources.length, sources)
+                console.log('authorKeywordLinks', authorKeywordLinks.length, authorKeywordLinks)
+                console.log('keywordSourcesLinks', keywordSourcesLinks.length, keywordSourcesLinks)
 
-            //     ,yearColId = -1
-            // table[0].forEach(function(txt, i){
-            //     if(txt == 'Year')
-            //         yearColId = i
-            // })
-            // if(yearColId>=0){
-            //     table2net.table = table.slice(0)
-            //     table2net.table.shift()
-            //     var years = table2net.getNodes(yearColId, true, ';')
-            //     if(years){
-            //         setTimeout(function(){
-            //             _self.dispatchEvent('update_sankeyNetwork', {
-            //                 'sankeyNetwork': years
-            //             })
-            //         }, 200)
+                var index = {}
+                    ,indexKey = 0
+                network = {
+                    'nodes': authors
+                                .map(function(d){
+                                        var key = 'au_'+d.node
+                                        index[key] = indexKey++
+                                        return {'name': d.node, 'breadth': 0}
+                                    })
+                        .concat(
+                                keywords
+                                    .map(function(d){
+                                            var key = 'kw_'+d.node
+                                            index[key] = indexKey++
+                                            return {'name': d.node, 'breadth': 1}
+                                        })
+                            )
+                        .concat(
+                                sources
+                                    .map(function(d){
+                                            var key = 'so_'+d.node
+                                            index[key] = indexKey++
+                                            return {'name': d.node, 'breadth': 2}
+                                        })
+                            )
+                    ,'links': authorKeywordLinks
+                                .map(function(d){
+                                        return {'source': index['au_'+d.source], 'target': index['kw_'+d.target], 'value':d.tableRows.length,'sourceName':d.source, 'targetName':d.target}
+                                    })
+                        .concat(
+                                keywordSourcesLinks
+                                    .map(function(d){
+                                                return {'source': index['kw_'+d.source], 'target': index['so_'+d.target], 'value':d.tableRows.length,'sourceName':d.source, 'targetName':d.target}
+                                        })
+                            )
+                }
 
-            //         _self.dispatchEvent('extraction_success', {})
-            //     } else {
-            //         _self.dispatchEvent('extraction_fail', {})
-            //     }
-            // } else {
-            //     _self.dispatchEvent('extraction_fail', {})
-            // }
+                _self.dispatchEvent('extraction_success', {})
+                setTimeout(function(){
+                    _self.dispatchEvent('update_sankeyNetwork', {
+                        'sankeyNetwork': network
+                    })
+                }, 200)
+
+            } else {
+                _self.dispatchEvent('extraction_fail', {})
+            }
         }
     })
 
@@ -424,7 +418,7 @@ domino.settings({
             height = $('#chart').height() - margin.top - margin.bottom;
 
         var formatNumber = d3.format(",.0f"),
-            format = function(d) { return formatNumber(d) + " TWh"; },
+            format = function(d) { return formatNumber(d) + " papers"; },
             color = d3.scale.category20();
 
         var svg = d3.select("#chart").append("svg")
