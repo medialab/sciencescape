@@ -138,6 +138,18 @@
                         </li>
                         <li class="span3">
                             <div class="thumbnail">
+                                <img src="res/sciencescape_sankey.png">
+                                <div class="caption">
+                                    <h3>A-K-J Sankey</h3>
+                                    <p class="description">Visualize the main <strong>authors</strong>, <strong>keywords</strong>, <strong>journals</strong>, and how they are related, as a Sankey diagram.</p>
+                                    <p>
+                                        <a href="scopus_mostCitedPapersProfile.php" class="btn btn-inverse">Scopus</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="span3">
+                            <div class="thumbnail">
                                 <img src="res/sciencescape_utils.png">
                                 <div class="caption">
                                     <h3>Utilities</h3>
