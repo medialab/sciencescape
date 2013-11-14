@@ -27,15 +27,15 @@ domino.settings({
             },{
                 id:'authorsCount'
                 ,type: 'number'
-                ,value: 10
+                ,value: 30
             },{
                 id:'keywordsCount'
                 ,type: 'number'
-                ,value: 10
+                ,value: 30
             },{
                 id:'sourcesCount'
                 ,type: 'number'
-                ,value: 10
+                ,value: 30
             },{
                 id:'dataTable'
                 ,dispatch: 'dataTable_updated'
@@ -44,6 +44,18 @@ domino.settings({
                 id:'sankeyNetwork'
                 ,dispatch: 'sankeyNetwork_updated'
                 ,triggers: 'update_sankeyNetwork'
+            },{
+                id:'mainAuthors'
+                ,dispatch: 'mainAuthors_updated'
+                ,triggers: 'update_mainAuthors'
+            },{
+                id:'mainKeywords'
+                ,dispatch: 'mainKeywords_updated'
+                ,triggers: 'update_mainKeywords'
+            },{
+                id:'mainSources'
+                ,dispatch: 'mainSources_updated'
+                ,triggers: 'update_mainSources'
             }
         ],services: [
         ],hacks:[
@@ -90,9 +102,9 @@ domino.settings({
     D.addModule(function(){
         domino.module.call(this)
 
-        this.triggers.events['networkJson_updated'] = function(provider, e) {
-            console.log('Network: ', provider.get('networkJson'))
-        }
+        // this.triggers.events['networkJson_updated'] = function(provider, e) {
+        //     console.log('Network: ', provider.get('networkJson'))
+        // }
     })
 
     // File loader
@@ -288,6 +300,9 @@ domino.settings({
                             var key = 'au_'+d.node
                             usedIndex[key] = true
                         })
+                _self.dispatchEvent('update_mainAuthors', {
+                    mainAuthors: authors.map(function(d){return {name:d.node, count:d.tableRows.length}})
+                })
 
                 table2net.table = table.slice(0)
                 var keywords = table2net.getNodes(keywordsColId, true, ';')
@@ -298,6 +313,9 @@ domino.settings({
                             var key = 'kw_'+d.node
                             usedIndex[key] = true
                         })
+                _self.dispatchEvent('update_mainKeywords', {
+                    mainKeywords: keywords.map(function(d){return {name:d.node, count:d.tableRows.length}})
+                })
                 
                 table2net.table = table.slice(0)
                 var sources = table2net.getNodes(sourcesColId, false, '')
@@ -308,6 +326,10 @@ domino.settings({
                             var key = 'so_'+d.node
                             usedIndex[key] = true
                         })
+                _self.dispatchEvent('update_mainSources', {
+                    mainSources: sources.map(function(d){return {name:d.node, count:d.tableRows.length}})
+                })
+
 
                 table2net.table = table.slice(0)
                 var authorKeywordLinks = table2net.getBipartiteLinks(authorsColId, true, ',', keywordsColId, true, ';')
@@ -339,11 +361,11 @@ domino.settings({
                     return linkedIndex['so_'+d.node]
                 })
 
-                console.log('authors', authors.length, authors)
-                console.log('keywords', keywords.length, keywords)
-                console.log('sources', sources.length, sources)
-                console.log('authorKeywordLinks', authorKeywordLinks.length, authorKeywordLinks)
-                console.log('keywordSourcesLinks', keywordSourcesLinks.length, keywordSourcesLinks)
+                // console.log('authors', authors.length, authors)
+                // console.log('keywords', keywords.length, keywords)
+                // console.log('sources', sources.length, sources)
+                // console.log('authorKeywordLinks', authorKeywordLinks.length, authorKeywordLinks)
+                // console.log('keywordSourcesLinks', keywordSourcesLinks.length, keywordSourcesLinks)
 
                 var index = {}
                     ,indexKey = 0
@@ -392,6 +414,81 @@ domino.settings({
             } else {
                 _self.dispatchEvent('extraction_fail', {})
             }
+        }
+    })
+    
+    // Main authors
+    D.addModule(function(){
+        domino.module.call(this)
+
+        var _self = this
+            ,container = $('#mainAuthors')
+
+        this.triggers.events['mainAuthors_updated'] = function(provider, e){
+            container.html('<h3>Main authors</h3>')
+                .append(
+                        $('<ul/>').append(
+                            provider.get('mainAuthors').map(function(d){
+                                return $('<li/>')
+                                    .append(
+                                            $('<strong/>').text(d.name)
+                                        )
+                                    .append(
+                                            $('<small class="text-info"/>').text(' ('+d.count+' papers)')
+                                        )
+                            })
+                        )
+                    )
+        }
+    })
+
+    // Main keywords
+    D.addModule(function(){
+        domino.module.call(this)
+
+        var _self = this
+            ,container = $('#mainKeywords')
+
+        this.triggers.events['mainKeywords_updated'] = function(provider, e){
+            container.html('<h3>Main keywords</h3>')
+                .append(
+                        $('<ul/>').append(
+                            provider.get('mainKeywords').map(function(d){
+                                return $('<li/>')
+                                    .append(
+                                            $('<strong/>').text(d.name)
+                                        )
+                                    .append(
+                                            $('<small class="text-info"/>').text(' ('+d.count+' papers)')
+                                        )
+                            })
+                        )
+                    )
+        }
+    })
+
+    // Main sources
+    D.addModule(function(){
+        domino.module.call(this)
+
+        var _self = this
+            ,container = $('#mainSources')
+
+        this.triggers.events['mainSources_updated'] = function(provider, e){
+            container.html('<h3>Main journals</h3>')
+                .append(
+                        $('<ul/>').append(
+                            provider.get('mainSources').map(function(d){
+                                return $('<li/>')
+                                    .append(
+                                            $('<strong/>').text(d.name)
+                                        )
+                                    .append(
+                                            $('<small class="text-info"/>').text(' ('+d.count+' papers)')
+                                        )
+                            })
+                        )
+                    )
         }
     })
 

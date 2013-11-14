@@ -15,6 +15,11 @@
         <style>
 
 
+            @import url(http://fonts.googleapis.com/css?family=PT+Serif|PT+Serif:b|PT+Serif:i|PT+Sans|PT+Sans:b);
+
+            svg {
+              font: 10px sans-serif;
+            }
 
             body {
                 padding-top: 60px;
@@ -22,7 +27,7 @@
             }
 
             #chart {
-              height: 500px;
+              height: 700px;
               width: 100%;
             }
 
@@ -40,7 +45,7 @@
             .link {
               fill: none;
               stroke: #000;
-              stroke-opacity: .2;
+              stroke-opacity: .1;
             }
 
             .link:hover {
@@ -81,9 +86,9 @@
 
             <div class="row">
                 <div class="span12">
-                    <h2>Volume of papers over time</h2>
+                    <h2>Main authors, keywords and journals</h2>
                     <p class="text-info">
-                        Upload a Scopus CSV file and look at how many papers are published each year (in your file)
+                        Upload a Scopus CSV file and look at the top authors, keywords and journals and how they associate.
                     </p>
                     <hr/>
                 </div>
@@ -101,7 +106,18 @@
             </div>
             <div class="row">
                 <div class="span12">
-                    <div id="chart"/>
+                    <div id="chart"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="span4">
+                    <div id="mainAuthors"></div>
+                </div>
+                <div class="span4">
+                    <div id="mainKeywords"></div>
+                </div>
+                <div class="span4">
+                    <div id="mainSources"></div>
                 </div>
             </div>
         </div>

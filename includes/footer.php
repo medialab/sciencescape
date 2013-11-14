@@ -32,16 +32,16 @@ if(isset($twitterText) && $twitterText != ""){
 				</div>
 				<div class="span4">
                     <p>Related tools:</p>
-                    <strong><a href="http://www.sebastian-grauwin.com/?page_id=492">BiblioTools</a></strong>
-                    <p>
-                        This tool was developed by <strong>Sebastian Grauwin</strong> for a similar purpose. It is dedicated to getting networks from Web of Science, and can deal a large mass of data.
-                    </p>
                     <strong><a href="https://tools.medialab.sciences-po.fr/table2net/">Table2Net</a></strong>
                     <p>
                         If you want to get the citation network from the table with the DOI, you can use Table2Net in "citation" mode :)
                     </p>
 					<p>See also our other tools at <strong><a href="http://tools.medialab.sciences-po.fr">Médialab Tools</a></strong>!</p>
-					<strong><a href="http://gephi.org/">Gephi</a></strong>
+					<strong><a href="http://www.sebastian-grauwin.com/?page_id=492">BiblioTools</a></strong>
+                    <p>
+                        BiblioTools was developed by <strong>Sebastian Grauwin</strong> for a similar purpose. It is dedicated to getting networks from Web of Science, and can deal a large mass of data.
+                    </p>
+                    <strong><a href="http://gephi.org/">Gephi</a></strong>
                     <p>
                         We recommand to use Gephi for spatializing networks. It is more efficient than this website. Check its <a href="http://gephi.org/users/">tutorials</a>!
                     </p>
