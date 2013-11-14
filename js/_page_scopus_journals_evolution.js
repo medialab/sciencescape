@@ -467,7 +467,7 @@ domino.settings({
                         ,year = yearMin + Math.floor((yearMax - yearMin)*(x+ergonomyOffset)/width)
                         ,count = data[year]
                     timeline.attr('title', year + ": " + count + ((normalize)?('/'+totalPerYear[year]):(''))
-                        + ' paper' + ((count>1)?('s'):('')) + ((normalize)?(' (' + (Math.round(1000 * data[year]/totalPerYear[year])/1000) +')'):('') ))
+                        + ' paper' + ((count>1)?('s'):('')) + ((normalize)?(' (' + (Math.round(1000 * (data[year]/totalPerYear[year] || 0))/1000) +')'):('') ))
                 })
 
                 // D3

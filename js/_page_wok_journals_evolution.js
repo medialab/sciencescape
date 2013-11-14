@@ -403,7 +403,7 @@ domino.settings({
                 if(normalize){
                     for(year in data){
                         if(Date.UTC(year, 0))
-                            flatData.push([Date.UTC(year, 0), Math.round(1000 * data[year]/totalPerYear[year]) / 1000])
+                            flatData.push([Date.UTC(year, 0), Math.round(1000 * (data[year]/totalPerYear[year] || 0)) / 1000])
                     }
                 } else {
                     for(year in data){
@@ -434,7 +434,7 @@ domino.settings({
                         ,year = yearMin + Math.floor((yearMax - yearMin)*(x+ergonomyOffset)/width)
                         ,count = data[year]
                     timeline.attr('title', year + ": " + count + ((normalize)?('/'+totalPerYear[year]):(''))
-                        + ' journal' + ((count>1)?('s'):('')) + ((normalize)?(' (' + (Math.round(1000 * data[year]/totalPerYear[year])/1000) +')'):('') ))
+                        + ' journal' + ((count>1)?('s'):('')) + ((normalize)?(' (' + (Math.round(1000 * (data[year]/totalPerYear[year] || 0))/1000) +')'):('') ))
                 })
 
                 // D3
