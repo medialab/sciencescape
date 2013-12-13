@@ -44,8 +44,6 @@ sigma.forceatlas2.ForceAtlas2 = function(graph) {
       };
     });
 
-    console.log(self.graph.nodes.length+' nodes')
-
     return self;
   }
 
@@ -234,7 +232,7 @@ sigma.forceatlas2.ForceAtlas2 = function(graph) {
         /// Tweak start
         // Optimize jitter tolerance:
         // var jitterTolerance = Math.max(self.p.jitterTolerance, Math.min(5, self.p.totalEffectiveTraction / Math.pow(nodes.length, 2)))
-        var estimatedOptimalJitterTolerance = 0.05 * Math.sqrt(nodes.length) // The 'right' jitter tolerance for this network. Bigger networks need more tolerance.
+        var estimatedOptimalJitterTolerance = 0.02 * Math.sqrt(nodes.length) // The 'right' jitter tolerance for this network. Bigger networks need more tolerance.
           ,minJT = Math.sqrt(estimatedOptimalJitterTolerance)
           ,maxJT = 10
           ,jitterTolerance = self.p.jitterTolerance * Math.max(minJT, Math.min(maxJT, estimatedOptimalJitterTolerance * self.p.totalEffectiveTraction / Math.pow(nodes.length, 2)))
@@ -265,7 +263,7 @@ sigma.forceatlas2.ForceAtlas2 = function(graph) {
                          maxRise * self.p.speed
                        );
         
-        console.log('speed '+Math.floor(1000*self.p.speed)/1000+' sEff '+Math.floor(1000*self.p.speedEfficiency)/1000+' jitter '+Math.floor(1000*jitterTolerance)/1000+' swing '+Math.floor(self.p.totalSwinging/nodes.length)+' conv '+Math.floor(self.p.totalEffectiveTraction/nodes.length));
+        // console.log('speed '+Math.floor(1000*self.p.speed)/1000+' sEff '+Math.floor(1000*self.p.speedEfficiency)/1000+' jitter '+Math.floor(1000*jitterTolerance)/1000+' swing '+Math.floor(self.p.totalSwinging/nodes.length)+' conv '+Math.floor(self.p.totalEffectiveTraction/nodes.length));
 
         // Save old coordinates
         nodes.forEach(function(n) {
@@ -387,7 +385,7 @@ sigma.forceatlas2.ForceAtlas2 = function(graph) {
     }
     this.p.barnesHutTheta = 1.2;
     */
-    // Tweak:
+    /// Tweak start
     if (graph.nodes.length >= 1000) {
       this.p.barnesHutOptimize = true;
     } else {
@@ -395,6 +393,7 @@ sigma.forceatlas2.ForceAtlas2 = function(graph) {
     }
     this.p.jitterTolerance = 1;
     this.p.barnesHutTheta = 1.2;
+    /// End tweak
 
     return this;
   }
