@@ -256,7 +256,7 @@ sigma.forceatlas2.ForceAtlas2 = function(graph) {
                          maxRise * self.p.speed
                        );
         
-        console.log('speed '+Math.floor(1000*self.p.speed)/1000+' sEff '+Math.floor(1000*self.p.speedEfficiency)/1000+' swing '+Math.floor(self.p.totalSwinging/nodes.length)+' conv '+Math.floor(self.p.totalEffectiveTraction/nodes.length));
+        // console.log('speed '+Math.floor(1000*self.p.speed)/1000+' sEff '+Math.floor(1000*self.p.speedEfficiency)/1000+' swing '+Math.floor(self.p.totalSwinging/nodes.length)+' conv '+Math.floor(self.p.totalEffectiveTraction/nodes.length));
 
         // Save old coordinates
         nodes.forEach(function(n) {
