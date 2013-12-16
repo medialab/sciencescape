@@ -237,15 +237,24 @@ sigma.forceatlas2.ForceAtlas2 = function(graph) {
           ,maxJT = 10
           ,jitterTolerance = self.p.jitterTolerance * Math.max(minJT, Math.min(maxJT, estimatedOptimalJitterTolerance * self.p.totalEffectiveTraction / Math.pow(nodes.length, 2)))
 
+        var minSpeedEfficiency = 0.05;
+        
+        // Protection against erratic behavior
+        if(self.p.totalSwinging / self.p.totalEffectiveTraction > 2.0){
+            if(self.p.speedEfficiency > minSpeedEfficiency)
+                self.p.speedEfficiency *= 0.5;
+            jt = Math.max(jitterTolerance, self.p.jitterTolerance);
+        }
+
         var targetSpeed = jitterTolerance *
-                          self.p.speedEfficiency
+                          self.p.speedEfficiency *
                           self.p.totalEffectiveTraction /
                           self.p.totalSwinging;
 
         // Speed efficiency is how the speed really corresponds to the swinging vs. convergence tradeoff
         // We adjust it slowly and carefully
         if(self.p.totalSwinging > jitterTolerance * self.p.totalEffectiveTraction){
-          if(self.p.speedEfficiency > 0.01)
+          if(self.p.speedEfficiency > minSpeedEfficiency)
             self.p.speedEfficiency *= 0.7
         } else {
           if(self.p.speed < 1000)
