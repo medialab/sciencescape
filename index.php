@@ -73,6 +73,19 @@
                         </li>
                         <li class="span3">
                             <div class="thumbnail">
+                                <img src="res/sciencescape_network.png">
+                                <div class="caption">
+                                    <h3>Reference Scape</h3>
+                                    <p class="description">Visualize and download networks using a landscape of references</p>
+                                    <p>
+                                        <a href="scopus_referencescape.php" class="btn btn-inverse">Scopus</a>
+                                        <!-- <a href="wok2net.php" class="btn btn-inverse">Web of Knowledge</a> -->
+                                    </p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="span3">
+                            <div class="thumbnail">
                                 <img src="res/sciencescape_papersvolumeevolution.png">
                                 <div class="caption">
                                     <h3>Papers over time</h3>
