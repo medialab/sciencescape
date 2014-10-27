@@ -902,15 +902,15 @@ domino.settings({
 		var table = build_DoiLinks(csv, d3.csv.parseRows, 'References', 'Cited papers having a DOI')
 
     // We extract and clean references
-    var referencesTable = cleanReferences(table)
+    var referencesHash = cleanReferences(table)
+
+    console.log(table)
 
     return table
   }
 
   function cleanReferences(table){
 
-    console.log(table)
-    
     var referencesColumn = -1
     table[0].forEach(function(cell, i){
       if(cell == "References"){
@@ -929,7 +929,7 @@ domino.settings({
       
       if(row_i == 0){
 
-        table.push('References ID')
+        row.push('References ID')
       
       } else {
         
@@ -990,19 +990,17 @@ domino.settings({
         // and we have to clean them in order to make them comparable
         // Our strategy is to build a key for each reference
 
-        tokenizedReferences.forEach(function(reference){
+        var referencesKeys = tokenizedReferences.map(function(reference){
           var refComp = extractReferenceComponents(reference)
           ,key = indexReference(
             refComp
             ,referencesHash
             ,5 // LEVENSHTEIN THRESHOLD !!!
           )
- 
-          
+          return key
         })
         
-        
-        
+        row.push(referencesKeys.filter(function(d){return d !== undefined}).join(';'))
 
       }
     })
@@ -1065,9 +1063,11 @@ domino.settings({
         }
       }
 
+      id = Number.parseInt(id)+1
+
       if(minD < levenshteinThreshold){
 
-        console.log('matching')
+        // console.log('matching')
 
         // We have a matching: we merge by returning the other's key
         key = trivialKey + '-' + minId
@@ -1076,8 +1076,8 @@ domino.settings({
       } else {
 
         // No match: we just add...
-        key = trivialKey + '-' + refIndex[trivialKey].length
-        refIndex[trivialKey][refIndex[trivialKey].length] = {key:key, components: components}
+        key = trivialKey + '-' + id
+        refIndex[trivialKey][id] = {key:key, components: components}
         return key
 
       }
