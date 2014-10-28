@@ -16,6 +16,10 @@ domino.settings({
 				id:'inputCSVfileUploader'
 				,dispatch: 'inputCSVfileUploader_updated'
 				,triggers: 'update_inputCSVfileUploader'
+      },{
+        id:'referencesHash'
+        ,dispatch: 'referencesHash_updated'
+        ,triggers: 'update_referencesHash'
 			},{
 				id:'dataTable'
 				,dispatch: 'dataTable_updated'
@@ -254,55 +258,27 @@ domino.settings({
 
 		this.triggers.events['parsing_processing'] = function(provider, e){
 			var fileLoader = provider.get('inputCSVfileUploader')
-				,scopusnet_data = parse_csv(fileLoader.reader.result)
-			if(scopusnet_data){
+			,parsing = parse_csv(fileLoader.reader.result)
+
+      if(parsing.table){
 				setTimeout(function(){
 					_self.dispatchEvent('update_dataTable', {
-						'dataTable': scopusnet_data
+						'dataTable': parsing.table
 					})
+          _self.dispatchEvent('update_referencesHash', {
+            'referencesHash': parsing.referencesHash
+          })
 				}, 200)
 
-				_self.dispatchEvent('parsing_success', {})
+				// _self.dispatchEvent('parsing_success', {})
 			} else {
 				_self.dispatchEvent('parsing_fail', {})
 			}
 		}
 	})
-
-	// Report
-	D.addModule(function(){
-		domino.module.call(this)
-
-		var _self = this
-			,container = $('#report')
-			,reportContainer = container.find('.reportText')
-
-		this.triggers.events['networkJson_updated'] = function(provider, e){
-			var networkJson = provider.get('networkJson')
-				,text = ''
-				,networkOptions = provider.get('networkOptions')
-				,optionId = $('#typeofnet').find('select').val()
-				,option = networkOptions[optionId]
-				,filteringOption = $('#minDegreeThreshold').find(':selected').text()
-
-			text +=   'Network exported with Scopus2Net - Sciences Po médialab tools'
-			text += '\n-------------------------------------------------------------'
-			text += '\n'
-			text += '\n:: Exported network'
-			text += '\nType: '+option.label
-			text += '\nNodes: '+networkJson.nodes.length
-			text += '\nEdges: '+networkJson.edges.length
-			text += '\n(These figures take filtering into account)'
-			text += '\n'
-			text += '\n:: Filtering'
-			text += '\nMode: '+filteringOption
-			text += '\nNodes removed: '+provider.get('poorlyConnectedNodesRemoved').length
-
-			reportContainer.text(text)
-		}
-	})
 	
 	// Type of network
+  /*
 	D.addModule(function(){
 		domino.module.call(this)
 
@@ -492,205 +468,147 @@ domino.settings({
 			).removeAttr('disabled')
 		}
 	})
+*/
+  
+  // Build
+  D.addModule(function(){
+    domino.module.call(this)
 
-	// Build button
-	D.addModule(function(){
-		domino.module.call(this)
+    var _self = this
 
-		var _self = this
-			,container = $('#build')
+    this.triggers.events['dataTable_updated'] = function(provider, e){
+      var data = provider.get('dataTable')
+      ,titleColumn
+      ,authorsColumn
+      ,authorKeywordsColumn
+      ,sourceTitleColumn
+      ,abbrSourceTitleColumn
+      ,doiCitedColumn
+      ,doiColumn
+      ,languageColumn
+      ,doctypeColumn
+      ,citedByColumn
+      ,correspondenceAddressColumn
+      ,affiliationsColumn
+      ,refColumn = data[0].length - 1
+        
+      data[0].forEach(function(d, i){
+        if(d == 'Title')
+          titleColumn = i
+        if(d == 'Authors')
+          authorsColumn = i
+        if(d == 'Author Keywords')
+          authorKeywordsColumn = i
+        if(d == 'Source title')
+          sourceTitleColumn = i
+        if(d == 'Abbreviated Source Title')
+          abbrSourceTitleColumn = i
+        if(d == 'Cited papers having a DOI')
+          doiCitedColumn = i
+        if(d == 'DOI')
+          doiColumn = i
+        if(d == 'Language of Original Document')
+          languageColumn = i
+        if(d == 'Document Type')
+          doctypeColumn = i
+        if(d == 'Cited by')
+          citedByColumn = i
+        if(d == 'Correspondence Address')
+          correspondenceAddressColumn = i
+        if(d == 'Affiliations')
+          affiliationsColumn = i
+      })
 
-		$(document).ready(function(e){
-			container.html('<div style="height: 35px"><button class="btn btn-block disabled"><i class="icon-cog"></i> Build network</button></div><div style="height: 25px;"><div class="progress" style="display:none;"><div class="bar" style="width: 100%;"></div></div></div>')
-		})
-		
-		this.triggers.events['networkOptions_updated'] = function(provider, e){
-			var button = container.find('button')
-				,progress = container.find('div.progress')
-				,bar = progress.find('div.bar')
+      // Get the ref network
+      var settings = {
+        mode: 'normal'
+        ,nodesColumnId: refColumn
+        ,nodesSeparator: ';'
+        ,nodesMetadataColumnIds: []
+        ,linksColumnId: titleColumn
+        ,jsonCallback: function(ref_json){
+          
+          // Adding AUTHORS
+          var settings = {
+            mode: 'bipartite'
+            ,nodesColumnId1: refColumn
+            ,nodesSeparator1: ';'
+            ,nodesMetadataColumnIds1: []
+            ,nodesColumnId2: authorsColumn
+            ,nodesSeparator2: ','
+            ,nodesMetadataColumnIds2: []
+            ,jsonCallback: function(author_json){
+              
+              // Adding KEYWORDS (author keywords)
+              var settings = {
+                mode: 'bipartite'
+                ,nodesColumnId1: refColumn
+                ,nodesSeparator1: ';'
+                ,nodesMetadataColumnIds1: []
+                ,nodesColumnId2: authorKeywordsColumn
+                ,nodesSeparator2: ';'
+                ,nodesMetadataColumnIds2: []
+                ,jsonCallback: function(kw_json){
 
-			progress.addClass('progress-striped').addClass('active')
+                  // Adding SOURCES
+                  var settings = {
+                    mode: 'bipartite'
+                    ,nodesColumnId1: refColumn
+                    ,nodesSeparator1: ';'
+                    ,nodesMetadataColumnIds1: []
+                    ,nodesColumnId2: sourceTitleColumn
+                    ,nodesMetadataColumnIds2: []
+                    ,jsonCallback: function(source_json){
 
-			button.removeClass('disabled').click(function(){
-				if(!button.hasClass('disabled')){
-					button.addClass('disabled')
-					progress.show()
-					progress.addClass('progress-striped').addClass('active')
-					bar.removeClass('bar-success')
-					bar.css('width', '100%').text('Building...')
-					setTimeout(function(){
-						_self.dispatchEvent('build_processing', {})
-					}, 500)
-				}
-			})
-		}
+                      console.log((new Date()).toLocaleString() + ' Filtering networks')
+                      filterNetworkByDegree(ref_json, 0.1 /* 10% */, 100, 1000)
+                      filterNetworkByOccurrences(author_json, 'Authors', 3)
+                      filterNetworkByOccurrences(kw_json, 'Author Keywords', 3)
+                      filterNetworkByOccurrences(source_json, 'Source title', 5)
 
-		this.triggers.events['build_processing'] = function(provider, e){
-			var networkOptions = provider.get('networkOptions')
-				,data = provider.get('dataTable')
-				,optionId = $('#typeofnet').find('select').val()
-				,option = networkOptions[optionId]
+                      var json = ref_json
 
-			option.settings.jsonCallback = function(json){
-				_self.dispatchEvent('build_success', {})
-				json.attributes.description = 'Network extracted from a Scopus file on ScienceScape ( http://tools.medialab.sciences-po.fr/sciencescape )'
-				
-				// Sum up the "cited by"
-				var citedByIds = []
-				json.nodesAttributes.forEach(function(attr){
-					if(attr.title == "Cited by"){
-						attr.type = 'integer'
-						citedByIds.push(attr.id)
-						if(citedByIds.length>1){
-							attr.title = "Cited by ("+citedByIds.length+")"
-						}
-					}
-				})
-				
-				if(citedByIds.length>0){
-					json.nodes.forEach(function(n){
-						n.attributes.forEach(function(attValue){
-							if(citedByIds.indexOf(attValue.attr) >= 0){
-								if(attValue.val == 'n/a'){
-									attValue.val = ''
-								} else {
-									var valuesList = (attValue.val || "").split('|')
-										,total = 0
-									valuesList.forEach(function(textValue){
-										var numValue = parseInt(textValue)
-										if(!isNaN(numValue)){
-											total += numValue
-										}
-									})
-									attValue.val = ''+total
-								}
-							}
-						})
-					})
-				}
-				
-				// Build indexes
-				json_graph_api.buildIndexes(json)
+                      // Merge all the jsons in json
+                      console.log((new Date()).toLocaleString() + ' Merging networks')
+                      mergeNetworks(author_json, json)
+                      mergeNetworks(kw_json, json)
+                      mergeNetworks(source_json, json)
 
-				// Put label for citation mode
-				if(option.fetchTitles){
-					var titleAttributeId
-					json.nodesAttributes.forEach(function(na){
-						if(na.title == 'Title')
-							titleAttributeId = na.id
-					})
-					if(titleAttributeId !== undefined)
-						json.nodes.forEach(function(node){
-							node.label = node.attributes_byId[titleAttributeId]
-						})
-				}
+                      // Build indexes
+                      json_graph_api.buildIndexes(json)
 
+                      console.log((new Date()).toLocaleString() + ' Processing finished')
 
+                      _self.dispatchEvent('update_networkJson', {
+                        networkJson: json
+                      })
 
-				var threshold
-					,recursive
-					,postCleaning
-					,poorlyConnectedNodesRemoved = []
-				
-				switch(''+provider.get('minDegreeThreshold')){
-					case '0':
-						threshold = 0
-						recursive = false
-						postCleaning = false
-						break
-					case '1':
-						threshold = 1
-						recursive = false
-						postCleaning = false
-						break
-					case '2r':
-						threshold = 2
-						recursive = true
-						postCleaning = false
-						break
-					case '3':
-						threshold = 3
-						recursive = false
-						postCleaning = false
-						break
-					case '2dn':
-						threshold = 2
-						recursive = true
-						postCleaning = true
-						break
-					case '3dn':
-						threshold = 3
-						recursive = false
-						postCleaning = true
-						break
-					case '4':
-						threshold = 4
-						recursive = false
-						postCleaning = false
-						break
-					case '5':
-						threshold = 5
-						recursive = false
-						postCleaning = false
-						break
+                    }
+                  }
 
-				}
-				
-				if(threshold>0){
-					// Recursive cleaning
-					var modif = true
-					while(modif){
-						modif = false
-						json.nodes.forEach(function(node){
-							if(node.inEdges.length + node.outEdges.length < threshold){
-								modif = recursive // Actually recur only if recursive
-								node.hidden = true
-								poorlyConnectedNodesRemoved.push(node)
-							}
-						})
-						json_graph_api.removeHidden(json)
-					}
-				}
-				// Post cleaning
-				if(postCleaning){
-					json.nodes.forEach(function(node){
-						if(node.inEdges.length + node.outEdges.length < 1){
-							node.hidden = true
-							poorlyConnectedNodesRemoved.push(node)
-						}
-					})
-					json_graph_api.removeHidden(json)
-				}
-				
+                  console.log((new Date()).toLocaleString() + ' Building SOURCES network')
+                  table2net.buildGraph(data, settings)
 
-				_self.dispatchEvent('update_poorlyConnectedNodesRemoved', {
-					poorlyConnectedNodesRemoved: poorlyConnectedNodesRemoved
-				})
+                }
+              }
 
-				_self.dispatchEvent('update_networkJson', {
-					networkJson: json
-				})
+              console.log((new Date()).toLocaleString() + ' Building KW network')
+              table2net.buildGraph(data, settings)
 
-				
-			}
-			setTimeout(function(){
-				table2net.buildGraph(data, option.settings)
-			}, 1000)
-			
+            }
+          }
 
-		}
-		this.triggers.events['build_success'] = function(provider, e){
-			var button = container.find('button')
-				,progress = container.find('div.progress')
-				,bar = progress.find('div.bar')
-			button.removeClass('disabled')
-			progress.removeClass('progress-striped').removeClass('active')
-			bar.addClass('bar-success').text('Build successful')
-			setTimeout(function(){
-				progress.hide()
-			}, 2000)
-		}
-	})
+          console.log((new Date()).toLocaleString() + ' Building AUTH network')
+          table2net.buildGraph(data, settings)
+
+        }
+      }
+
+      console.log((new Date()).toLocaleString() + ' Building REF network')
+      table2net.buildGraph(data, settings)
+    }
+
+  })
 
 	// Settings
 	D.addModule(function(d){
@@ -722,14 +640,13 @@ domino.settings({
 
 			var json = provider.get('networkJson')
 				,networkOptions = provider.get('networkOptions')
-				,optionId = $('#typeofnet').find('select').val()
-				,option = networkOptions[optionId]
 				,colors = ["#637CB5", "#C34E7B", "#66903C", "#C55C32", "#B25AC9"]
-				,colorsByType = {}
-
-			option.types.forEach(function(type, i){
-				colorsByType[type] = colors[i]
-			})
+				,colorsByType = {
+          'References ID': '#637CB5'
+          ,'Authors': '#C34E7B'
+          ,'Source title': '#66903C'
+          ,'Author Keywords': '#C55C32'
+        }
 
 			// Kill old sigma if needed
 			var oldSigmaInstance = provider.get('sigmaInstance')
@@ -756,7 +673,7 @@ domino.settings({
 					,'y': Math.random()
 					,label: node.label
 					,size: 1 + Math.log(1 + 0.1 * ( node.inEdges.length + node.outEdges.length ) )
-					,'color': colorsByType[node.attributes_byId['attr_type']]
+					,'color': colorsByType[node.attributes_byId['attr_type']] || '#000'
 				})
 			})
 			json.edges.forEach(function(link, i){
@@ -904,9 +821,7 @@ domino.settings({
     // We extract and clean references
     var referencesHash = cleanReferences(table)
 
-    console.log(table)
-
-    return table
+    return {table: table, referencesHash: referencesHash}
   }
 
   function cleanReferences(table){
@@ -1005,8 +920,28 @@ domino.settings({
       }
     })
     
-    return referencesHash
+    // Now we will filter out references that have not been indexed several times
+    var remainingReferences = {}
+    for(key in referencesHash){
+      var ref = referencesHash[key]
+      for(i in ref){
+        if(ref[i].count > 1){
+          remainingReferences[ref[i].key] = true
+        }
+      }
+    }
+    table.forEach(function(row, row_i){
+      if(row_i > 0){
+        var refs = row[row.length - 1].split(';')
+        row[row.length - 1] = refs
+          .filter(function(r){
+            return remainingReferences[r]
+          })
+          .join(';')
+      }
+    })
 
+    return referencesHash
   }
 
   function checkDistance(comp1, comp2){
@@ -1039,7 +974,7 @@ domino.settings({
 
       // It's the first time this ref is indexed
       key = trivialKey + '-0'
-      refIndex[trivialKey] = {0:{key:key, components: components}}
+      refIndex[trivialKey] = {0:{key:key, components: components, count: 1}}
       return key
 
     } else {
@@ -1071,13 +1006,14 @@ domino.settings({
 
         // We have a matching: we merge by returning the other's key
         key = trivialKey + '-' + minId
+        refIndex[trivialKey][minId].count++
         return key
 
       } else {
 
         // No match: we just add...
         key = trivialKey + '-' + id
-        refIndex[trivialKey][id] = {key:key, components: components}
+        refIndex[trivialKey][id] = {key:key, components: components, count:1}
         return key
 
       }
@@ -1107,7 +1043,7 @@ domino.settings({
       })
     }
 
-    return '' + components.date + '-' + authorsShort.join('-')
+    return '' + components.date + '.' + authorsShort.join('.')
   }
 
   function extractReferenceComponents(reference){
@@ -1218,6 +1154,96 @@ domino.settings({
 		headline.unshift(doi_column_name)
 		return csvRows
 	}
+
+  function filterNetworkByDegree(graph, keepAtLeast, minCount, maxCount){
+    json_graph_api.buildIndexes(graph)
+
+    // Get information about the degrees
+    var degreeIndex = {}
+    graph.nodes.forEach(function(n){
+      var degree = n.inEdges.length + n.outEdges.length
+      degreeIndex[degree] = (degreeIndex[degree] || 0) + 1
+    })
+
+    var degrees = Object.keys(degreeIndex)
+      .map(function(d){return Number.parseInt(d)})
+      .sort(function(a,b){
+        return a-b 
+      })
+      .reverse()
+
+    // Define the threshold
+    var minDegree = 0
+    ,total = graph.nodes.length
+    ,keep = 0
+    degrees.some(function(degree){
+
+      // We stop if we would have more than the max count
+      if(keep + degreeIndex[degree] > maxCount)
+        return true
+      
+      keep += degreeIndex[degree]
+      minDegree = degree
+      
+      // We stop if...
+      return keep > keepAtLeast * total && keep >= minCount
+    })
+
+    // Filter the nodes
+    console.log(graph.nodes.length + ' nodes, minDegree: ' + minDegree)
+    var remainingNodes = {}
+    graph.nodes = graph.nodes.filter(function(n){
+      var degree = n.inEdges.length + n.outEdges.length
+      if(degree < minDegree){
+        return false
+      } else {
+        remainingNodes[n.id] = true
+        return true
+      }
+    })
+    console.log(graph.nodes.length + ' nodes')
+    graph.edges = graph.edges.filter(function(e){
+      return remainingNodes[e.sourceID] && remainingNodes[e.targetID]
+    })
+
+    graph = json_graph_api.getBackbone(graph)
+  }
+
+  function filterNetworkByOccurrences(graph, type, minOcc){
+    
+    // Filter the nodes
+    var remainingNodes = {}
+    graph.nodes = graph.nodes.filter(function(n){
+      if(n.attributes[0].val == type && n.attributes[1].val < minOcc){
+        return false
+      } else {
+        remainingNodes[n.id] = true
+        return true
+      }
+    })
+    
+    graph.edges = graph.edges.filter(function(e){
+      return remainingNodes[e.sourceID] && remainingNodes[e.targetID]
+    })
+  }
+
+  function mergeNetworks(obsoleteGraph, resultGraph){
+    obsoleteGraph.nodes.forEach(function(n){
+      if(n.attributes[0].val != "References ID"){
+        resultGraph.nodes.push(n)
+      }
+    })
+    resultGraph.edges = resultGraph.edges.concat(obsoleteGraph.edges)
+
+    // Filter the nodes
+    var remainingNodes = {}
+    resultGraph.nodes.forEach(function(n){
+      remainingNodes[n.id] = true
+    })
+    resultGraph.edges = resultGraph.edges.filter(function(e){
+      return remainingNodes[e.sourceID] && remainingNodes[e.targetID]
+    })
+  }
 
 
 

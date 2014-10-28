@@ -127,27 +127,7 @@
                         <h4>Upload your Scopus CSV file</h4>
                         <div id="scopusextract"><span class="muted">file uploader</span></div>
                     </div>
-                    <div id="settingsDiv" style="display: none">
-                        <h4>Settings</h4>
-                        <div id="typeofnet"><span class="muted">type of network to extract</span></div>
-                        <form>
-                            <fieldset>
-                                <label>Filtering</label>
-                                <!-- <span class="help-block">Example block-level help text here.</span> -->
-                                <select id="minDegreeThreshold" class="input-block-level">
-                                    <option value="0">No filter</option>
-                                    <option value="1">Remove disconnected nodes</option>
-                                    <!-- <option value="2r">Get only nodes with 2+ links (recursive)</option> -->
-                                    <option value="2dn">Remove nodes &lt; 2 links, then disconnected nodes</option>
-                                    <option value="3dn">Remove nodes &lt; 3 links, then disconnected nodes</option>
-                                    <!-- <option value="3">Remove nodes with less than 3 links</option>
-                                    <option value="4">Remove nodes with less than 4 links</option>
-                                    <option value="5">Remove nodes with less than 5 links</option> -->
-                                </select>
-                            </fieldset>
-                        </form>
-                        <div id="build"><span class="muted">Build network button</span></div>
-                    </div>
+                    
                 </div>
                 <div class="span8">
                     <div id="networkDiv" style="display:none;">
