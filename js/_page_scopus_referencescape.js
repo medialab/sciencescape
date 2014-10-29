@@ -68,20 +68,28 @@ domino.settings({
 						// Loading and parsing process
 						,'loading_started'
 						,'loading_completed'
-						,'parsing_primed'
+            ,'parse'
 						,'parsing_processing'
 						,'parsing_success'
 						,'parsing_fail'
-						,'uploadAndParsing_success'
+            ,'compute'
+            ,'start_computing'
 
 						,'build_processing'
 						,'build_success'
 						,'build_fail'
 					]
 			},{
+        // When the file is loaded, trigger the parsing
+        triggers: ['loading_completed']
+        ,method: function(e){
+          this.dispatchEvent('parse')
+        }
+      },{
+        // When the file is parsed, trigger the computing
         triggers: ['dataTable_updated']
         ,method: function(e){
-
+          this.dispatchEvent('compute')
         }
       },{
 				triggers: ['ui_toggleLayoutRunning']
@@ -100,19 +108,6 @@ domino.settings({
 	})
 
 	//// Modules
-
-	// Log stuff in the console
-	D.addModule(function(){
-		domino.module.call(this)
-
-		this.triggers.events['loadingProgress_updated'] = function(provider, e) {
-			console.log('Loading progress', provider.get('loadingProgress'))
-		}
-
-		this.triggers.events['networkJson_updated'] = function(provider, e) {
-			console.log('Network: ', provider.get('networkJson'))
-		}
-	})
 
 	// File loader
 	D.addModule(function(){
@@ -185,10 +180,6 @@ domino.settings({
 			bar.addClass('bar-success')
 			bar.css('width', '100%')
 			bar.text('Reading: 100%')
-
-			setTimeout(function(){
-				_self.dispatchEvent('parsing_primed')
-			}, 1000)
 		}
 
 		this.triggers.events['uploadAndParsing_success'] = function(provider, e){
@@ -203,7 +194,7 @@ domino.settings({
 		var _self = this
 			,container = $('#scopusextract')    // We reuse the uploader progress bar
 
-		this.triggers.events['parsing_primed'] = function(provider, e){
+		this.triggers.events['parse'] = function(provider, e){
 			var progressElement = container.find('div.progress')
 				,bar = progressElement.find('div.bar')
 			progressElement.addClass('progress-striped')
@@ -236,20 +227,6 @@ domino.settings({
 		}
 	})
 
-	// Show Settings
-	D.addModule(function(){
-		domino.module.call(this)
-
-		var _self = this
-			,container = $('#settingsDiv')
-
-		this.triggers.events['uploadAndParsing_success'] = function(provider, e){
-			container.show()
-		}
-
-	})
-	
-	
 	// Processing: parsing
 	D.addModule(function(){
 		domino.module.call(this)
@@ -276,199 +253,33 @@ domino.settings({
 			}
 		}
 	})
-	
-	// Type of network
-  /*
-	D.addModule(function(){
-		domino.module.call(this)
 
-		var _self = this
-			,container = $('#typeofnet')
+  // Computing progress bar (applies to the loading progress bar)
+  D.addModule(function(){
+    domino.module.call(this)
 
-		$(document).ready(function(e){
-			container.html('<form><fieldset><label>Type of network</label><select class="input-block-level" disabled></select></fieldset></form>')
-		})
-		
-		this.triggers.events['dataTable_updated'] = function(provider, e){
-			var networkOptions = []
-				,data = provider.get('dataTable')
-				,titleColumn
-				,authorsColumn
-				,authorKeywordsColumn
-				,sourceTitleColumn
-				,abbrSourceTitleColumn
-				,doiCitedColumn
-				,doiColumn
-				,languageColumn
-				,doctypeColumn
-				,citedByColumn
-				,correspondenceAddressColumn
-				,affiliationsColumn
+    var _self = this
+      ,container = $('#scopusextract')    // We reuse the uploader progress bar
 
-			
-			data[0].forEach(function(d, i){
-				if(d == 'Title')
-					titleColumn = i
-				if(d == 'Authors')
-					authorsColumn = i
-				if(d == 'Author Keywords')
-					authorKeywordsColumn = i
-				if(d == 'Source title')
-					sourceTitleColumn = i
-				if(d == 'Abbreviated Source Title')
-					abbrSourceTitleColumn = i
-				if(d == 'Cited papers having a DOI')
-					doiCitedColumn = i
-				if(d == 'DOI')
-					doiColumn = i
-				if(d == 'Language of Original Document')
-					languageColumn = i
-				if(d == 'Document Type')
-					doctypeColumn = i
-				if(d == 'Cited by')
-					citedByColumn = i
-				if(d == 'Correspondence Address')
-					correspondenceAddressColumn = i
-				if(d == 'Affiliations')
-					affiliationsColumn = i
-			})
+    this.triggers.events['compute'] = function(provider, e){
+      var progressElement = container.find('div.progress')
+        ,bar = progressElement.find('div.bar')
+      progressElement.addClass('progress-striped')
+      progressElement.addClass('active')
+      bar.removeClass('bar-success')
+      bar.css('width', '100%')
+      bar.text('Computing... (may take a while)')
+    }
 
-			if( authorsColumn !== undefined && authorKeywordsColumn !== undefined )
-				networkOptions.push({
-					label: 'Authors and author Keywords, coappearing in the same papers'
-					,types: ['Authors', 'Author Keywords']
-					,settings: {
-						mode: 'bipartite'
-						,nodesColumnId1: authorsColumn
-						,nodesSeparator1: ','
-						,nodesMetadataColumnIds1: [
-								sourceTitleColumn
-								,abbrSourceTitleColumn
-								,languageColumn
-								,citedByColumn
-								,affiliationsColumn
-							].filter(function(d){return d!==undefined})
-						,nodesColumnId2: authorKeywordsColumn
-						,nodesSeparator2: ';'
-						,nodesMetadataColumnIds2: [
-								citedByColumn
-							].filter(function(d){return d!==undefined})
-					}
-				})
+    this.triggers.events['update_networkJson'] = function(provider, e){
+      var progressElement = container.find('div.progress')
+        ,bar = progressElement.find('div.bar')
+      progressElement.removeClass('progress-striped')
+      bar.addClass('bar-success')
+      bar.text('Computing successful')
+    }
 
-			if( authorsColumn !== undefined && sourceTitleColumn !== undefined )
-				networkOptions.push({
-					label: 'Authors and Source Titles, coappearing in the same papers'
-					,types: ['Authors', 'Source title']
-					,settings: {
-						mode: 'bipartite'
-						,nodesColumnId1: authorsColumn
-						,nodesMetadataColumnIds1: [
-								languageColumn
-								,citedByColumn
-								,affiliationsColumn
-							].filter(function(d){return d!==undefined})
-						,nodesSeparator1: ','
-						,nodesColumnId2: sourceTitleColumn
-						,nodesMetadataColumnIds2: [
-								abbrSourceTitleColumn
-								,citedByColumn
-							].filter(function(d){return d!==undefined})
-					}
-				})
-
-			if( sourceTitleColumn !== undefined && authorKeywordsColumn !== undefined )
-				networkOptions.push({
-					label: 'Source Titles and author Keywords, coappearing in the same papers'
-					,types: ['Author Keywords', 'Source title']
-					,settings: {
-						mode: 'bipartite'
-						,nodesColumnId1: authorKeywordsColumn
-						,nodesSeparator1: ';'
-						,nodesMetadataColumnIds1: [
-								citedByColumn
-							].filter(function(d){return d!==undefined})
-						,nodesColumnId2: sourceTitleColumn
-						,nodesMetadataColumnIds2: [
-								abbrSourceTitleColumn
-								,languageColumn
-								,citedByColumn
-							].filter(function(d){return d!==undefined})
-					}
-				})
-
-			if( authorsColumn !== undefined && titleColumn !== undefined )
-				networkOptions.push({
-					label: 'Authors linked by co-publication'
-					,types: ['Authors']
-					,settings: {
-						mode: 'normal'
-						,nodesColumnId: authorsColumn
-						,nodesSeparator: ','
-						,nodesMetadataColumnIds: [
-								sourceTitleColumn
-								,abbrSourceTitleColumn
-								,languageColumn
-								,citedByColumn
-								,affiliationsColumn
-							].filter(function(d){return d!==undefined})
-						,linksColumnId: titleColumn
-					}
-				})
-
-			if( doiColumn !== undefined && doiCitedColumn !== undefined && titleColumn !== undefined )
-				networkOptions.push({
-					label: 'Papers linked by Citations (when they have a DOI)'
-					,types: ['DOI']
-					,fetchTitles: true
-					,settings: {
-						mode: 'citation'
-						,nodesColumnId: doiColumn
-						,nodesMetadataColumnIds: [
-								titleColumn
-								,sourceTitleColumn
-								,abbrSourceTitleColumn
-								,languageColumn
-								,doctypeColumn
-								,citedByColumn
-								,correspondenceAddressColumn
-								,affiliationsColumn
-							].filter(function(d){return d!==undefined})
-						,citationLinksColumnId: doiCitedColumn
-						,citationLinksSeparator: ';'
-					}
-				})
-
-			if( authorKeywordsColumn !== undefined && titleColumn !== undefined )
-				networkOptions.push({
-					label: 'author Keywords coappearing in the same papers'
-					,types: ['Author Keywords']
-					,settings: {
-						mode: 'normal'
-						,nodesColumnId: authorKeywordsColumn
-						,nodesSeparator: ';'
-						,nodesMetadataColumnIds: [
-								citedByColumn
-							].filter(function(d){return d!==undefined})
-						,linksColumnId: titleColumn
-					}
-				})
-
-			_self.dispatchEvent('update_networkOptions', {
-				'networkOptions': networkOptions
-			})
-		}
-
-		this.triggers.events['networkOptions_updated'] = function(provider, e){
-			var networkOptions = provider.get('networkOptions')
-			container.find('select').html('').append(
-				networkOptions.map(function(option, i){
-					return $('<option/>').attr('value',i).text(option.label)
-				})
-			).removeAttr('disabled')
-		}
-	})
-*/
+  })
   
   // Build
   D.addModule(function(){
@@ -476,7 +287,13 @@ domino.settings({
 
     var _self = this
 
-    this.triggers.events['dataTable_updated'] = function(provider, e){
+    this.triggers.events['compute'] = function(provider, e){
+      setTimeout(function(){
+        _self.dispatchEvent('start_computing')
+      }, 1000)
+    }
+
+    this.triggers.events['start_computing'] = function(provider, e){
       var data = provider.get('dataTable')
       ,titleColumn
       ,authorsColumn
@@ -609,20 +426,6 @@ domino.settings({
     }
 
   })
-
-	// Settings
-	D.addModule(function(d){
-		domino.module.call(this)
-
-		var _self = this
-
-		$(document).ready(function(e){
-			$('#minDegreeThreshold').val(d.get('minDegreeThreshold'))
-				.change(function(){
-					_self.dispatchEvent('update_minDegreeThreshold', {minDegreeThreshold: $('#minDegreeThreshold').val()})
-				})
-		})
-	})
 
 	// Preview network (sigma)
 	D.addModule(function(){
