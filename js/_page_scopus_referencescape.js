@@ -86,8 +86,15 @@ domino.settings({
 				triggers: ['ui_rescaleGraph']
 				,method: function(e){
 					var sigmaInstance = this.get('sigmaInstance')
-					if(sigmaInstance !== undefined)
-						sigmaInstance.position(0,0,1).draw()
+					if(sigmaInstance !== undefined){
+            var cam = sigmaInstance.cameras[0];
+
+            sigma.misc.animation.camera(
+              cam,
+              {x: 0, y: 0, angle: 0, ratio: 1},
+              { duration: 150 }
+            );
+          }
 				}
 			}
 		]
@@ -566,7 +573,7 @@ domino.settings({
 
           // LinLog
           ,linLogMode: true
-          ,scalingRatio: 0.2
+          ,scalingRatio: 0.8
           ,strongGravityMode: false
           ,slowDown: 1
         })
@@ -655,7 +662,7 @@ domino.settings({
 
 					// Get layout properties from sigma
 					var sigmaInstance = provider.get('sigmaInstance')
-					sigmaInstance.iterNodes(function(sigmaNode){
+					sigmaInstance.graph.nodes().forEach(function(sigmaNode){
 						var node = json.nodes_byId[sigmaNode.id]
 						if(node === undefined){
 							console.log('Cannot find node '+sigmaNode.id)
