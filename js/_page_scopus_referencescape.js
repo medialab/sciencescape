@@ -29,10 +29,6 @@ domino.settings({
 				,dispatch: 'networkJson_updated'
 				,triggers: 'update_networkJson'
 			},{
-				id:'networkOptions'
-				,dispatch: 'networkOptions_updated'
-				,triggers: 'update_networkOptions'
-			},{
 				id:'loadingProgress'
 				,dispatch: 'loadingProgress_updated'
 				,triggers: 'update_loadingProgress'
@@ -47,16 +43,6 @@ domino.settings({
 				,value: false
 				,dispatch: 'layoutRunning_updated'
 				,triggers: 'update_layoutRunning'
-			},{
-				id:'minDegreeThreshold'
-				// ,type: 'integer'
-				,value: '1'
-				,dispatch: 'minDegreeThreshold_updated'
-				,triggers: 'update_minDegreeThreshold'
-			},{
-				id: 'poorlyConnectedNodesRemoved'
-				,dispatch: 'poorlyConnectedNodesRemoved_updated'
-				,triggers: 'update_poorlyConnectedNodesRemoved'
 			}
 		],services: [
 		],hacks:[
@@ -377,7 +363,12 @@ domino.settings({
                     ,nodesMetadataColumnIds2: []
                     ,jsonCallback: function(source_json){
 
+                      // Filter networks
                       console.log((new Date()).toLocaleString() + ' Filtering networks')
+                      filterAutoLinks(ref_json)
+                      filterAutoLinks(author_json)
+                      filterAutoLinks(kw_json)
+                      filterAutoLinks(source_json)
                       filterNetworkByDegree(ref_json, 0.1 /* 10% */, 100, 1000)
                       filterNetworkByOccurrences(author_json, 'Authors', 3)
                       filterNetworkByOccurrences(kw_json, 'Author Keywords', 3)
@@ -391,11 +382,17 @@ domino.settings({
                       mergeNetworks(kw_json, json)
                       mergeNetworks(source_json, json)
 
+                      // Filter the result to remove leaves and orphans
+                      filterNetworkRemoveLeavesAndOrphans(json)
+
                       // Build indexes
                       json_graph_api.buildIndexes(json)
 
                       console.log((new Date()).toLocaleString() + ' Processing finished')
 
+                      if(json.nodes.length == 0){
+                        alert('The result is an empty network')
+                      }
                       _self.dispatchEvent('update_networkJson', {
                         networkJson: json
                       })
@@ -1010,6 +1007,39 @@ domino.settings({
     })
 
     graph = json_graph_api.getBackbone(graph)
+  }
+
+  function filterAutoLinks(graph){
+    graph.edges = graph.edges.filter(function(e){
+      return e.sourceID != e.targetID
+    })
+  }
+
+  function filterNetworkRemoveLeavesAndOrphans(graph){
+    json_graph_api.buildIndexes(graph)
+
+    var somethingChanged = false
+
+    // Filter the nodes
+    var remainingNodes = {}
+    graph.nodes = graph.nodes.filter(function(n){
+      var degree = n.inEdges.length + n.outEdges.length
+      if(degree < 2){
+        somethingChanged = true
+        return false
+      } else {
+        remainingNodes[n.id] = true
+        return true
+      }
+    })
+    graph.edges = graph.edges.filter(function(e){
+      return remainingNodes[e.sourceID] && remainingNodes[e.targetID]
+    })
+
+    graph = json_graph_api.getBackbone(graph)
+
+    if(somethingChanged)
+      filterNetworkRemoveLeavesAndOrphans(graph)
   }
 
   function filterNetworkByOccurrences(graph, type, minOcc){
