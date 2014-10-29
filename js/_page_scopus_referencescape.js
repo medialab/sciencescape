@@ -1,12 +1,12 @@
 domino.settings({
-	shortcutPrefix: "::" // Hack: preventing a bug related to a port in a URL for Ajax
-	,verbose: false
+  shortcutPrefix: "::" // Hack: preventing a bug related to a port in a URL for Ajax
+  ,verbose: false
 })
 
 ;(function($, domino, undefined){
-	var D = new domino({
-		name: "main"
-		,properties: [
+  var D = new domino({
+    name: "main"
+    ,properties: [
       {
         id:'authorsMinimumOccurrences'
         ,value: 3
@@ -30,63 +30,63 @@ domino.settings({
         ,dispatch: 'degreeCut_updated'
         ,triggers: 'update_degreeCut'
       },{
-				id:'inputCSVfiles'
-				,dispatch: 'inputCSVfiles_updated'
-				,triggers: 'update_inputCSVfiles'
-			},{
-				id:'inputCSVfileUploader'
-				,dispatch: 'inputCSVfileUploader_updated'
-				,triggers: 'update_inputCSVfileUploader'
+        id:'inputCSVfiles'
+        ,dispatch: 'inputCSVfiles_updated'
+        ,triggers: 'update_inputCSVfiles'
+      },{
+        id:'inputCSVfileUploader'
+        ,dispatch: 'inputCSVfileUploader_updated'
+        ,triggers: 'update_inputCSVfileUploader'
       },{
         id:'referencesHash'
         ,dispatch: 'referencesHash_updated'
         ,triggers: 'update_referencesHash'
-			},{
-				id:'dataTable'
-				,dispatch: 'dataTable_updated'
-				,triggers: 'update_dataTable'
-			},{
-				id:'networkJson'
-				,dispatch: 'networkJson_updated'
-				,triggers: 'update_networkJson'
-			},{
-				id:'loadingProgress'
-				,dispatch: 'loadingProgress_updated'
-				,triggers: 'update_loadingProgress'
-				,value: 0
-			},{
-				id:'sigmaInstance'
-				,dispatch: 'sigmaInstance_updated'
-				,triggers: 'update_sigmaInstance'
-			},{
-				id:'layoutRunning'
-				,type: 'boolean'
-				,value: false
-				,dispatch: 'layoutRunning_updated'
-				,triggers: 'update_layoutRunning'
-			}
-		],services: [
-		],hacks:[
-			{
-				// Events that need to be declared somewhere
-				triggers: [
-						'sigmaInstance_updated'
+      },{
+        id:'dataTable'
+        ,dispatch: 'dataTable_updated'
+        ,triggers: 'update_dataTable'
+      },{
+        id:'networkJson'
+        ,dispatch: 'networkJson_updated'
+        ,triggers: 'update_networkJson'
+      },{
+        id:'loadingProgress'
+        ,dispatch: 'loadingProgress_updated'
+        ,triggers: 'update_loadingProgress'
+        ,value: 0
+      },{
+        id:'sigmaInstance'
+        ,dispatch: 'sigmaInstance_updated'
+        ,triggers: 'update_sigmaInstance'
+      },{
+        id:'layoutRunning'
+        ,type: 'boolean'
+        ,value: false
+        ,dispatch: 'layoutRunning_updated'
+        ,triggers: 'update_layoutRunning'
+      }
+    ],services: [
+    ],hacks:[
+      {
+        // Events that need to be declared somewhere
+        triggers: [
+            'sigmaInstance_updated'
 
-						// Loading and parsing process
-						,'loading_started'
-						,'loading_completed'
+            // Loading and parsing process
+            ,'loading_started'
+            ,'loading_completed'
             ,'parse'
-						,'parsing_processing'
-						,'parsing_success'
-						,'parsing_fail'
+            ,'parsing_processing'
+            ,'parsing_success'
+            ,'parsing_fail'
             ,'compute'
             ,'start_computing'
 
-						,'build_processing'
-						,'build_success'
-						,'build_fail'
-					]
-			},{
+            ,'build_processing'
+            ,'build_success'
+            ,'build_fail'
+          ]
+      },{
         // When the file is loaded, trigger the parsing
         triggers: ['loading_completed']
         ,method: function(e){
@@ -99,15 +99,15 @@ domino.settings({
           this.dispatchEvent('compute')
         }
       },{
-				triggers: ['ui_toggleLayoutRunning']
-				,method: function(e){
-					this.update('layoutRunning', !this.get('layoutRunning'))
-				}
-			},{
-				triggers: ['ui_rescaleGraph']
-				,method: function(e){
-					var sigmaInstance = this.get('sigmaInstance')
-					if(sigmaInstance !== undefined){
+        triggers: ['ui_toggleLayoutRunning']
+        ,method: function(e){
+          this.update('layoutRunning', !this.get('layoutRunning'))
+        }
+      },{
+        triggers: ['ui_rescaleGraph']
+        ,method: function(e){
+          var sigmaInstance = this.get('sigmaInstance')
+          if(sigmaInstance !== undefined){
             var cam = sigmaInstance.cameras[0];
 
             sigma.misc.animation.camera(
@@ -116,157 +116,157 @@ domino.settings({
               { duration: 150 }
             );
           }
-				}
-			}
-		]
-	})
+        }
+      }
+    ]
+  })
 
-	//// Modules
+  //// Modules
 
-	// File loader
-	D.addModule(function(){
-		domino.module.call(this)
+  // File loader
+  D.addModule(function(){
+    domino.module.call(this)
 
-		var _self = this
-			,container = $('#scopusextract')
+    var _self = this
+      ,container = $('#scopusextract')
 
-		$(document).ready(function(e){
-			container.html('<div style="height: 50px"><div class="input"><input type="file" name="file"/><span class="help-block">Note: you can drag and drop a file</span></div><div class="progress" style="display: none;"><div class="bar" style="width: 0%;"></div></div></div>')
-			container.find('input').on('change', function(evt){
-				var target = evt.target || evt.srcElement
-				_self.dispatchEvent('update_inputCSVfiles', {
-					inputCSVfiles: target.files
-				})
-			})
-		})
+    $(document).ready(function(e){
+      container.html('<div style="height: 50px"><div class="input"><input type="file" name="file"/><span class="help-block">Note: you can drag and drop a file</span></div><div class="progress" style="display: none;"><div class="bar" style="width: 0%;"></div></div></div>')
+      container.find('input').on('change', function(evt){
+        var target = evt.target || evt.srcElement
+        _self.dispatchEvent('update_inputCSVfiles', {
+          inputCSVfiles: target.files
+        })
+      })
+    })
 
-		
-		this.triggers.events['inputCSVfiles_updated'] = function(provider, e){
-			var files = provider.get('inputCSVfiles')
-			if( files !== undefined && files.length >0 ){
-				container.find('div.input').hide()
-				container.find('div.progress').show()
-				var bar = container.find('div.progress .bar')
-				bar.css('width', '0%')
-				
-				var fileLoader = new FileLoader()
-				_self.dispatchEvent('update_inputCSVfileUploader', {
-					inputCSVfileUploader: fileLoader
-				})
-				fileLoader.read(files, {
-					onloadstart: function(evt){
-						_self.dispatchEvent('loading_started')
-					},
-					onload: function(evt){
-						_self.dispatchEvent('loading_completed')
-					},
-					onprogress: function(evt){
-						// evt is an ProgressEvent
-						if (evt.lengthComputable) {
-							_self.dispatchEvent('update_loadingProgress', {
-								loadingProgress: Math.round((evt.loaded / evt.total) * 100)
-							})
-						}
-					}
-				})
-			}
-		}
+    
+    this.triggers.events['inputCSVfiles_updated'] = function(provider, e){
+      var files = provider.get('inputCSVfiles')
+      if( files !== undefined && files.length >0 ){
+        container.find('div.input').hide()
+        container.find('div.progress').show()
+        var bar = container.find('div.progress .bar')
+        bar.css('width', '0%')
+        
+        var fileLoader = new FileLoader()
+        _self.dispatchEvent('update_inputCSVfileUploader', {
+          inputCSVfileUploader: fileLoader
+        })
+        fileLoader.read(files, {
+          onloadstart: function(evt){
+            _self.dispatchEvent('loading_started')
+          },
+          onload: function(evt){
+            _self.dispatchEvent('loading_completed')
+          },
+          onprogress: function(evt){
+            // evt is an ProgressEvent
+            if (evt.lengthComputable) {
+              _self.dispatchEvent('update_loadingProgress', {
+                loadingProgress: Math.round((evt.loaded / evt.total) * 100)
+              })
+            }
+          }
+        })
+      }
+    }
 
-		this.triggers.events['loadingProgress_updated'] = function(provider, e){
-			var percentLoaded = +provider.get('loadingProgress')
-			// Increase the progress bar length.
-			if (percentLoaded < 100) {
-				var bar = container.find('div.progress .bar')
-				bar.css('width', percentLoaded + '%')
-				bar.text(percentLoaded + '%')
-			}
-		}
+    this.triggers.events['loadingProgress_updated'] = function(provider, e){
+      var percentLoaded = +provider.get('loadingProgress')
+      // Increase the progress bar length.
+      if (percentLoaded < 100) {
+        var bar = container.find('div.progress .bar')
+        bar.css('width', percentLoaded + '%')
+        bar.text(percentLoaded + '%')
+      }
+    }
 
-		this.triggers.events['loading_started'] = function(provider, e){
-			var bar = container.find('div.progress .bar')
-			bar.removeClass("bar-success")
-			bar.removeClass("bar-warning")
-		}
+    this.triggers.events['loading_started'] = function(provider, e){
+      var bar = container.find('div.progress .bar')
+      bar.removeClass("bar-success")
+      bar.removeClass("bar-warning")
+    }
 
-		this.triggers.events['loading_completed'] = function(provider, e){
-			var progressElement = container.find('div.progress')
-				,bar = progressElement.find('div.bar')
-			bar.addClass('bar-success')
-			bar.css('width', '100%')
-			bar.text('Reading: 100%')
-		}
+    this.triggers.events['loading_completed'] = function(provider, e){
+      var progressElement = container.find('div.progress')
+        ,bar = progressElement.find('div.bar')
+      bar.addClass('bar-success')
+      bar.css('width', '100%')
+      bar.text('Reading: 100%')
+    }
 
-		this.triggers.events['uploadAndParsing_success'] = function(provider, e){
-			container.html('<span class="tex-success">File uploaded and parsed successfully</span>')
-		}
-	})
-	
-	// Parsing progress bar (applies to the loading progress bar)
-	D.addModule(function(){
-		domino.module.call(this)
+    this.triggers.events['uploadAndParsing_success'] = function(provider, e){
+      container.html('<span class="tex-success">File uploaded and parsed successfully</span>')
+    }
+  })
+  
+  // Parsing progress bar (applies to the loading progress bar)
+  D.addModule(function(){
+    domino.module.call(this)
 
-		var _self = this
-			,container = $('#scopusextract')    // We reuse the uploader progress bar
+    var _self = this
+      ,container = $('#scopusextract')    // We reuse the uploader progress bar
 
-		this.triggers.events['parse'] = function(provider, e){
-			var progressElement = container.find('div.progress')
-				,bar = progressElement.find('div.bar')
-			progressElement.addClass('progress-striped')
-			progressElement.addClass('active')
-			bar.removeClass('bar-success')
-			bar.css('width', '100%')
-			bar.text('Parsing...')
-			setTimeout(function(){
-				_self.dispatchEvent('parsing_processing')
-			}, 800)
-		}
+    this.triggers.events['parse'] = function(provider, e){
+      var progressElement = container.find('div.progress')
+        ,bar = progressElement.find('div.bar')
+      progressElement.addClass('progress-striped')
+      progressElement.addClass('active')
+      bar.removeClass('bar-success')
+      bar.css('width', '100%')
+      bar.text('Parsing...')
+      setTimeout(function(){
+        _self.dispatchEvent('parsing_processing')
+      }, 800)
+    }
 
-		this.triggers.events['parsing_success'] = function(provider, e){
-			var progressElement = container.find('div.progress')
-				,bar = progressElement.find('div.bar')
-			progressElement.removeClass('progress-striped')
-			bar.addClass('bar-success')
-			bar.text('Parsing successful')
-			setTimeout(function(){
-				_self.dispatchEvent('uploadAndParsing_success')
-			}, 500)
-		}
+    this.triggers.events['parsing_success'] = function(provider, e){
+      var progressElement = container.find('div.progress')
+        ,bar = progressElement.find('div.bar')
+      progressElement.removeClass('progress-striped')
+      bar.addClass('bar-success')
+      bar.text('Parsing successful')
+      setTimeout(function(){
+        _self.dispatchEvent('uploadAndParsing_success')
+      }, 500)
+    }
 
-		this.triggers.events['parsing_fail'] = function(provider, e){
-			var progressElement = container.find('div.progress')
-				,bar = progressElement.find('div.bar')
-			progressElement.removeClass('progress-striped')
-			bar.addClass('bar-danger')
-			bar.text('Parsing failed')
-		}
-	})
+    this.triggers.events['parsing_fail'] = function(provider, e){
+      var progressElement = container.find('div.progress')
+        ,bar = progressElement.find('div.bar')
+      progressElement.removeClass('progress-striped')
+      bar.addClass('bar-danger')
+      bar.text('Parsing failed')
+    }
+  })
 
-	// Processing: parsing
-	D.addModule(function(){
-		domino.module.call(this)
+  // Processing: parsing
+  D.addModule(function(){
+    domino.module.call(this)
 
-		var _self = this
+    var _self = this
 
-		this.triggers.events['parsing_processing'] = function(provider, e){
-			var fileLoader = provider.get('inputCSVfileUploader')
-			,parsing = parse_csv(fileLoader.reader.result)
+    this.triggers.events['parsing_processing'] = function(provider, e){
+      var fileLoader = provider.get('inputCSVfileUploader')
+      ,parsing = parse_csv(fileLoader.reader.result)
 
       if(parsing && parsing.table){
-				setTimeout(function(){
+        setTimeout(function(){
           _self.dispatchEvent('update_referencesHash', {
             'referencesHash': parsing.referencesHash
           })
           _self.dispatchEvent('update_dataTable', {
             'dataTable': parsing.table
           })
-				}, 200)
+        }, 200)
 
-				// _self.dispatchEvent('parsing_success', {})
-			} else {
-				_self.dispatchEvent('parsing_fail', {})
-			}
-		}
-	})
+        // _self.dispatchEvent('parsing_success', {})
+      } else {
+        _self.dispatchEvent('parsing_fail', {})
+      }
+    }
+  })
 
   // Computing progress bar (applies to the loading progress bar)
   D.addModule(function(){
@@ -427,18 +427,23 @@ domino.settings({
                         if(n.attributes[0].val == "References ID"){
                           n.size = 1
                           var refKey = n.label.toUpperCase().split('-')
-                          ,components = referencesHash[refKey[0]][refKey[1]].components
-                          ,name = (components.authors || ['Unknown authors'])
-                            .map(function(str){
-                              var el = str.trim().replace(',', '').split(' ')
-                              return (el[1] || '').replace('.', '. ') + '. ' + (el[0] || '')
-                            })
-                            .map(titleCase).join(', ')
-                            + '. '
-                            + sentenceCase(components.title || components.title_plus || 'Unknown title').trim()
-                            + ', '
-                            + (components.date || 'Unknown date')
-                          n.label = name
+                          ,components
+                          try{
+                            components = referencesHash[refKey[0]][refKey[1]].components
+                            var name = (components.authors || ['Unknown authors'])
+                              .map(function(str){
+                                var el = str.trim().replace(',', '').split(' ')
+                                return (el[1] || '').replace('.', '. ') + '. ' + (el[0] || '')
+                              })
+                              .map(titleCase).join(', ')
+                              + '. '
+                              + sentenceCase(components.title || components.title_plus || 'Unknown title').trim()
+                              + ', '
+                              + (components.date || 'Unknown date')
+                            n.label = name
+                          } catch(e){
+                            console.log('Error while naming: ' + e + ' - Ref Key: ' + n.label.toUpperCase())
+                          }
                         }
                       })
 
@@ -486,32 +491,32 @@ domino.settings({
 
   })
 
-	// Sigma: Preview network
-	D.addModule(function(){
-		domino.module.call(this)
+  // Sigma: Preview network
+  D.addModule(function(){
+    domino.module.call(this)
 
-		var _self = this
-			,container = $('#sigmaContainer')
+    var _self = this
+      ,container = $('#sigmaContainer')
 
-		$(document).ready(function(e){
-			container.html('<div class="sigma-parent"><div class="sigma-expand" id="sigma-example"></div></div>')
-		})
+    $(document).ready(function(e){
+      container.html('<div class="sigma-parent"><div class="sigma-expand" id="sigma-example"></div></div>')
+    })
 
-		this.triggers.events['networkJson_updated'] = function(provider, e){
-			$('#networkDiv').show()
+    this.triggers.events['networkJson_updated'] = function(provider, e){
+      $('#networkDiv').show()
 
-			var json = provider.get('networkJson')
-				,networkOptions = provider.get('networkOptions')
-				,colors = ["#637CB5", "#C34E7B", "#66903C", "#C55C32", "#B25AC9"]
-				,colorsByType = {
+      var json = provider.get('networkJson')
+        ,networkOptions = provider.get('networkOptions')
+        ,colors = ["#637CB5", "#C34E7B", "#66903C", "#C55C32", "#B25AC9"]
+        ,colorsByType = {
           'References ID': '#CCC'
           ,'Authors': '#637CB5'
           ,'Source title': '#C34E7B'
           ,'Author Keywords': '#66903C'
         }
 
-			// Instanciate sigma.js and customize it
-			var sigmaInstance = new sigma({
+      // Instanciate sigma.js and customize it
+      var sigmaInstance = new sigma({
         container: 'sigma-example'
         ,settings:{
           defaultLabelColor: '#666'
@@ -537,48 +542,48 @@ domino.settings({
         }
       })
 
-			// Populate
-			json.nodes.forEach(function(node){
-				sigmaInstance.graph.addNode({
-					id: node.id
+      // Populate
+      json.nodes.forEach(function(node){
+        sigmaInstance.graph.addNode({
+          id: node.id
           ,x: Math.random()
-					,y: Math.random()
-					,label: node.label
-					,size: node.size || 1 + Math.log(1 + 0.1 * ( node.inEdges.length + node.outEdges.length ) )
-					,'color': colorsByType[node.attributes_byId['attr_type']] || '#000'
+          ,y: Math.random()
+          ,label: node.label
+          ,size: node.size || 1 + Math.log(1 + 0.1 * ( node.inEdges.length + node.outEdges.length ) )
+          ,'color': colorsByType[node.attributes_byId['attr_type']] || '#000'
           ,dlevel: node.dlevel
-				})
-			})
-			json.edges.forEach(function(link, i){
-				sigmaInstance.graph.addEdge({
+        })
+      })
+      json.edges.forEach(function(link, i){
+        sigmaInstance.graph.addEdge({
           id: +i
           ,source: link.sourceID
           ,target: link.targetID
         })
-			})
+      })
 
-			_self.dispatchEvent('update_sigmaInstance', {
-				sigmaInstance: sigmaInstance
-			})
+      _self.dispatchEvent('update_sigmaInstance', {
+        sigmaInstance: sigmaInstance
+      })
 
-			// Start the ForceAtlas2 algorithm
-			_self.dispatchEvent('update_layoutRunning', {
-				layoutRunning: true
-			})
-		}
-	})
-	
-	// ForceAtlas
-	D.addModule(function(){
-		domino.module.call(this)
+      // Start the ForceAtlas2 algorithm
+      _self.dispatchEvent('update_layoutRunning', {
+        layoutRunning: true
+      })
+    }
+  })
+  
+  // ForceAtlas
+  D.addModule(function(){
+    domino.module.call(this)
 
-		var _self = this
+    var _self = this
 
-		this.triggers.events['layoutRunning_updated'] = function(provider, e){
-			var sigmaInstance = provider.get('sigmaInstance')
-				,layoutRunning = provider.get('layoutRunning')
-			if(layoutRunning){
-				sigmaInstance.startForceAtlas2({
+    this.triggers.events['layoutRunning_updated'] = function(provider, e){
+      var sigmaInstance = provider.get('sigmaInstance')
+        ,layoutRunning = provider.get('layoutRunning')
+      if(layoutRunning){
+        sigmaInstance.startForceAtlas2({
           barnesHutOptimize: false  // Mandatory in the tweaked version
           ,gravity: 0.05
           ,startingIterations: 50
@@ -595,115 +600,115 @@ domino.settings({
           ,strongGravityMode: false
           ,slowDown: 1
         })
-			} else {
-				sigmaInstance.stopForceAtlas2()
-			}
-		}
-	})
+      } else {
+        sigmaInstance.stopForceAtlas2()
+      }
+    }
+  })
 
-	// Sigma buttons
-	D.addModule(function(){
-		domino.module.call(this)
+  // Sigma buttons
+  D.addModule(function(){
+    domino.module.call(this)
 
-		var _self = this
-			,container = $('#sigmaButtons')
+    var _self = this
+      ,container = $('#sigmaButtons')
 
-		$(document).ready(function(e){
-			container.html('<div class="btn-group"><button class="btn btn-small" id="layoutSwitch">Stop Layout</button> <button class="btn btn-small" id="rescaleGraph"><i class="icon-resize-full"/> Rescale Graph</button></div>')
-			
-			container.find('#layoutSwitch').click(function(){
-				_self.dispatchEvent('ui_toggleLayoutRunning')
-			})
-			container.find('#rescaleGraph').click(function(){
-				_self.dispatchEvent('ui_rescaleGraph')
-			})
+    $(document).ready(function(e){
+      container.html('<div class="btn-group"><button class="btn btn-small" id="layoutSwitch">Stop Layout</button> <button class="btn btn-small" id="rescaleGraph"><i class="icon-resize-full"/> Rescale Graph</button></div>')
+      
+      container.find('#layoutSwitch').click(function(){
+        _self.dispatchEvent('ui_toggleLayoutRunning')
+      })
+      container.find('#rescaleGraph').click(function(){
+        _self.dispatchEvent('ui_rescaleGraph')
+      })
 
-			_self.dispatchEvent('sigmaInstance_updated')
-		})
+      _self.dispatchEvent('sigmaInstance_updated')
+    })
 
-		function updateLayoutSwitch(provider, e){
-			var button = container.find('#layoutSwitch')
-				,layoutRunning = provider.get('layoutRunning')
-				,sigmaInstance = provider.get('sigmaInstance')
-			if(sigmaInstance === undefined){
-				button.html('<i class="icon-play"/> Start layout')
-				button.addClass('disabled')
-			} else {
-				button.removeClass('disabled')
-				if(layoutRunning){
-					button.html('<i class="icon-stop"/> Stop layout')
-				} else {
-					button.html('<i class="icon-play"/> Start layout')
-				}
-			}
-		}
+    function updateLayoutSwitch(provider, e){
+      var button = container.find('#layoutSwitch')
+        ,layoutRunning = provider.get('layoutRunning')
+        ,sigmaInstance = provider.get('sigmaInstance')
+      if(sigmaInstance === undefined){
+        button.html('<i class="icon-play"/> Start layout')
+        button.addClass('disabled')
+      } else {
+        button.removeClass('disabled')
+        if(layoutRunning){
+          button.html('<i class="icon-stop"/> Stop layout')
+        } else {
+          button.html('<i class="icon-play"/> Start layout')
+        }
+      }
+    }
 
-		function updateRescaleGraph(provider, e){
-			var button = container.find('#rescaleGraph')
-				,sigmaInstance = provider.get('sigmaInstance')
-			if(sigmaInstance === undefined){
-				button.addClass('disabled')
-			} else {
-				button.removeClass('disabled')
-			}
-		}
+    function updateRescaleGraph(provider, e){
+      var button = container.find('#rescaleGraph')
+        ,sigmaInstance = provider.get('sigmaInstance')
+      if(sigmaInstance === undefined){
+        button.addClass('disabled')
+      } else {
+        button.removeClass('disabled')
+      }
+    }
 
-		this.triggers.events['sigmaInstance_updated'] = function(provider, e){
-			updateLayoutSwitch(provider, e)
-			updateRescaleGraph(provider, e)
-		}
+    this.triggers.events['sigmaInstance_updated'] = function(provider, e){
+      updateLayoutSwitch(provider, e)
+      updateRescaleGraph(provider, e)
+    }
 
-		this.triggers.events['layoutRunning_updated'] = function(provider, e){
-			updateLayoutSwitch(provider, e)
-		}
-	})
-	
-	// Download graph button     
-	D.addModule(function(){
-		domino.module.call(this)
+    this.triggers.events['layoutRunning_updated'] = function(provider, e){
+      updateLayoutSwitch(provider, e)
+    }
+  })
+  
+  // Download graph button     
+  D.addModule(function(){
+    domino.module.call(this)
 
-		var _self = this
-			,container = $('#download')
+    var _self = this
+      ,container = $('#download')
 
-		$(document).ready(function(e){
-			container.html('<div><button class="btn btn-small btn-primary disabled"><i class="icon-download icon-white"></i> Download network</button></div>')
-		})
-		
-		this.triggers.events['networkJson_updated'] = function(provider, e){
-			var button = container.find('button')
+    $(document).ready(function(e){
+      container.html('<div><button class="btn btn-small btn-primary disabled"><i class="icon-download icon-white"></i> Download network</button></div>')
+    })
+    
+    this.triggers.events['networkJson_updated'] = function(provider, e){
+      var button = container.find('button')
 
-			button.removeClass('disabled').click(function(){
-				if(!button.hasClass('disabled')){
-					button.addClass('disabled')
-					
-					var json = provider.get('networkJson')
+      button.removeClass('disabled').click(function(){
+        if(!button.hasClass('disabled')){
+          button.addClass('disabled')
+          
+          var json = provider.get('networkJson')
 
-					// Get layout properties from sigma
-					var sigmaInstance = provider.get('sigmaInstance')
-					sigmaInstance.graph.nodes().forEach(function(sigmaNode){
-						var node = json.nodes_byId[sigmaNode.id]
-						if(node === undefined){
-							console.log('Cannot find node '+sigmaNode.id)
-							sigmaNode.color = '#FF0000'
-						} else {
+          // Get layout properties from sigma
+          var sigmaInstance = provider.get('sigmaInstance')
+          sigmaInstance.graph.nodes().forEach(function(sigmaNode){
+            var node = json.nodes_byId[sigmaNode.id]
+            if(node === undefined){
+              console.log('Cannot find node '+sigmaNode.id)
+              sigmaNode.color = '#FF0000'
+            } else {
               node.x = sigmaNode.x
-							node.y = sigmaNode.y
-							node.size = sigmaNode.size
-							var rgb = chroma.hex(sigmaNode.color).rgb
-							node.color = {r:rgb[0], g:rgb[1], b:rgb[2]}
-						}
-					})
+              node.y = sigmaNode.y
+              node.size = sigmaNode.size
+              var rgb = chroma.hex(sigmaNode.color).rgb
+              node.color = {r:rgb[0], g:rgb[1], b:rgb[2]}
+            }
+          })
 
-					// Download
-					var blob = new Blob(json_graph_api.buildGEXF(json), {'type':'text/gexf+xml;charset=utf-8'})
-						,filename = "Network.gexf"
-					if(navigator.userAgent.match(/firefox/i))
-					   alert('Note:\nFirefox does not handle file names, so you will have to rename this file to\n\"'+filename+'\""\nor some equivalent.')
-					saveAs(blob, filename)
-				}
-			})
-		}
-	})
+          // Download
+          var blob = new Blob(json_graph_api.buildGEXF(json), {'type':'text/gexf+xml;charset=utf-8'})
+            ,filename = "Network.gexf"
+          if(navigator.userAgent.match(/firefox/i))
+             alert('Note:\nFirefox does not handle file names, so you will have to rename this file to\n\"'+filename+'\""\nor some equivalent.')
+          saveAs(blob, filename)
+        }
+      })
+    }
+  })
 
   // Report Module
   D.addModule(function(){
@@ -761,9 +766,9 @@ domino.settings({
   })
 
 
-	//// Data processing
-	function parse_csv(csv){
-		var table = build_DoiLinks(csv, d3.csv.parseRows, 'References', 'Cited papers having a DOI')
+  //// Data processing
+  function parse_csv(csv){
+    var table = build_DoiLinks(csv, d3.csv.parseRows, 'References', 'Cited papers having a DOI')
 
     // We extract and clean references
     var referencesHash = cleanReferences(table)
@@ -1068,42 +1073,42 @@ domino.settings({
     return undefined
   }
 
-	function build_DoiLinks(csv, rowsParser, column, doi_column_name){
-		var lines = rowsParser(csv)
-		var headline = lines.shift()
-		var CR_index = -1;  // Index containing the references
-		headline.forEach(function(h,i){
-			if(h == column){
-				CR_index = i
-			}
-		})
-		var csvRows = [headline]
-		lines.forEach(function(row){
-			if(CR_index>=0 && CR_index < row.length){
-				// Extract DOI reference of the cited paper if applicable
-				var doi_refs = d3.merge(row[CR_index]
-					.split(";")
-					.map(function(ref){
-						return ref.split(",").filter(function(d){
-							return d.match(/ +DOI[ :]+.*/gi)
-						})
-					})).map(function(doi){
-						//return doi.trim().split(/[ :]/)[1] || ""
-						var r = / +DOI[ :]+(.*)/gi
-						return r.exec(doi)[1] || ''
-					}).filter(function(doi){
-						return doi.trim() != ""
-					})
-				row.unshift(doi_refs.join("; "))
-			} else {
-				row.unshift("")
-			}
-			csvRows.push(row)
-		})
-		
-		headline.unshift(doi_column_name)
-		return csvRows
-	}
+  function build_DoiLinks(csv, rowsParser, column, doi_column_name){
+    var lines = rowsParser(csv)
+    var headline = lines.shift()
+    var CR_index = -1;  // Index containing the references
+    headline.forEach(function(h,i){
+      if(h == column){
+        CR_index = i
+      }
+    })
+    var csvRows = [headline]
+    lines.forEach(function(row){
+      if(CR_index>=0 && CR_index < row.length){
+        // Extract DOI reference of the cited paper if applicable
+        var doi_refs = d3.merge(row[CR_index]
+          .split(";")
+          .map(function(ref){
+            return ref.split(",").filter(function(d){
+              return d.match(/ +DOI[ :]+.*/gi)
+            })
+          })).map(function(doi){
+            //return doi.trim().split(/[ :]/)[1] || ""
+            var r = / +DOI[ :]+(.*)/gi
+            return r.exec(doi)[1] || ''
+          }).filter(function(doi){
+            return doi.trim() != ""
+          })
+        row.unshift(doi_refs.join("; "))
+      } else {
+        row.unshift("")
+      }
+      csvRows.push(row)
+    })
+    
+    headline.unshift(doi_column_name)
+    return csvRows
+  }
 
   function filterNetworkByDegree(graph, keepAtLeast, minCount, maxCount){
     json_graph_api.buildIndexes(graph)
@@ -1232,20 +1237,20 @@ domino.settings({
 
 
 
-	// Utilities
-	function clean_expression(expression){
-		expression = expression || "";
-		return expression.replace(/ +/gi, ' ').trim().toLowerCase();
-	}
-	function dehydrate_expression(expression){
-		expression = expression || "";
-		return expression.replace(/[^a-zA-Z0-9]*/gi, '').trim().toLowerCase();
-	}
-	function xmlEntities(expression) {
-		expression = expression || "";
-		return String(expression).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-	}
-	function log(t){$("#log").text($("#log").text()+t);};
+  // Utilities
+  function clean_expression(expression){
+    expression = expression || "";
+    return expression.replace(/ +/gi, ' ').trim().toLowerCase();
+  }
+  function dehydrate_expression(expression){
+    expression = expression || "";
+    return expression.replace(/[^a-zA-Z0-9]*/gi, '').trim().toLowerCase();
+  }
+  function xmlEntities(expression) {
+    expression = expression || "";
+    return String(expression).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function log(t){$("#log").text($("#log").text()+t);};
 
   // Compute the edit (levenshtein) distance between the two given strings
   function getEditDistance(a, b) {
