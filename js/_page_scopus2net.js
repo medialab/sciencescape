@@ -815,7 +815,7 @@ domino.settings({
         sigmaInstance.startForceAtlas2({
           barnesHutOptimize: true
           ,gravity: 0.05
-          ,startingIterations: 50
+          ,startingIterations: 10
           ,iterationsPerRender: 10
 
           // FA2
