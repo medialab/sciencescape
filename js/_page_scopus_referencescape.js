@@ -7,8 +7,29 @@ domino.settings({
 	var D = new domino({
 		name: "main"
 		,properties: [
-
-			{
+      {
+        id:'authorsMinimumOccurrences'
+        ,value: 3
+      },{
+        id:'keywordsMinimumOccurrences'
+        ,value: 3
+      },{
+        id:'sourceMinimumOccurrences'
+        ,value: 5
+      },{
+        id:'refRatio'
+        ,value: 0.1
+      },{
+        id:'refMinimum'
+        ,value: 100
+      },{
+        id:'refMaximum'
+        ,value: 1000
+      },{
+        id:'degreeCut'
+        ,dispatch: 'degreeCut_updated'
+        ,triggers: 'update_degreeCut'
+      },{
 				id:'inputCSVfiles'
 				,dispatch: 'inputCSVfiles_updated'
 				,triggers: 'update_inputCSVfiles'
@@ -230,7 +251,7 @@ domino.settings({
 			var fileLoader = provider.get('inputCSVfileUploader')
 			,parsing = parse_csv(fileLoader.reader.result)
 
-      if(parsing.table){
+      if(parsing && parsing.table){
 				setTimeout(function(){
           _self.dispatchEvent('update_referencesHash', {
             'referencesHash': parsing.referencesHash
@@ -370,6 +391,13 @@ domino.settings({
                     ,nodesColumnId2: sourceTitleColumn
                     ,nodesMetadataColumnIds2: []
                     ,jsonCallback: function(source_json){
+                      // Settings
+                      var authorsMinimumOccurrences = provider.get('authorsMinimumOccurrences')
+                      ,keywordsMinimumOccurrences = provider.get('keywordsMinimumOccurrences')
+                      ,sourceMinimumOccurrences = provider.get('sourceMinimumOccurrences')
+                      ,refRatio = provider.get('refRatio')
+                      ,refMinimum = provider.get('refMinimum')
+                      ,refMaximum = provider.get('refMaximum')
 
                       // Filter networks
                       console.log((new Date()).toLocaleString() + ' Filtering networks')
@@ -377,10 +405,10 @@ domino.settings({
                       filterAutoLinks(author_json)
                       filterAutoLinks(kw_json)
                       filterAutoLinks(source_json)
-                      filterNetworkByDegree(ref_json, 0.1 /* 10% */, 100, 1000)
-                      filterNetworkByOccurrences(author_json, 'Authors', 3)
-                      filterNetworkByOccurrences(kw_json, 'Author Keywords', 3)
-                      filterNetworkByOccurrences(source_json, 'Source title', 5)
+                      var degreeCut = filterNetworkByDegree(ref_json, refRatio, refMinimum, refMaximum)
+                      filterNetworkByOccurrences(author_json, 'Authors', authorsMinimumOccurrences)
+                      filterNetworkByOccurrences(kw_json, 'Author Keywords', keywordsMinimumOccurrences)
+                      filterNetworkByOccurrences(source_json, 'Source title', sourceMinimumOccurrences)
 
                       var json = ref_json
 
@@ -428,9 +456,8 @@ domino.settings({
                       if(json.nodes.length == 0){
                         alert('The result is an empty network')
                       }
-                      _self.dispatchEvent('update_networkJson', {
-                        networkJson: json
-                      })
+                      _self.dispatchEvent('update_degreeCut', {degreeCut: degreeCut})
+                      _self.dispatchEvent('update_networkJson', {networkJson: json})
 
                     }
                   }
@@ -688,6 +715,61 @@ domino.settings({
 		}
 	})
 
+  // Report Module
+  D.addModule(function(){
+    domino.module.call(this)
+
+    var _self = this
+      ,container = $('#report')
+      ,reportContainer = container.find('.reportText')
+
+    this.triggers.events['networkJson_updated'] = function(provider, e){
+      var networkJson             = provider.get('networkJson')
+      ,authorsMinimumOccurrences  = provider.get('authorsMinimumOccurrences')
+      ,keywordsMinimumOccurrences = provider.get('keywordsMinimumOccurrences')
+      ,sourceMinimumOccurrences   = provider.get('sourceMinimumOccurrences')
+      ,refRatio                   = provider.get('refRatio')
+      ,refMinimum                 = provider.get('refMinimum')
+      ,refMaximum                 = provider.get('refMaximum')
+      ,degreeCut                  = provider.get('degreeCut')
+      ,filteringOption = $('#minDegreeThreshold').find(':selected').text()
+      ,text = ''
+
+      text +=   'Network exported with ScienceScape - Sciences Po médialab tools'
+      text += '\n-------------------------------------------------------------'
+      text += '\n'
+      text += '\n:: Exported network'
+      text += '\nType: References connected together and with Authors, Author Keywords, and Sources (journals)'
+      text += '\nNodes: '+networkJson.nodes.length
+      text += '\nEdges: '+networkJson.edges.length
+      text += '\n(These figures take filtering into account)'
+      text += '\n'
+      text += '\n:: Layout'
+      text += '\nReferences are spatialized independently to the rest of the network.'
+      text += '\nExactly as if we spatialized the references alone, then fixed them, then'
+      text += '\nspatialized the rest of the nodes - except we do it at the same time.'
+      text += '\nWe use a modified version of ForceAtlas2 to do so.'
+      text += '\n'
+      text += '\n:: Process and Filtering'
+      text += '\n1) References cited in less than 2 papers are filtered out'
+      text += '\n'
+      text += '\n2) References connected to less than '+degreeCut+' other references are filtered out'
+      text += '\n   Note: this threshold was determined by trying to keep ' + (100 * refRatio) + '% of references'
+      text += '\n   with a minimum of ' + refMinimum + ' and a maximum of ' + refMaximum + ' references' 
+      text += '\n'
+      text += '\n3) Authors present in less than ' + authorsMinimumOccurrences + ' papers are filtered out'
+      text += '\n'
+      text += '\n4) Keywords present in less than ' + keywordsMinimumOccurrences + ' papers are filtered out'
+      text += '\n'
+      text += '\n5) Journals present in less than ' + sourceMinimumOccurrences + ' papers are filtered out'
+      text += '\n'
+      text += '\n6) Networks are merged and nodes with less than 2 neighbors are filtered out recursively'
+      text += '\n   (we remove "leaves" and "orphans")'
+
+      reportContainer.text(text)
+    }
+  })
+
 
 	//// Data processing
 	function parse_csv(csv){
@@ -695,6 +777,9 @@ domino.settings({
 
     // We extract and clean references
     var referencesHash = cleanReferences(table)
+
+    if(referencesHash === undefined)
+      return undefined
 
     return {table: table, referencesHash: referencesHash}
   }
@@ -1082,6 +1167,8 @@ domino.settings({
     })
 
     graph = json_graph_api.getBackbone(graph)
+
+    return minDegree
   }
 
   function filterAutoLinks(graph){
