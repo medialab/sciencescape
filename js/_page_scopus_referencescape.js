@@ -507,7 +507,8 @@ domino.settings({
           ,defaultLabelSize: 13
           ,minEdgeSize: 1.5
           ,maxEdgeSize: 1.5
-          ,maxNodeSize: 8
+          ,minNodeSize: 0.5
+          ,maxNodeSize: 6
           ,defaultEdgeColor: '#ddd'
           ,defaultNodeColor: '#ccc'
           ,edgeColor: 'default'
@@ -573,7 +574,7 @@ domino.settings({
 
           // LinLog
           ,linLogMode: true
-          ,scalingRatio: 0.8
+          ,scalingRatio: 0.2
           ,strongGravityMode: false
           ,slowDown: 1
         })
@@ -668,8 +669,7 @@ domino.settings({
 							console.log('Cannot find node '+sigmaNode.id)
 							sigmaNode.color = '#FF0000'
 						} else {
-							// console.log('Can find node '+sigmaNode.id)
-							node.x = sigmaNode.x
+              node.x = sigmaNode.x
 							node.y = sigmaNode.y
 							node.size = sigmaNode.size
 							var rgb = chroma.hex(sigmaNode.color).rgb
