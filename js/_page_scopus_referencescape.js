@@ -225,11 +225,11 @@ domino.settings({
 
       if(parsing.table){
 				setTimeout(function(){
-					_self.dispatchEvent('update_dataTable', {
-						'dataTable': parsing.table
-					})
           _self.dispatchEvent('update_referencesHash', {
             'referencesHash': parsing.referencesHash
+          })
+          _self.dispatchEvent('update_dataTable', {
+            'dataTable': parsing.table
           })
 				}, 200)
 
@@ -281,6 +281,7 @@ domino.settings({
 
     this.triggers.events['start_computing'] = function(provider, e){
       var data = provider.get('dataTable')
+      ,referencesHash = provider.get('referencesHash')
       ,titleColumn
       ,authorsColumn
       ,authorKeywordsColumn
@@ -385,6 +386,28 @@ domino.settings({
                       // Filter the result to remove leaves and orphans
                       filterNetworkRemoveLeavesAndOrphans(json)
 
+                      // Put a good name and the right size to ref nodes
+                      console.log('referencesHash', referencesHash)
+                      json.nodes.forEach(function(n){
+                        if(n.attributes[0].val == "References ID"){
+                          n.size = 1
+                          var refKey = n.label.toUpperCase().split('-')
+                          ,components = referencesHash[refKey[0]][refKey[1]].components
+                          ,name = (components.authors || ['Unknown authors'])
+                            .map(function(str){
+                              var el = str.trim().replace(',', '').split(' ')
+                              return el[1].replace('.', '. ') + '. ' + el[0]
+                            })
+                            .map(titleCase).join(', ')
+                            + '. '
+                            + sentenceCase(components.title || components.title_plus || 'Unknown title').trim()
+                            + ', '
+                            + (components.date || 'Unknown date')
+                          console.log(name)
+                          n.label = name
+                        }
+                      })
+
                       // Build indexes
                       json_graph_api.buildIndexes(json)
 
@@ -424,7 +447,7 @@ domino.settings({
 
   })
 
-	// Preview network (sigma)
+	// Sigma: Preview network
 	D.addModule(function(){
 		domino.module.call(this)
 
@@ -442,10 +465,10 @@ domino.settings({
 				,networkOptions = provider.get('networkOptions')
 				,colors = ["#637CB5", "#C34E7B", "#66903C", "#C55C32", "#B25AC9"]
 				,colorsByType = {
-          'References ID': '#637CB5'
-          ,'Authors': '#C34E7B'
-          ,'Source title': '#66903C'
-          ,'Author Keywords': '#C55C32'
+          'References ID': '#CCC'
+          ,'Authors': '#637CB5'
+          ,'Source title': '#C34E7B'
+          ,'Author Keywords': '#66903C'
         }
 
 			// Kill old sigma if needed
@@ -472,7 +495,7 @@ domino.settings({
 					'x': Math.random()
 					,'y': Math.random()
 					,label: node.label
-					,size: 1 + Math.log(1 + 0.1 * ( node.inEdges.length + node.outEdges.length ) )
+					,size: node.size || 1 + Math.log(1 + 0.1 * ( node.inEdges.length + node.outEdges.length ) )
 					,'color': colorsByType[node.attributes_byId['attr_type']] || '#000'
 				})
 			})
@@ -1129,6 +1152,14 @@ domino.settings({
    
     return matrix[b.length][a.length];
   };
+
+  function titleCase(string){
+    return string.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()})
+  }
+
+  function sentenceCase(string){
+    return string.replace(/.*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()})
+  }
 
 })(jQuery, domino)
 
