@@ -179,6 +179,10 @@
 
         <?php include("includes/codebottom.php"); ?>
 
+        <script src="js/libs/sigma.js"></script>
+        <script src="js/libs/sigma-forceatlas2-worker.js"></script>
+        <script src="js/libs/sigma-forceatlas2-supervisor.js"></script>
+
         <script src="js/_page_scopus2net.js"></script>
 
         <script>

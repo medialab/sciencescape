@@ -510,16 +510,6 @@ domino.settings({
           ,'Author Keywords': '#66903C'
         }
 
-			// Kill old sigma if needed
-			// var oldSigmaInstance = provider.get('sigmaInstance')
-			// if(oldSigmaInstance !== undefined){
-			// 	_self.dispatchEvent('update_layoutRunning', {
-			// 		layoutRunning: !provider.get('layoutRunning')
-			// 	})
-			// 	oldSigmaInstance.emptyGraph() // .kill() is not currently implemented
-			// 	container.find('#sigma-example').html('')
-			// }
-
 			// Instanciate sigma.js and customize it
 			var sigmaInstance = new sigma({
         container: 'sigma-example'

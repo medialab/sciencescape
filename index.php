@@ -73,7 +73,7 @@
                         </li>
                         <li class="span3">
                             <div class="thumbnail">
-                                <img src="res/sciencescape_network.png">
+                                <img src="res/sciencescape_referencescape.png">
                                 <div class="caption">
                                     <h3>Reference Scape</h3>
                                     <p class="description">Visualize and download networks using a landscape of references</p>

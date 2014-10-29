@@ -116,9 +116,10 @@
 
             <div class="row">
                 <div class="span12">
-                    <h2>Scopus to Network</h2>
+                    <h2>Reference Scape</h2>
                     <p class="text-info">
                         Extract a network from a Scopus file and download it. You may visualize it with <a href="http://gephi.org">Gephi</a>.
+                        <br>This network we call a "reference scape" uses the top references as a basemap to project authors, keywords and journals.
                     </p>
                     <hr/>
                 </div>
