@@ -396,14 +396,13 @@ domino.settings({
                           ,name = (components.authors || ['Unknown authors'])
                             .map(function(str){
                               var el = str.trim().replace(',', '').split(' ')
-                              return el[1].replace('.', '. ') + '. ' + el[0]
+                              return (el[1] || '').replace('.', '. ') + '. ' + (el[0] || '')
                             })
                             .map(titleCase).join(', ')
                             + '. '
                             + sentenceCase(components.title || components.title_plus || 'Unknown title').trim()
                             + ', '
                             + (components.date || 'Unknown date')
-                          console.log(name)
                           n.label = name
                         }
                       })
@@ -411,7 +410,13 @@ domino.settings({
                       // Build indexes
                       json_graph_api.buildIndexes(json)
 
+                      // Add the dependency level (for sigma)
+                      json.nodes.forEach(function(n){
+                        n.dlevel = (n.attributes_byId['attr_type'] == "References ID") ? (0) : (1)
+                      })
+
                       console.log((new Date()).toLocaleString() + ' Processing finished')
+                      console.log('network', json)
 
                       if(json.nodes.length == 0){
                         alert('The result is an empty network')
@@ -472,35 +477,59 @@ domino.settings({
         }
 
 			// Kill old sigma if needed
-			var oldSigmaInstance = provider.get('sigmaInstance')
-			if(oldSigmaInstance !== undefined){
-				_self.dispatchEvent('update_layoutRunning', {
-					layoutRunning: !provider.get('layoutRunning')
-				})
-				oldSigmaInstance.emptyGraph() // .kill() is not currently implemented
-				container.find('#sigma-example').html('')
-			}
+			// var oldSigmaInstance = provider.get('sigmaInstance')
+			// if(oldSigmaInstance !== undefined){
+			// 	_self.dispatchEvent('update_layoutRunning', {
+			// 		layoutRunning: !provider.get('layoutRunning')
+			// 	})
+			// 	oldSigmaInstance.emptyGraph() // .kill() is not currently implemented
+			// 	container.find('#sigma-example').html('')
+			// }
 
 			// Instanciate sigma.js and customize it
-			var sigmaInstance = sigma.init(document.getElementById('sigma-example')).drawingProperties({
-				defaultLabelColor: '#666'
-				,edgeColor: 'default'
-				,defaultEdgeColor: '#ccc'
-				,defaultNodeColor: '#999'
-			})
+			var sigmaInstance = new sigma({
+        container: 'sigma-example'
+        ,settings:{
+          defaultLabelColor: '#666'
+          ,edgeColor: 'default'
+          ,defaultEdgeColor: '#ccc'
+          ,defaultNodeColor: '#999'
+          ,hideEdgesOnMove: true
+          ,font: 'Roboto Condensed'
+          ,fontStyle: '300'
+          ,defaultLabelSize: 13
+          ,minEdgeSize: 1.5
+          ,maxEdgeSize: 1.5
+          ,maxNodeSize: 8
+          ,defaultEdgeColor: '#ddd'
+          ,defaultNodeColor: '#ccc'
+          ,edgeColor: 'default'
+          ,rescaleIgnoreSize: false
+          ,labelThreshold: 8
+          ,singleHover: true
+          ,zoomMin: 0.002
+          ,zoomMax: 2
+        }
+      })
 
 			// Populate
 			json.nodes.forEach(function(node){
-				sigmaInstance.addNode(node.id,{
-					'x': Math.random()
-					,'y': Math.random()
+				sigmaInstance.graph.addNode({
+					id: node.id
+          ,x: Math.random()
+					,y: Math.random()
 					,label: node.label
 					,size: node.size || 1 + Math.log(1 + 0.1 * ( node.inEdges.length + node.outEdges.length ) )
 					,'color': colorsByType[node.attributes_byId['attr_type']] || '#000'
+          ,dlevel: node.dlevel
 				})
 			})
 			json.edges.forEach(function(link, i){
-				sigmaInstance.addEdge(i,link.sourceID,link.targetID)
+				sigmaInstance.graph.addEdge({
+          id: +i
+          ,source: link.sourceID
+          ,target: link.targetID
+        })
 			})
 
 			_self.dispatchEvent('update_sigmaInstance', {
@@ -524,7 +553,23 @@ domino.settings({
 			var sigmaInstance = provider.get('sigmaInstance')
 				,layoutRunning = provider.get('layoutRunning')
 			if(layoutRunning){
-				sigmaInstance.startForceAtlas2()
+				sigmaInstance.startForceAtlas2({
+          barnesHutOptimize: false  // Mandatory in the tweaked version
+          ,gravity: 0.05
+          ,startingIterations: 50
+          ,iterationsPerRender: 10
+
+          // FA2
+          // ,scalingRatio: 10
+          // ,strongGravityMode: true
+          // ,slowDown: 2
+
+          // LinLog
+          ,linLogMode: true
+          ,scalingRatio: 0.2
+          ,strongGravityMode: false
+          ,slowDown: 1
+        })
 			} else {
 				sigmaInstance.stopForceAtlas2()
 			}

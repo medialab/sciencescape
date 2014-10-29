@@ -82,6 +82,8 @@
 
         </style>
 
+        <link href='http://fonts.googleapis.com/css?family=Roboto:400,300,700|Roboto+Condensed:400,300,700' rel='stylesheet' type='text/css'>
+
     </head>
     <body>
         <!--[if lt IE 7]>
@@ -158,6 +160,11 @@
         <?php include("includes/footer.php"); ?>
 
         <?php include("includes/codebottom.php"); ?>
+
+
+        <script src="js/libs/sigma.js"></script>
+        <script src="js/libs/sigma-forceatlas2-worker-tweaked.js"></script>
+        <script src="js/libs/sigma-forceatlas2-supervisor-tweaked.js"></script>
 
         <script src="js/_page_scopus_referencescape.js"></script>
 
