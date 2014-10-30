@@ -809,8 +809,10 @@ domino.settings({
     var _self = this
 
     this.triggers.events['layoutRunning_updated'] = function(provider, e){
+      
       var sigmaInstance = provider.get('sigmaInstance')
-        ,layoutRunning = provider.get('layoutRunning')
+      ,layoutRunning = provider.get('layoutRunning')
+      
       if(layoutRunning){
         sigmaInstance.startForceAtlas2({
           barnesHutOptimize: true
@@ -828,6 +830,7 @@ domino.settings({
           // ,scalingRatio: 0.2
           // ,strongGravityMode: false
           // ,slowDown: 1
+          
         })
       } else {
         sigmaInstance.stopForceAtlas2()
