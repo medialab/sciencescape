@@ -9,13 +9,20 @@ domino.settings({
     ,properties: [
       {
         id:'authorsMinimumOccurrences'
-        ,value: 3
+        // ,value: 3
+        ,value: 20
+      },{
+        id:'referencesMinimumOccurrences'
+        // ,value: 2
+        ,value: 20
       },{
         id:'keywordsMinimumOccurrences'
-        ,value: 3
+        // ,value: 3
+        ,value: 20
       },{
         id:'sourceMinimumOccurrences'
-        ,value: 5
+        // ,value: 5
+        ,value: 100
       },{
         id:'refRatio'
         ,value: 0.1
@@ -24,7 +31,8 @@ domino.settings({
         ,value: 100
       },{
         id:'refMaximum'
-        ,value: 1000
+        ,value: 2000
+        // ,value: 1000
       },{
         id:'degreeCut'
         ,dispatch: 'degreeCut_updated'
@@ -249,7 +257,7 @@ domino.settings({
 
     this.triggers.events['parsing_processing'] = function(provider, e){
       var fileLoader = provider.get('inputCSVfileUploader')
-      ,parsing = parse_csv(fileLoader.reader.result)
+      ,parsing = parse_csv(fileLoader.reader.result, provider)
 
       if(parsing && parsing.table){
         setTimeout(function(){
@@ -719,14 +727,15 @@ domino.settings({
       ,reportContainer = container.find('.reportText')
 
     this.triggers.events['networkJson_updated'] = function(provider, e){
-      var networkJson             = provider.get('networkJson')
-      ,authorsMinimumOccurrences  = provider.get('authorsMinimumOccurrences')
-      ,keywordsMinimumOccurrences = provider.get('keywordsMinimumOccurrences')
-      ,sourceMinimumOccurrences   = provider.get('sourceMinimumOccurrences')
-      ,refRatio                   = provider.get('refRatio')
-      ,refMinimum                 = provider.get('refMinimum')
-      ,refMaximum                 = provider.get('refMaximum')
-      ,degreeCut                  = provider.get('degreeCut')
+      var networkJson                 = provider.get('networkJson')
+      ,referencesMinimumOccurrences   = provider.get('referencesMinimumOccurrences')
+      ,authorsMinimumOccurrences      = provider.get('authorsMinimumOccurrences')
+      ,keywordsMinimumOccurrences     = provider.get('keywordsMinimumOccurrences')
+      ,sourceMinimumOccurrences       = provider.get('sourceMinimumOccurrences')
+      ,refRatio                       = provider.get('refRatio')
+      ,refMinimum                     = provider.get('refMinimum')
+      ,refMaximum                     = provider.get('refMaximum')
+      ,degreeCut                      = provider.get('degreeCut')
       ,filteringOption = $('#minDegreeThreshold').find(':selected').text()
       ,text = ''
 
@@ -746,7 +755,7 @@ domino.settings({
       text += '\nWe use a modified version of ForceAtlas2 to do so.'
       text += '\n'
       text += '\n:: Process and Filtering'
-      text += '\n1) References cited in less than 2 papers are filtered out'
+      text += '\n1) References cited in less than ' + referencesMinimumOccurrences + ' papers are filtered out'
       text += '\n'
       text += '\n2) References connected to less than '+degreeCut+' other references are filtered out'
       text += '\n   Note: this threshold was determined by trying to keep ' + (100 * refRatio) + '% of references'
@@ -767,11 +776,11 @@ domino.settings({
 
 
   //// Data processing
-  function parse_csv(csv){
+  function parse_csv(csv, provider){
     var table = build_DoiLinks(csv, d3.csv.parseRows, 'References', 'Cited papers having a DOI')
 
     // We extract and clean references
-    var referencesHash = cleanReferences(table)
+    var referencesHash = cleanReferences(table, provider)
 
     if(referencesHash === undefined)
       return undefined
@@ -779,7 +788,9 @@ domino.settings({
     return {table: table, referencesHash: referencesHash}
   }
 
-  function cleanReferences(table){
+  function cleanReferences(table, provider){
+
+    console.log((new Date()).toLocaleString() + ' Cleaning references')
 
     var referencesColumn = -1
     table[0].forEach(function(cell, i){
@@ -880,7 +891,7 @@ domino.settings({
     for(key in referencesHash){
       var ref = referencesHash[key]
       for(i in ref){
-        if(ref[i].count > 1){
+        if(ref[i].count > provider.get('referencesMinimumOccurrences') - 1){
           remainingReferences[ref[i].key] = true
         }
       }
