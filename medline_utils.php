@@ -85,6 +85,9 @@
 
                 </div>
                 <div class="span4">
+                    
+                </div>
+                <div class="span4">
                     <h2>MEDLINE tags explanation</h2>
                     <p class="text-info">
                         The "field tags" in the MEDLINE files are documented <a href="https://www.nlm.nih.gov/bsd/mms/medlineelements.html">on this page</a>.

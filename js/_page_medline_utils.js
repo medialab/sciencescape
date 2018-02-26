@@ -223,55 +223,10 @@ function downloadMedlinecsv(){
         
         // Save file
         var blob = new Blob(content, {'type':'text/csv;charset=utf-8'})
-            ,filename = "Web of Science.csv"
+            ,filename = "MEDLINE.csv"
         if(navigator.userAgent.match(/firefox/i))
            alert('Note:\nFirefox does not handle file names, so you will have to rename this file to\n\"'+filename+'\""\nor some equivalent.')
         saveAs(blob, filename)
-    }
-}
-
-function parseMedline(medline){
-    var lines = medline.split("\n");
-    var headline = lines.shift().split("\t");
-    var CR_index = -1;
-    headline.forEach(function(h,i){
-        if(h == "CR"){
-            CR_index = i;
-        }
-    });
-    var csvRows = [headline];
-    lines.forEach(function(line){
-        var row = line.split("\t");
-        if(CR_index>=0 && CR_index < row.length){
-            // Extract DOI reference of the cited paper if applicable
-            var doi_refs = d3.merge(row[CR_index]
-                .split(";")
-                .map(function(ref){
-                    return ref.split(",").filter(function(d){
-                        return d.match(/ +DOI.*/gi);
-                    });
-                })).map(function(doi){
-                    return doi.trim().split(" ")[1] || "";
-                }).filter(function(doi){
-                    return doi.trim() != "";
-                });
-            row.unshift(doi_refs.join("; "));
-        } else {
-            row.unshift("");
-        }
-        csvRows.push(row);
-    });
-    
-    headline.unshift("DOI_CITED");
-    return csvRows;
-}
-
-function build_medlineDoiLinks(medline){
-    if ( medline.substring(0,2) != "FN" ){
-    // if ( $('#medlinedoilinks_filetype').is( ':checked' ) ){
-        return build_DoiLinks(medline, d3.csv.parseRows, 'CR', 'DOI_CITED')
-    } else {
-        return convert_medline_to_CSV(medline, true)
     }
 }
 
@@ -284,47 +239,29 @@ function convert_medline_to_CSV(medline, extractDOI){
     var currentFieldTag = "";
     var currentItem = {};
     var lines = medline.split("\n");
-    if(lines.shift().substring(0,2) == "FN"){
+    var firstLine = lines.shift().trim()
+    if (firstLine == ''){
         lines.forEach(function(line){
-            var candidateFieldTag = line.substring(0,2);
-            if(candidateFieldTag != "  "){
-                currentFieldTag = candidateFieldTag;
-            }
-            
-            if(currentFieldTag == "ER"){
+            if(line.trim() == '') {
+                // New record
                 data.push(currentItem);
                 currentItem = new Object();
+                return
             } else {
+                var candidateFieldTag = line.substring(0,4).trim();
+                if(candidateFieldTag != ""){
+                    currentFieldTag = candidateFieldTag;
+                }
+            
                 if(currentItem[currentFieldTag]){
-                    if(currentFieldTag=="AU"
-                        || currentFieldTag=="AF"
-                        || currentFieldTag=="C1"
-                        || currentFieldTag=="CR"
-                    ){
-                        currentItem[currentFieldTag] += "|" + line.substring(3);
-                    } else {
-                        currentItem[currentFieldTag] += " " + line.substring(3);
-                    }
-                    
-                    // Extract citations
-                    if(currentFieldTag=="CR" && extractDOI){
-                        // Extract DOI reference of the cited paper if applicable
-                        var doi_refs = line.substring(3).match(/DOI.*/gi);
-                        if(doi_refs && doi_refs.length>0){
-                            if(currentItem["DOI_CITED"]){
-                                currentItem["DOI_CITED"] += "|" + doi_refs[0].split(" ")[1];
-                            } else {
-                                currentItem["DOI_CITED"] = doi_refs[0].split(" ")[1];
-                            }
-                        }
-                    }
+                    currentItem[currentFieldTag].push(line.substring(6));
                 } else {
-                    currentItem[currentFieldTag] = line.substring(3);
+                    currentItem[currentFieldTag] = [line.substring(6)];
                 }
             }
         });
     } else {
-        alert("There is a problem with the MEDLINE file\n(No FileName fieldtag)");
+        alert("There is a problem with the MEDLINE file");
     }
 
     // At this point, data is a list of objects.
@@ -344,46 +281,9 @@ function convert_medline_to_CSV(medline, extractDOI){
 
     data.forEach(function(item){
         csvRows.push(headers.map(function(header){
-            return item[header] || '';
+            return (item[header] || []).join('|') || '';
         }))
     })
-    return csvRows
-}
-
-function build_DoiLinks(csv, rowsParser, column, doi_column_name){
-    var lines = rowsParser(csv)
-    var headline = lines.shift()
-    var CR_index = -1;  // Index containing the references
-    headline.forEach(function(h,i){
-        if(h == column){
-            CR_index = i
-        }
-    })
-    var csvRows = [headline]
-    lines.forEach(function(row){
-        if(CR_index>=0 && CR_index < row.length){
-            // Extract DOI reference of the cited paper if applicable
-            var doi_refs = d3.merge(row[CR_index]
-                .split(";")
-                .map(function(ref){
-                    return ref.split(",").filter(function(d){
-                        return d.match(/ +DOI[ :]+.*/gi)
-                    })
-                })).map(function(doi){
-                    //return doi.trim().split(/[ :]/)[1] || ""
-                    var r = / +DOI[ :]+(.*)/gi
-                    return r.exec(doi)[1] || ''
-                }).filter(function(doi){
-                    return doi.trim() != ""
-                })
-            row.unshift(doi_refs.join("; "))
-        } else {
-            row.unshift("")
-        }
-        csvRows.push(row)
-    })
-    
-    headline.unshift(doi_column_name)
     return csvRows
 }
 
