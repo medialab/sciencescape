@@ -238,6 +238,7 @@ function convert_medline_to_CSV(medline, extractDOI){
     var data = [];
     var currentFieldTag = "";
     var currentItem = {};
+    var continuingLine
     var lines = medline.split("\n");
     var firstLine = lines.shift().trim()
     if (firstLine == ''){
@@ -251,12 +252,18 @@ function convert_medline_to_CSV(medline, extractDOI){
                 var candidateFieldTag = line.substring(0,4).trim();
                 if(candidateFieldTag != ""){
                     currentFieldTag = candidateFieldTag;
+                    continuingLine = false;
+                } else {
+                    continuingLine = true;
                 }
             
-                if(currentItem[currentFieldTag]){
-                    currentItem[currentFieldTag].push(line.substring(6));
+                if(currentItem[currentFieldTag] === undefined){
+                    currentItem[currentFieldTag] = [];
+                }
+                if (continuingLine) {
+                    currentItem[currentFieldTag][currentItem[currentFieldTag].length - 1] = currentItem[currentFieldTag][currentItem[currentFieldTag].length - 1] + line.substring(6).trim();
                 } else {
-                    currentItem[currentFieldTag] = [line.substring(6)];
+                    currentItem[currentFieldTag].push(line.substring(6).trim());
                 }
             }
         });
