@@ -261,7 +261,7 @@ function convert_medline_to_CSV(medline, extractDOI){
                     currentItem[currentFieldTag] = [];
                 }
                 if (continuingLine) {
-                    currentItem[currentFieldTag][currentItem[currentFieldTag].length - 1] = currentItem[currentFieldTag][currentItem[currentFieldTag].length - 1] + line.substring(6).trim();
+                    currentItem[currentFieldTag][currentItem[currentFieldTag].length - 1] = currentItem[currentFieldTag][currentItem[currentFieldTag].length - 1] + ' ' + line.substring(6).trim();
                 } else {
                     currentItem[currentFieldTag].push(line.substring(6).trim());
                 }
