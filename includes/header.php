@@ -42,6 +42,15 @@
                                     <li><a href="wok_utils.php">Utilities</a></li>
                                 </ul>
                             </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                    For PubMed / Medline
+                                    <b class="caret"></b>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="medline_utils.php">Utilities</a></li>
+                                </ul>
+                            </li>
                         </ul>
                         <div class="pull-right">
                             <ul class="nav">

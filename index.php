@@ -170,6 +170,8 @@
                                     <p>
                                         <a href="scopus_utils.php" class="btn btn-inverse">Scopus</a>
                                         <a href="wok_utils.php" class="btn btn-inverse">Web of Knowledge</a>
+                                    </p><p>
+                                        <a href="medline_utils.php" class="btn btn-inverse">PubMed / Medline</a>
                                     </p>
                                 </div>
                             </div>
