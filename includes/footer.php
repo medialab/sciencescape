@@ -6,16 +6,8 @@
 				</div>
 				<div class="span4">
 					<p>
-<?php
-if(isset($twitterText) && $twitterText != ""){
-?>
-
-						<a href="https://twitter.com/share" class="twitter-share-button" data-text="<?php echo htmlentities($twitterText) ?>">Tweet</a>
+						<a href="https://twitter.com/share" class="twitter-share-button" data-text="$TWEET">Tweet</a>
 						<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-
-<?php
-}
-?>
 					</p>
 					<p>
                         We used:
@@ -28,7 +20,7 @@ if(isset($twitterText) && $twitterText != ""){
                         <a href="http://modernizr.com/">Modernizr</a>,
                         <a href="http://www.initializr.com/">Initializr</a>
                     </p>
-				
+
 				</div>
 				<div class="span4">
                     <p>Related tools:</p>

@@ -1,0 +1,32 @@
+{
+  "name": "sciencescape-build",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Scripts to build static site.",
+  "main": "build.js",
+  "scripts": {
+    "build": "rm -rf build && GOOGLE_ANALYTICS=$npm_package_sciencescape_ga TWEET=$npm_package_sciencescape_tweet PREFIX=$npm_package_sciencescape_prefix node build.js",
+    "deploy": "npm run build && gh-pages -d ./build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/medialab/sciencescape.git"
+  },
+  "author": "yomguithereal <kropotkinepiotr@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/medialab/sciencescape/issues"
+  },
+  "homepage": "https://github.com/medialab/sciencescape#readme",
+  "dependencies": {
+    "escape-string-regexp": "^2.0.0",
+    "fs-extra": "^8.1.0",
+    "gh-pages": "^2.0.1",
+    "glob": "^7.1.4"
+  },
+  "sciencescape": {
+    "ga": "UA-37695848-1",
+    "tweet": "ScienceScape: getting networks from WoS and Scopus files",
+    "prefix": "/sciencescape/"
+  }
+}
