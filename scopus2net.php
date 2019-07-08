@@ -184,7 +184,7 @@
         <script src="js/libs/sigma-forceatlas2-worker.js"></script>
         <script src="js/libs/sigma-forceatlas2-supervisor.js"></script>
 
-        <script src="js/_page_scopus2net.js"></script>
+        <script src="js/page_scopus2net.js"></script>
 
         <script>
             // document.getElementById('scopusextract_input').addEventListener('change', fileLoader.handleFileSelect, false);

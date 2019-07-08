@@ -101,7 +101,7 @@
 
         <?php include("includes/codebottom.php"); ?>
 
-        <script src="js/_page_medline_utils.js"></script>
+        <script src="js/page_medline_utils.js"></script>
 
         <script>
             document.getElementById('medlinecsv_input').addEventListener('change', fileLoader.handleFileSelect, false);

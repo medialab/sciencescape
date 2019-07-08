@@ -85,7 +85,7 @@
         <?php include("includes/codebottom.php"); ?>
 
         <script src="js/libs/horizon.js"></script>
-        <script src="js/_page_scopus_journals_topPerYear.js"></script>
+        <script src="js/page_scopus_journals_topPerYear.js"></script>
 
         <script>
             // document.getElementById('scopusextract_input').addEventListener('change', fileLoader.handleFileSelect, false);

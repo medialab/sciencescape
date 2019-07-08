@@ -102,7 +102,7 @@
 
         <?php include("includes/codebottom.php"); ?>
 
-        <script src="js/_page_scopus_utils.js"></script>
+        <script src="js/page_scopus_utils.js"></script>
 
         <script>
             document.getElementById('scopusdoilinks_input').addEventListener('change', fileLoader.handleFileSelect, false);

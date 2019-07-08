@@ -107,7 +107,7 @@
         <?php include("includes/codebottom.php"); ?>
 
         <script src="js/libs/horizon.js"></script>
-        <script src="js/_page_scopus_papersvolume_evolution.js"></script>
+        <script src="js/page_scopus_papersvolume_evolution.js"></script>
 
         <script>
             // document.getElementById('scopusextract_input').addEventListener('change', fileLoader.handleFileSelect, false);

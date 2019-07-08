@@ -145,7 +145,7 @@
 
         <?php include("includes/codebottom.php"); ?>
 
-        <script src="js/_page_wok_utils.js"></script>
+        <script src="js/page_wok_utils.js"></script>
 
         <script>
             document.getElementById('wosdoilinks_input').addEventListener('change', fileLoader.handleFileSelect, false);

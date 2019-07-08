@@ -120,7 +120,7 @@
         <?php include("includes/codebottom.php"); ?>
 
         <script src="js/libs/horizon.js"></script>
-        <script src="js/_page_wok_journals_evolution.js"></script>
+        <script src="js/page_wok_journals_evolution.js"></script>
 
         <script>
             // document.getElementById('scopusextract_input').addEventListener('change', fileLoader.handleFileSelect, false);
