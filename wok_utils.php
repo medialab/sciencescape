@@ -10,7 +10,6 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
 
-<?php include('includes/config_management.php') ?>
 <?php include('includes/codetop.php') ?>
         <style>
 
@@ -95,7 +94,7 @@
                         <strong>Supported file formats</strong> are CSV as well as the WoK-specific format, usually a .txt file.
                         <strong>The detection is automatic.</strong> Just upload your file and the right algorithm will apply.
                     </p>
-                    
+
 
                 </div>
 
@@ -128,7 +127,7 @@
                     <p>
                         If you have a classic WOK export (text format, organized by two-letter codes and beginning with "FN"), it will be converted to a <a href="http://en.wikipedia.org/wiki/CSV">CSV file</a> containing the same information.
                     </p>
-                    
+
 
                 </div>
                 <div class="span4">

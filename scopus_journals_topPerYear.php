@@ -10,7 +10,6 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
 
-<?php include('includes/config_management.php') ?>
 <?php include('includes/codetop.php') ?>
         <style>
 
@@ -63,7 +62,7 @@
                 <div class="span12">
                     <h2>Top journals per year</h2>
                     <p class="text-info">
-                        
+
                     </p>
                 </div>
             </div>

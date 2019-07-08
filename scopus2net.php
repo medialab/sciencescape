@@ -10,7 +10,6 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
 
-<?php include('includes/config_management.php') ?>
 <?php include('includes/codetop.php') ?>
         <style>
 
@@ -28,7 +27,7 @@
                 position: relative;
 
                 /*background-color: #f8f8f8;*/
-                
+
                 /* from http://www.colorzilla.com/gradient-editor/ */
                 background: rgb(242,242,242); /* Old browsers */
                 background: -moz-linear-gradient(top,  rgba(242,242,242,1) 0%, rgba(244,244,244,1) 43%, rgba(252,252,252,1) 100%); /* FF3.6+ */
@@ -83,7 +82,7 @@
         </style>
 
         <link href='http://fonts.googleapis.com/css?family=Roboto:400,300,700|Roboto+Condensed:400,300,700' rel='stylesheet' type='text/css'>
-        
+
     </head>
     <body>
         <!--[if lt IE 7]>
@@ -172,7 +171,7 @@
                         </div>
                     </div>
 
-                    
+
                 </div>
             </div>
         </div>

@@ -10,7 +10,6 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
 
-<?php include('includes/config_management.php') ?>
 <?php include('includes/codetop.php') ?>
         <style>
 
@@ -71,7 +70,7 @@
                             </div>
                         </div>
                     </p>
-                    
+
                     <br/>
                     <h4>2. Download result</h4>
                     <p>

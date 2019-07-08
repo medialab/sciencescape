@@ -10,7 +10,6 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
 
-<?php include('includes/config_management.php') ?>
 <?php include('includes/codetop.php') ?>
         <style>
 
@@ -28,7 +27,7 @@
                 position: relative;
 
                 /*background-color: #f8f8f8;*/
-                
+
                 /* from http://www.colorzilla.com/gradient-editor/ */
                 background: rgb(242,242,242); /* Old browsers */
                 background: -moz-linear-gradient(top,  rgba(242,242,242,1) 0%, rgba(244,244,244,1) 43%, rgba(252,252,252,1) 100%); /* FF3.6+ */
@@ -130,7 +129,7 @@
                         <h4>Upload your Scopus CSV file</h4>
                         <div id="scopusextract"><span class="muted">file uploader</span></div>
                     </div>
-                    
+
                 </div>
                 <div class="span8">
                     <div id="networkDiv" style="display:none;">
@@ -153,7 +152,7 @@
                         </div>
                     </div>
 
-                    
+
                 </div>
             </div>
         </div>

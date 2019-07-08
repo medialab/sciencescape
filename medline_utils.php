@@ -10,7 +10,6 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
 
-<?php include('includes/config_management.php') ?>
 <?php include('includes/codetop.php') ?>
         <style>
 
@@ -81,11 +80,11 @@
                     <p>
                         If you have a classic MEDLINE or PUBMED export (text format, organized by codes and beginning with "PMID"), it will be converted to a <a href="http://en.wikipedia.org/wiki/CSV">CSV file</a> containing the same information.
                     </p>
-                    
+
 
                 </div>
                 <div class="span4">
-                    
+
                 </div>
                 <div class="span4">
                     <h2>MEDLINE tags explanation</h2>
