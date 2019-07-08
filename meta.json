@@ -1,0 +1,10 @@
+{
+  "name": "ScienceScape",
+  "authors": ["Mathieu Jacomy"],
+  "url": "http://tools.medialab.sciences-po.fr/sciencescape/",
+  "source": "https://github.com/medialab/sciencescape",
+  "licence": "LGPL/CECILL-C",
+  "visual": "http://tools.medialab.sciences-po.fr/sciencescape/res/visual",
+  "description": "Helpers for scientometrics. Convert files, get networks, visualize stuff from Scopus or Web of Science.",
+  "doc": ""
+}

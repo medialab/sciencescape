@@ -1,0 +1,326 @@
+---
+redirect_from: /scopus_keywords_evolution.php.html
+---
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>ScienceScape</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+
+<?php
+if(is_dir('_config/')){
+	// If there is a conf file, then take it
+	include('_config/conf.php');
+} else {
+	// If there is not, make one with the default one, and then take it
+	recurse_copy('_config_default/', '_config/');
+	include('_config_default/conf.php');
+}
+
+function recurse_copy($src, $dst) {
+	// NB: only one level, not the sub dirs
+    $dir = opendir($src); 
+    @mkdir($dst); 
+    while(false !== ( $file = readdir($dir)) ) { 
+        if (( $file != '.' ) && ( $file != '..' )) { 
+            if ( is_dir($src . '/' . $file) ) { 
+                // recurse_copy($src . '/' . $file,$dst . '/' . $file);
+                // (not the sub directories)
+            } 
+            else { 
+                copy($src . '/' . $file,$dst . '/' . $file); 
+            } 
+        } 
+    } 
+    closedir($dir); 
+} 
+?>
+		<link rel="stylesheet" href="/sciencescape/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/sciencescape/css/bootstrap-responsive.min.css">
+        <!-- <link rel="stylesheet" href="/sciencescape/css/prettify.css"> -->
+
+        <link rel="stylesheet" href="/sciencescape/css/main.css">
+
+        <script src="/sciencescape/js/libs/modernizr-2.6.1-respond-1.1.0.min.js"></script>
+        <style>
+
+            body {
+                padding-top: 60px;
+                padding-bottom: 40px;
+            }
+
+            svg{
+                margin-bottom: 4px;
+            }
+
+            .grid line {
+              stroke: #fff;
+            }
+
+            .grid line.minor {
+              stroke-width: .5px;
+            }
+
+            .grid text {
+              display: none;
+            }
+
+            path.domain {
+              display: none;
+            }
+
+            #timelines{
+                margin-top: 30px;
+            }
+        </style>
+
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
+        <![endif]-->
+
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+                    <a class="brand" href="/sciencescape/">ScienceScape</a>
+                    <div class="nav-collapse collapse">
+                        <ul class="nav">
+                            <!--<li class="active"><a href="#">Gaga</a></li>-->
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                    For Scopus
+                                    <b class="caret"></b>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="/sciencescape/scopus2net/">Scopus to Network</a></li>
+                                    <li><a href="/sciencescape/scopus_referencescape/">ReferenceScape</a></li>
+                                    <li><a href="/sciencescape/scopus_papersvolume_evolution/">Papers volume over time</a></li>
+                                    <li><a href="/sciencescape/scopus_keywords_evolution/">Keywords over time</a></li>
+                                    <li><a href="/sciencescape/scopus_keywords_topPerYear/">Keywords over time: Top per year</a></li>
+                                    <li><a href="/sciencescape/scopus_journals_evolution/">Journals over time</a></li>
+                                    <li><a href="/sciencescape/scopus_journals_topPerYear/">Journals over time: Top per year</a></li>
+                                    <li><a href="/sciencescape/scopus_mostCitedPapersProfile/">Authors / Keywords / Journals (Sankey)</a></li>
+                                    <li><a href="/sciencescape/scopus_utils/">Utilities</a></li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                    For Web of Knowledge
+                                    <b class="caret"></b>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="/sciencescape/wok2net/">WoK to Network</a></li>
+                                    <li><a href="/sciencescape/wok_papersvolume_evolution/">Papers volume over time</a></li>
+                                    <li><a href="/sciencescape/wok_keywords_evolution/">Keywords over time</a></li>
+                                    <li><a href="/sciencescape/wok_keywords_topPerYear/">Keywords over time: Top per year</a></li>
+                                    <li><a href="/sciencescape/wok_journals_evolution/">Journals over time</a></li>
+                                    <li><a href="/sciencescape/wok_journals_topPerYear/">Journals over time: Top per year</a></li>
+                                    <li><a href="/sciencescape/wok_utils/">Utilities</a></li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                    For PubMed / Medline
+                                    <b class="caret"></b>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="/sciencescape/medline_utils/">Utilities</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                        <div class="pull-right">
+                            <ul class="nav">
+                                <li><a href="http://tools.medialab.sciences-po.fr"><i class="icon icon-plus icon-white"></i> <span style="color: #FFF">Médialab Tools</span></a></li>
+                            </ul>
+                        </div>
+                        
+                    </div><!--/.nav-collapse -->
+                </div>
+            </div>
+        </div>
+
+
+
+
+        <div class="container">
+
+            <!-- Main hero unit for a primary marketing message or call to action -->
+            <div class="splash-unit row">
+                <div class="span7">
+                    <div class="image">
+                        <a href="/sciencescape/"><img src="/sciencescape/res/header.png"/></a>
+                    </div>
+                    <div class="title">
+                        ScienceScape
+                    </div>
+                </div>
+                <div class="span5">
+                    <div class="abstract">
+                        <p><strong>Helpers for scientometrics.</strong> Convert files, get networks, visualize stuff from Scopus or Web of Science.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="span12">
+                    <h2>Keywords Evolution</h2>
+                    <p class="text-info">
+                        Upload a Scopus file containing author keywords and year of publication,
+                        and visualize the evolution of most important keywords (&gt;10 papers in the file).
+                        The normalization divides by the total count of papers each year.
+                    </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="span4">
+                    <div id="extract"><span class="muted">file uploader</span></div>
+                </div>
+                <div class="span4">
+                    <div id="parsing"><span class="muted">parsing</span></div>
+                </div>
+                <div class="span4">
+                    <div id="extraction"><span class="muted">extraction</span></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="span4">
+                    <label class="checkbox">
+                        <input id="normalize" type="checkbox"> Normalize
+                    </label>
+                </div>
+                <div class="span4">
+                </div>
+                <div class="span4">
+                    <div id="download"><span class="muted">download</span></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="span12">
+                    <div id="timelines"></div>
+                </div>
+            </div>
+        </div>
+
+        	<footer>
+		<div class="container">
+			<div class="row">
+				<div class="span12">
+					<hr/>
+				</div>
+				<div class="span4">
+					<p>
+						<a href="https://twitter.com/share" class="twitter-share-button" data-text="ScienceScape: getting networks from WoS and Scopus files">Tweet</a>
+						<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+					</p>
+					<p>
+                        We used:
+                        <br/>
+                        <a href="http://sigmajs.org/">Sigma.js</a>,
+                        <a href="http://dominojs.org/">Domino.js</a>,
+                        <a href="https://github.com/eligrey/FileSaver.js/">FileSaver.js</a>,
+                        <a href="http://twitter.github.com/bootstrap/">Bootstrap</a>,
+                        <a href="http://jquery.com/">jQuery</a>,
+                        <a href="http://modernizr.com/">Modernizr</a>,
+                        <a href="http://www.initializr.com/">Initializr</a>
+                    </p>
+
+				</div>
+				<div class="span4">
+                    <p>Related tools:</p>
+                    <strong><a href="https://tools.medialab.sciences-po.fr/table2net/">Table2Net</a></strong>
+                    <p>
+                        If you want to get the citation network from the table with the DOI, you can use Table2Net in "citation" mode :)
+                    </p>
+					<p>See also our other tools at <strong><a href="http://tools.medialab.sciences-po.fr">Médialab Tools</a></strong>!</p>
+					<strong><a href="http://www.sebastian-grauwin.com/?page_id=492">BiblioTools</a></strong>
+                    <p>
+                        BiblioTools was developed by <strong>Sebastian Grauwin</strong> for a similar purpose. It is dedicated to getting networks from Web of Science, and can deal a large mass of data.
+                    </p>
+                    <strong><a href="http://gephi.org/">Gephi</a></strong>
+                    <p>
+                        We recommand to use Gephi for spatializing networks. It is more efficient than this website. Check its <a href="http://gephi.org/users/">tutorials</a>!
+                    </p>
+				</div>
+				<div class="span4">
+					<div style="text-align:right">
+						<a href="http://medialab.sciences-po.fr"><img src="/sciencescape/res/logosp_fonce.png"/></a>
+						<p class="muted">
+							Developed by Mathieu Jacomy
+							<br/>
+							at the <a href="http://medialab.sciences-po.fr">Sciences-Po Medialab</a>
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</footer>
+
+
+        
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="/sciencescape/js/libs/jquery-1.8.0.min.js"><\/script>')</script>
+
+<script src="/sciencescape/js/libs/jquery.md5.js"></script>
+
+<script src="/sciencescape/js/libs/bootstrap.min.js"></script>
+
+<script src="/sciencescape/js/libs/d3.v2.min.js"></script>
+<!-- <script src="/sciencescape/js/libs/d3.min.js"></script> -->
+<!-- <script src="/sciencescape/js/libs/d3.chart.min.js"></script> -->
+<!-- <script src="/sciencescape/js/libs/d3.csv.min.js"></script> -->
+<!-- <script src="/sciencescape/js/libs/d3.geo.min.js"></script> -->
+<!-- <script src="/sciencescape/js/libs/d3.geom.min.js"></script> -->
+<!-- <script src="/sciencescape/js/libs/d3.layout.min.js"></script> -->
+<!-- <script src="/sciencescape/js/libs/d3.time.min.js"></script> -->
+
+<script src="/sciencescape/js/libs/chroma.js"></script>
+<!-- <script src="/sciencescape/js/libs/chroma.palette-gen.js"></script> -->
+
+<script src="/sciencescape/js/libs/FileSaver.js"></script>
+
+<script src="/sciencescape/js/libs/domino.min.js"></script>
+
+<script src="/sciencescape/js/libs/json_graph_api.js"></script>
+<script src="/sciencescape/js/table2net.js"></script>
+
+<script src="/sciencescape/js/sandbox.js"></script>
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-37695848-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+<!--[if lt IE 7 ]>
+	<script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.2/CFInstall.min.js"></script>
+	<script>window.attachEvent("onload",function(){CFInstall.check({mode:"overlay"})})</script>
+<![endif]-->
+
+
+
+        <script src="/sciencescape/js/libs/horizon.js"></script>
+        <script src="/sciencescape/js/_page_scopus_keywords_evolution.js"></script>
+
+        <script>
+            // document.getElementById('scopusextract_input').addEventListener('change', fileLoader.handleFileSelect, false);
+        </script>
+    </body>
+</html>
