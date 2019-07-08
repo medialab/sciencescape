@@ -13,34 +13,6 @@ redirect_from: /scopus_referencescape.php.html
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
 
-<?php
-if(is_dir('_config/')){
-	// If there is a conf file, then take it
-	include('_config/conf.php');
-} else {
-	// If there is not, make one with the default one, and then take it
-	recurse_copy('_config_default/', '_config/');
-	include('_config_default/conf.php');
-}
-
-function recurse_copy($src, $dst) {
-	// NB: only one level, not the sub dirs
-    $dir = opendir($src); 
-    @mkdir($dst); 
-    while(false !== ( $file = readdir($dir)) ) { 
-        if (( $file != '.' ) && ( $file != '..' )) { 
-            if ( is_dir($src . '/' . $file) ) { 
-                // recurse_copy($src . '/' . $file,$dst . '/' . $file);
-                // (not the sub directories)
-            } 
-            else { 
-                copy($src . '/' . $file,$dst . '/' . $file); 
-            } 
-        } 
-    } 
-    closedir($dir); 
-} 
-?>
 		<link rel="stylesheet" href="/sciencescape/css/bootstrap.min.css">
         <link rel="stylesheet" href="/sciencescape/css/bootstrap-responsive.min.css">
         <!-- <link rel="stylesheet" href="/sciencescape/css/prettify.css"> -->
@@ -64,7 +36,7 @@ function recurse_copy($src, $dst) {
                 position: relative;
 
                 /*background-color: #f8f8f8;*/
-                
+
                 /* from http://www.colorzilla.com/gradient-editor/ */
                 background: rgb(242,242,242); /* Old browsers */
                 background: -moz-linear-gradient(top,  rgba(242,242,242,1) 0%, rgba(244,244,244,1) 43%, rgba(252,252,252,1) 100%); /* FF3.6+ */
@@ -229,7 +201,7 @@ function recurse_copy($src, $dst) {
                         <h4>Upload your Scopus CSV file</h4>
                         <div id="scopusextract"><span class="muted">file uploader</span></div>
                     </div>
-                    
+
                 </div>
                 <div class="span8">
                     <div id="networkDiv" style="display:none;">
@@ -252,7 +224,7 @@ function recurse_copy($src, $dst) {
                         </div>
                     </div>
 
-                    
+
                 </div>
             </div>
         </div>
